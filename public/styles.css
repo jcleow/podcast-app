@@ -1,0 +1,17 @@
+/** @format */
+.audioOuterFrame {
+  position: relative;
+  width: 267px;
+  height: 25px;
+  overflow: hidden;
+}
+
+.audioInnerFrame {
+  position: absolute;
+  top: -268px;
+  left: 200px;
+}
+
+.transformFrame {
+  transform: translateX(300px);
+}

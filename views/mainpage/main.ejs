@@ -1,0 +1,190 @@
+<%- include('headerAndNav') %>
+<body class='bg'>  
+<!-- First Section--> 
+<video autoplay muted loop id="mainPageBirdDisplay">
+  <source src="/seagulls.mp4" type="video/mp4">
+</video>  
+<div class= "toCollapseShow" data-toggle="collapse" data-target="#collapseSightingsTable">
+  <div class="row">
+    <div class="col d-flex justify-content-center align-self-center backgroundDisplay">
+      <div class='displaySightings'>
+        <span>Main Page<span>
+      </div>
+    </div>
+  </div>
+  <div class='row'>
+    <div class='col d-flex justify-content-center align-self-center backgroundDisplay'>
+      <span><i class="fa fa-angle-double-down fa-3x"></i></span>
+    </div>
+  </div>
+</div> 
+
+<section>
+<div class="container-sm tableDisplay collapse" id="collapseSightingsTable">
+  <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
+  <thead>
+    <tr>
+      <th scope="col" class='text-white'>ID.</th>
+      <th scope="col" class='text-white'>Species Name</th>
+      <th scope="col" class='text-white'>Habitat</th>
+      <th scope="col" class='text-white'>Flock Size</th>
+      <th scope="col" class='text-white'>Logged By</th>
+      <th scope="col" class='text-white'>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="accordion">
+    
+    <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
+      <th scope="row" class='text-white'>test</th>
+      <td><a href="/note/" class="text-dark"></a> </td>
+      <td class='text-white'>  </td>
+      <td class='text-white'>  </td>
+      <td class='text-white'> </td>      
+    <td class='actionBtns'>
+      <div class="row">
+        <div class="col-sm-3">
+             <a href="/note//edit" class="btn btn-outline-dark" role="button">
+          Edit</a
+        >
+        </div>
+       <div class="col-sm-3"> 
+        <form action="/note//delete?_method=DELETE" method="POST">
+          <input
+            type="submit"
+            class="btn btn-outline-danger"
+            name="_method"
+            value="Delete"
+          />
+        </form>
+      </div>
+    </td>
+    <td class="expand-button"></td>
+    </tr>
+    <tr>
+    <td colspan="12">
+      <div id="collapse1" class="collapse" data-parent="#accordion">
+                <div class="row pt-3 pl-3"><b>Species Name:</b></div>
+      <div class="row pl-3"></div>
+
+      <div class="row pt-3 pl-3"><b>Habitat:</b></div>
+      <div class="row pl-3"></div>
+
+      <div class="row pt-3 pl-3"><b>Date:</b></div>
+      <div class="row pl-3"></div>
+
+      <div class="row pt-3 pl-3"><b>Appearance:</b></div>
+      <div class="row pl-3"></div>
+      
+      <div class="row pt-3 pl-3"><b>Behaviour:</b></div>
+      <div class="row pl-3"></div>
+
+      <div class="row pt-3 pl-3"><b>Vocalizations:</b></div>
+      <div class="row pl-3"></div>
+
+      <div class="row pt-3 pl-3"><b>Flock Size</b></div>
+      <div class="row pl-3"></div>
+      </div>
+    </td>
+    </tr>    
+  </tbody>
+</table>
+  </div>
+
+
+</section>
+
+
+<!-- Second Section on Species Viewed-->
+<section>
+<div class= "toCollapseShow" data-toggle="collapse" data-target="#collapseSpeciesTable">
+  <div class="row">
+    <div class="col d-flex justify-content-center align-self-center backgroundDisplay">
+      <div class='displaySightings2'>
+        <span>All Species Recorded</span>
+      </div>
+    </div>
+  </div>
+  <div class='row'>
+    <div class='col d-flex justify-content-center align-self-center backgroundDisplay angleArrows'>
+      <span><i class="fa fa-angle-double-down fa-3x"></i></span>
+    </div>
+  </div>
+</div> 
+
+<div class="container-sm tableDisplay collapse" id="collapseSpeciesTable">
+  <table class="table table-hover tableBackground" class="collapse" data-parent="#overallAccordion">
+  <thead>
+    <tr>
+      <th scope="col" class='text-white'>ID</th>
+      <th scope="col"class='text-white'>Species Name</th>
+      <th scope="col"class='text-white'>Scientific Name</th>
+      <th scope="col"class='text-white'>Family Name</th>
+      <th scope="col"class='text-white'>Other Information</th>
+    </tr>
+  </thead>
+  <tbody id="accordion2">
+    
+    <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
+      <th scope="row" class='text-white'></th>
+      <td ><a href="/note/" class='text-dark'> </a> </td>
+      <td class='text-white'>  </td>
+      <td class='text-white'> </td>      
+    <td class='actionBtns'>
+      <div class="row">
+        <div class="col-sm-3">
+             <a href="/note//edit" class="btn btn-outline-dark" role="button">
+          Edit</a
+        >
+        </div>
+       <div class="col-sm-3"> 
+        <form action="/note//delete?_method=DELETE" method="POST">
+          <input
+            type="submit"
+            class="btn btn-outline-danger"
+            name="_method"
+            value="Delete"
+          />
+        </form>
+      </div>
+    </td>
+    <td class="expand-button"></td>
+    </tr>
+    <tr>
+    <td colspan="12">
+      <div id="collapse1" class="collapse" data-parent="#accordion2">
+                <div class="row pt-3 pl-3"><b>Species Name:</b></div>
+      <div class="row pl-3"> </div>
+
+      <div class="row pt-3 pl-3"><b>Scientific Name</b></div>
+      <div class="row pl-3"></div>
+
+      <div class="row pt-3 pl-3"><b>Family Name</b></div>
+      <div class="row pl-3"></div>
+
+      <div class="row pt-3 pl-3"><b>Other Information</b></div>
+      <div class="row pl-3"></div>
+    </td>
+    </tr>    
+
+  </tbody>
+</table>
+  </div>
+</section>
+<section>
+<div class="videoDisplay">
+  <p><span class="display"></span></p>
+</div>
+</section>
+
+</div>
+</body>
+<div class="fixed-bottom">
+  <div class ="container">
+    <div class="row">
+      <div class="col d-flex justify-content-center">
+  <iframe width="50%" height="90%" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/936374314&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<%-include('footer') %>
