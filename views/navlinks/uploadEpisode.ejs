@@ -1,0 +1,51 @@
+<%- include('../mainpage/headerAndNav') %>
+  <!-- Body-->
+  <body>
+    <div class="container navTopMargin">
+      <div class="row">
+        <div class="col d-flex justify-content-center submitSighting">
+          Upload a New Podcast Episode
+        </div>
+      </div>
+<form action="/podcast/episode/create" method="POST">
+  <div class="form-group">
+    <label for='episodeName'>Episode Name<span class="required">*</span></label>
+    <input type='text' class="form-control" id='episodeName' name='episodeName'>
+  </div>
+  <div class="form-group">
+    <label for="episodeNumber">Episode Number<span class="required">*</span></label>
+    <input type="number" class="form-control" id="episodeNumber" name='episodeNumber'>
+  </div>
+
+   <div class="form-group">
+    <label for="description">Description of Episode</label>
+    <textarea class="form-control" id="episodeDescription" name='episodeDescription'></textarea>
+  </div>
+
+   <div class="form-group">
+    <label for="soundCloudUrl">Paste SoundCloud Link<span class="required">*</span></label>
+    <textarea class="form-control" id="soundCloudUrl" name='soundCloudUrl'></textarea>
+  </div>
+
+
+  <div class="btn-group">
+    <button type="button" class="btn btn-info">Subgenre</button>
+    <button type="button" class="btn btn-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" name="Comedy">Comedy</a>
+      <a class="dropdown-item" name="Educational">Educational</a>
+      <a class="dropdown-item" name="Romance">Romance</a>
+    </div>
+  </div>
+
+
+  <div class="form-group">
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+    </div>
+  </body>
+  
+<%-include('../mainpage/footer') %>

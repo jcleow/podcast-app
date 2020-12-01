@@ -10,13 +10,13 @@
   </ol>
   <div class="carousel-inner">
     <div class="carousel-item carouselDiv active">
-      <img class="d-block w-100 carouselPictures" src="chatwithtraders.jpg" alt="First slide">
+      <img class="d-block w-100 carouselPictures" src="carousel/chatwithtraders.jpg" alt="First slide">
     </div>
     <div class="carousel-item carouselDiv">
-      <img class="d-block w-100 carouselPictures" src="thisamericanlife.jpg" alt="Second slide">
+      <img class="d-block w-100 carouselPictures" src="carousel/thisamericanlife.jpg" alt="Second slide">
     </div>
     <div class="carousel-item carouselDiv">
-      <img class="d-block w-100 carouselPictures" src="fallback.jpg" alt="Third slide">
+      <img class="d-block w-100 carouselPictures" src="carousel/fallback.jpg" alt="Third slide">
     </div>
   </div>
   <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
@@ -28,10 +28,6 @@
     <span class="sr-only">Next</span>
   </a>
 </div>
-
-
-
-
 
 <div class= "toCollapseShow" data-toggle="collapse" data-target="#collapseSightingsTable">
   <div class="row">
@@ -49,26 +45,54 @@
 </div> 
 
 <section>
+<div class="card-deck">
+<div class = "row d-flex flex-row flex-nowrap overflow-auto">
+ <% episodes.forEach((episode)=>{ %>
+  <div class = "col-xs-1 col-sm-3 col-md-2  ">
+    <div class="card cardSize">
+      
+      <form class= "artworkDisplay d-flex justify-content-center" action ='/'> 
+          <img class="card-img-top artworkDisplay">
+          <button class= "mx-auto" type='submit'>Play</button>
+          <input type='hidden' name="episode_id" value="<%=episode.podcast_ext_url%>"/>
+      </form>
+     
+      <div class="card-body">
+        <h5 class="card-title"><%=episode.name%></h5>
+        <p class="card-text text-overflow">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+      </div>
+    </div>
+  </div>
+<% }); %>
+
+</div>
+
+</section>
+
+
+<section>
 <div class="container-sm tableDisplay collapse" id="collapseSightingsTable">
   <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>
-      <th scope="col" class='text-white'>ID.</th>
-      <th scope="col" class='text-white'>Species Name</th>
-      <th scope="col" class='text-white'>Habitat</th>
-      <th scope="col" class='text-white'>Flock Size</th>
-      <th scope="col" class='text-white'>Logged By</th>
-      <th scope="col" class='text-white'>Actions</th>
+      <th scope="col" class='text-dark'>ID.</th>
+      <th scope="col" class='text-dark'>Play</th>
+      <th scope="col" class='text-dark'>Episode Name</th>
+      <th scope="col" class='text-dark'>Ep. Number</th>
+      <th scope="col" class='text-dark'>Description</th>
     </tr>
   </thead>
   <tbody id="accordion">
-    
     <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
-      <th scope="row" class='text-white'>test</th>
-      <td><a href="/note/" class="text-dark"></a> </td>
-      <td class='text-white'>  </td>
-      <td class='text-white'>  </td>
-      <td class='text-white'> </td>      
+      <% episodes.forEach((episode)=>{ %>
+      <th scope="row" class='text-dark'><%=episode.id%></th>
+      <td><form action ='/'>
+        <button type='submit'>Play</button>
+        <input type='hidden' name="episode_id" value="<%=episode.podcast_ext_url%>"/>
+      </form></td>
+      <td><a class="text-dark"><%=episode.name%></a></form> </td>
+      <td class='text-dark'><%= episode.episode_number %></td>
+      <td class='text-dark'><%= episode.description %> </td>      
     <td class='actionBtns'>
       <div class="row">
         <div class="col-sm-3">
@@ -89,6 +113,7 @@
     </td>
     <td class="expand-button"></td>
     </tr>
+    <% }); %>
     <tr>
     <td colspan="12">
       <div id="collapse1" class="collapse" data-parent="#accordion">
@@ -118,8 +143,6 @@
   </tbody>
 </table>
   </div>
-
-
 </section>
 
 
@@ -144,20 +167,20 @@
   <table class="table table-hover tableBackground" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>
-      <th scope="col" class='text-white'>ID</th>
-      <th scope="col"class='text-white'>Species Name</th>
-      <th scope="col"class='text-white'>Scientific Name</th>
-      <th scope="col"class='text-white'>Family Name</th>
-      <th scope="col"class='text-white'>Other Information</th>
+      <th scope="col" class='text-dark'>ID</th>
+      <th scope="col"class='text-dark'>Species Name</th>
+      <th scope="col"class='text-dark'>Scientific Name</th>
+      <th scope="col"class='text-dark'>Family Name</th>
+      <th scope="col"class='text-dark'>Other Information</th>
     </tr>
   </thead>
   <tbody id="accordion2">
     
     <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
-      <th scope="row" class='text-white'></th>
+      <th scope="row" class='text-dark'></th>
       <td ><a href="/note/" class='text-dark'> </a> </td>
-      <td class='text-white'>  </td>
-      <td class='text-white'> </td>      
+      <td class='text-dark'>  </td>
+      <td class='text-dark'> </td>      
     <td class='actionBtns'>
       <div class="row">
         <div class="col-sm-3">
@@ -211,8 +234,9 @@
   <div class ="container">
     <div class="row">
       <div class="col d-flex justify-content-center">
-  <iframe width="50%" height="90%" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/936374314&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"></iframe>
-      </div>
+  <iframe width="50%" height="90%" scrolling="no" frameborder="no" allow="autoplay" src='<%=episodeLinkToPlay%>'></iframe>
+ 
+</div>
     </div>
   </div>
 </div>

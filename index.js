@@ -15,14 +15,14 @@ if (process.env.ENV === 'PRODUCTION') {
     // set DB_PASSWORD as an environment variable for security.
     password: process.env.DB_PASSWORD,
     host: 'localhost',
-    database: 'birding',
+    database: 'podcast',
     port: 5432,
   };
 } else {
   poolConfig = {
     user: process.env.USER,
     host: 'localhost',
-    database: 'birding',
+    database: 'podcast',
     port: 5432, // Postgres server always runs on this port
   };
 }
@@ -84,7 +84,52 @@ app.use((req, res, next) => {
   next();
 });
 app.get('/', (req, res) => {
-  res.render('mainpage/main');
+  const episodeToPlay = req.query.episode_id;
+  const selectAllPodcastQuery = {
+    text: 'SELECT * FROM podcast_episode',
+  };
+  pool
+    .query(selectAllPodcastQuery)
+    .then((result) => {
+      const data = {};
+      // Pass all the data from sql query into result.rows;
+      data.episodes = result.rows;
+      data.episodeLinkToPlay = episodeToPlay;
+      // Pass all the data into result.rows;
+      console.log(data, 'data');
+      res.render('mainpage/main', data);
+    })
+    .catch((error) => console.log(error));
+});
+
+app.get('/podcast/create', (req, res) => {
+  res.render('navlinks/createPodcastSeries');
+});
+
+app.get('/podcast/episode/create', (req, res) => {
+  res.render('navlinks/uploadEpisode');
+});
+
+app.post('/podcast/episode/create', (req, res) => {
+  const { soundCloudUrl: rawIframeUrl } = req.body;
+  console.log(req.body, 'req.body');
+
+  // searching for the first string that starts with https and ends with true
+  // \b stands for word boundary
+  // .+? (one or more of any characters except linefeeds, non-greedily)
+  const regex = new RegExp(/\bhttps.+?show_teaser=true\b/);
+  const refinedUrl = rawIframeUrl.match(regex)[0];
+  req.body.soundCloudUrl = refinedUrl;
+  const valuesArray = Object.entries(req.body).map(([key, value]) => value);
+  const insertEpisodeQuery = {
+    text: 'INSERT INTO podcast_episode(name,episode_number,description,podcast_ext_url) VALUES($1,$2,$3,$4)',
+    values: valuesArray,
+  };
+  pool
+    .query(insertEpisodeQuery)
+    .then((result) => {
+      console.log(result);
+      res.redirect('/'); });
 });
 
 app.listen(PORT);
