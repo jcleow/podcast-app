@@ -21,7 +21,7 @@
     <div class = "collapse navbar-collapse w-100 order-1 order-md-0" id="collapsibleNavbar">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="/note"> New Sighting</a>
+          <a class="nav-link text-light" href="/note"> New Sighting</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/species/create" class="text-light">New Species</a>
@@ -38,8 +38,27 @@
 <!-- Navbar links on the right -->
     <div class = "collapse navbar-collapse w-100 order-3" id="collapsibleNavbar">
       <ul class="navbar-nav ml-auto">
-    
+
       <li class="nav-item ml-auto">
+
+        <!-- Example split danger button -->
+        <div class="btn-group">
+          <button type="button" class="btn btn-outline-light">Account</button>
+          <button type="button" class="btn btn-outline-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="#">Login</a>
+            <a class="dropdown-item" href="#">Signup</a>
+            <a class="dropdown-item" href="#">My profile</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">Log out</a>
+          </div>
+        </div>
+      </li>
+
+    
+      <!-- <li class="nav-item ml-auto">
         <a class="nav-link" href="/login">Login</a>
       </li>
       
@@ -67,7 +86,7 @@
         <form action="/logout?_method=DELETE" method="POST">
         <button class="nav-link logoutBtn" type="submit" name="_method">Log out</button>
         </form>
-      </li>
+      </li> -->
   
     </ul>
     </div>

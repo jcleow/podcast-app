@@ -87,6 +87,4 @@ app.get('/', (req, res) => {
   res.render('mainpage/main');
 });
 
-console.log('hello');
-
 app.listen(PORT);
