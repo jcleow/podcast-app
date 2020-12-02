@@ -93,7 +93,6 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   // Check if the form is submitted by the genre/subgenre selection or the user has already
   // decided to submit the full form
-  console.log(req.body, 'req.body');
   const episodeToPlay = req.query.episode_id;
   const selectAllPodcastQuery = {
     text: 'SELECT * FROM podcast_episodes',
@@ -153,6 +152,7 @@ app.get('/podcast/create', (req, res) => {
 app.post('/podcast/create', upload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
+  console.log(req.body, 'post-req.body');
   if (!req.body.submitOverallForm) {
     res.cookie('previousValues', req.body);
     res.cookie('previousFileSelected', req.file);
@@ -160,40 +160,48 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
     return;
   }
 
+  // Insert new podcast details into podcast_series body
   const { podcastSeriesName, description } = req.body;
-
   const insertNewPodcastDetailsQuery = {
-    text: 'INSERT INTO podcast_series(name,description) VALUES ($1,$2)',
+    text: 'INSERT INTO podcast_series(name,description) VALUES ($1,$2) RETURNING id AS podcast_series_id',
     values: [podcastSeriesName, description],
   };
+  // Store current podcast_series_id
+  let currPodcastSeriesId;
+
+  // Execute all queries
   pool
     .query(insertNewPodcastDetailsQuery)
+    .then((result) => {
+      console.log(result.rows, 'check query');
+      currPodcastSeriesId = result.rows[0].podcast_series_id;
+      // Insert relationship between podcast and subgenre into podcast_series_subgenres join table
+      const insertPodcastSubgenreQuery = {
+        text: `INSERT INTO podcast_series_subgenres(podcast_series_id,subgenre_id) SELECT ${currPodcastSeriesId},subgenres.id FROM subgenres WHERE subgenres.name = '${req.body.subgenreText}'`,
+      };
+
+      return pool.query(insertPodcastSubgenreQuery);
+    })
+    // If user uploaded an artwork, then run the query to insert it
     .then(() => {
-      // If user uploaded an artwork, then run the query to insert it
       if (req.file) {
         const { filename } = req.file;
+        console.log(filename, 'filename');
         const insertPodcastSeriesArtworkQuery = {
-          text: 'INSERT INTO podcast_series(artwork_filename) VALUES ($1)',
+          text: `UPDATE podcast_series SET artwork_filename= $1 WHERE id=${currPodcastSeriesId} RETURNING *`,
           values: [filename],
         };
-        pool
-          .query(insertPodcastSeriesArtworkQuery)
-          .then((result) => {
-            console.log(result);
-            res.redirect('/');
-          })
-          .catch((error) => response.status(503).send(error));
-        return;
+
+        return pool.query(insertPodcastSeriesArtworkQuery);
       }
-      // If not, terminate the req-res cycle;
+    })
+    .then(() => {
+      // If not, terminate the req-res cycle and clear cookies relating to create podcast form
+      res.clearCookie('previousValues');
+      res.clearCookie('previousFileSelected');
       res.redirect('/');
     })
     .catch((error) => response.status(503).send(error));
-
-  // res.clearCookie('previousValues');
-  // res.clearCookie('previousFileSelected');
-  // res.redirect('/');
-  // return;
 });
 
 app.get('/podcast/episode/create', (req, res) => {
