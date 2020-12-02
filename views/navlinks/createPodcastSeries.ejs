@@ -43,7 +43,6 @@
                   <div class="input-group-prepend">
                     <button class="btn btn-outline-secondary dropdown-toggle pr-5" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select a Genre</button>
                     <div class="dropdown-menu scrollable-menu">
-                      <a class="dropdown-item ">Create a new genre</a>
                       <input class="dropdown-item" type="submit" name="genreName" value="New Genre">
                       <div role="separator" class="dropdown-divider"></div>
                       <% genreNames.forEach((genreName)=>{ %>
@@ -92,7 +91,7 @@
                       <div role="separator" class="dropdown-divider"></div>
                     <% if(locals.subgenreNames) {%>                      
                       <% subgenreNames.forEach((subgenreName)=>{ %>
-                      <input class="dropdown-item" type="submit" name="subgenreName" value="<%=subgenreName%>">
+                      <input class="dropdown-item" type="submit" name="subgenreName" value="<%=subgenreName%>" readonly>
                       <% }); %>
                     <% } %>
                     </div>

@@ -7,7 +7,41 @@
           Upload a New Podcast Episode
         </div>
       </div>
-<form action="/podcast/episode/create" method="POST">
+
+    
+<form action="/podcast/episode/create" method="POST" enctype="multipart/form-data">
+    <div class="form-group ">
+    <div>
+      <label for="Podcast Series">Podcast Series</label>
+    </div>
+    <div class="form-check form-check-inline w-100">
+      <div class="container-fluid genre">
+        <div class="row">
+            <div class="col-md-12">
+              <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <button class="btn btn-outline-secondary dropdown-toggle pr-5" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select a Series</button>
+                    <div class="dropdown-menu scrollable-menu">
+                      <% allExistingSeries.forEach((series)=>{ %>
+                       <input class="dropdown-item"  type="submit" name="seriesName" value="<%=series%>">
+                    <% }); %>
+                    </div>
+                  </div>  
+              <input type="text" class="form-control" id="seriesText" name='seriesText' 
+              
+              <% if(locals.previousValues){ %>
+                value = "<%=previousValues.seriesName%>"                     
+              <% } %>
+              readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+   </div>
+
+
+
   <div class="form-group">
     <label for='episodeName'>Episode Name<span class="required">*</span></label>
     <input type='text' class="form-control" id='episodeName' name='episodeName'>
@@ -27,23 +61,15 @@
     <textarea class="form-control" id="soundCloudUrl" name='soundCloudUrl'></textarea>
   </div>
 
-
-  <div class="btn-group">
-    <button type="button" class="btn btn-info">Subgenre</button>
-    <button type="button" class="btn btn-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <span class="sr-only">Toggle Dropdown</span>
-    </button>
-    <div class="dropdown-menu">
-      <a class="dropdown-item" name="Comedy">Comedy</a>
-      <a class="dropdown-item" name="Educational">Educational</a>
-      <a class="dropdown-item" name="Romance">Romance</a>
-    </div>
+  <div class="form-group">
+    <label for="photo">Upload an Episode Artwork</label><br/>
+    <input type="file" name="artwork" />
   </div>
 
 
   <div class="form-group">
   </div>
-  <button type="submit" class="btn btn-primary">Submit</button>
+  <input type="submit" class="btn btn-primary" name="submitOverallForm"></input>
 </form>
     </div>
   </body>

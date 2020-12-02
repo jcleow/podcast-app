@@ -42,6 +42,8 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: false }));
 // Middleware to allow static images/css files to be served
 app.use(express.static('public'));
+// Middleware to allow static images/css files to be served
+app.use(express.static('uploads'));
 // Middleware that allows POST methods to be overriden for PUT and DELETE requests
 app.use(methodOverride('_method'));
 // Middleware that allows request.cookies to be parsed
@@ -95,7 +97,7 @@ app.get('/', (req, res) => {
   // decided to submit the full form
   const episodeToPlay = req.query.episode_id;
   const selectAllPodcastQuery = {
-    text: 'SELECT * FROM podcast_episodes',
+    text: 'SELECT *,podcast_episodes.name AS name, podcast_series.artwork_filename AS album_artwork, podcast_episodes.artwork_filename AS episode_artwork FROM podcast_episodes INNER JOIN podcast_series ON podcast_episodes.podcast_series_id = podcast_series.id',
   };
   pool
     .query(selectAllPodcastQuery)
@@ -110,6 +112,7 @@ app.get('/', (req, res) => {
     .catch((error) => console.log(error));
 });
 
+// Route that renders a new form to enter podcast_series details
 app.get('/podcast/create', (req, res) => {
   // first, store all the variables inside a data var
   const data = {};
@@ -117,19 +120,16 @@ app.get('/podcast/create', (req, res) => {
   // Next Check if there are data stored in cookies
   if (req.cookies.previousValues) {
     data.previousValues = req.cookies.previousValues;
-    console.log(data.previousValues, 'previousValues');
     if (req.cookies.previousFileSelected) {
       data.previousFileSelected = req.cookies.previousFileSelected;
-      console.log(data.previousFileSelected, 'previousFileSelected');
     }
   }
-  // second, check from cookies if there are any genres/subGenres names selected
-
-  // third query for all the genres and subgenres and store into a temp data var
 
   pool
     .query('SELECT id,name FROM genres')
+    // second, check from cookies if there are any genres/subGenres names selected
     .then((result) => { data.genreNames = result.rows.map((row) => row.name);
+    // third query for all the genres and subgenres and store into a temp data var
     })
     .then(() => {
       if (req.cookies.previousValues) {
@@ -149,10 +149,10 @@ app.get('/podcast/create', (req, res) => {
     .catch((error) => console.log(error));
 });
 
+// Route that creates a new podcast_series entry
 app.post('/podcast/create', upload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
-  console.log(req.body, 'post-req.body');
   if (!req.body.submitOverallForm) {
     res.cookie('previousValues', req.body);
     res.cookie('previousFileSelected', req.file);
@@ -173,7 +173,6 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
   pool
     .query(insertNewPodcastDetailsQuery)
     .then((result) => {
-      console.log(result.rows, 'check query');
       currPodcastSeriesId = result.rows[0].podcast_series_id;
       // Insert relationship between podcast and subgenre into podcast_series_subgenres join table
       const insertPodcastSubgenreQuery = {
@@ -186,7 +185,6 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
     .then(() => {
       if (req.file) {
         const { filename } = req.file;
-        console.log(filename, 'filename');
         const insertPodcastSeriesArtworkQuery = {
           text: `UPDATE podcast_series SET artwork_filename= $1 WHERE id=${currPodcastSeriesId} RETURNING *`,
           values: [filename],
@@ -204,11 +202,43 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
     .catch((error) => response.status(503).send(error));
 });
 
+// Route that renders a form that creates a new podcast_episode
 app.get('/podcast/episode/create', (req, res) => {
-  res.render('navlinks/uploadEpisode');
+  // Store all results into a temp object to pass into ejs
+  const data = {};
+
+  if (req.cookies.previousValues) {
+    data.previousValues = req.cookies.previousValues;
+  }
+
+  const selectAllExistingPodcastsQuery = {
+    text: 'SELECT name FROM podcast_series',
+  };
+
+  pool
+    // first obtain all the names of existing podcasts in the database
+    .query(selectAllExistingPodcastsQuery)
+    // consolidate the names into an array and assign to var data
+    .then((result) => {
+      const allExistingSeries = result.rows.map((row) => row.name);
+      data.allExistingSeries = allExistingSeries;
+      res.render('navlinks/uploadEpisode', data);
+    })
+    .catch((error) => console.log(error));
 });
 
+// Route that submits a request that creates a new podcast_episode entry
 app.post('/podcast/episode/create', upload.single('artwork'), (req, res) => {
+  // Check if entry is finished through temp data in req.cookies
+  // if entry is not finished, the info will be stored in the cookies
+  if (!req.body.submitOverallForm) {
+    res.cookie('previousValues', req.body);
+    res.redirect('/podcast/episode/create');
+    return;
+  }
+  // Track the podcastEpisodeId being inserted
+  let currPodcastEpisodeId;
+  // Get the iframes soundCloudUrl out first
   const { soundCloudUrl: rawIframeUrl } = req.body;
 
   // searching for the first string that starts with https and ends with true
@@ -216,17 +246,51 @@ app.post('/podcast/episode/create', upload.single('artwork'), (req, res) => {
   // .+? (one or more of any characters except linefeeds, non-greedily)
   const regex = new RegExp(/\bhttps.+?show_teaser=true\b/);
   const refinedUrl = rawIframeUrl.match(regex)[0];
+
+  // Assign refinedurl to the request body
   req.body.soundCloudUrl = refinedUrl;
+
+  // Store all the entries from req.body into values array
   const valuesArray = Object.entries(req.body).map(([key, value]) => value);
+  const [podcastSeriesName, podcastEpisodeName, episodeNumber, description, externalLink, artwork] = valuesArray;
+
   const insertEpisodeQuery = {
-    text: 'INSERT INTO podcast_episode(name,episode_number,description,podcast_ext_url) VALUES($1,$2,$3,$4)',
-    values: valuesArray,
+    text: 'INSERT INTO podcast_episodes(name,episode_number,description,podcast_ext_url) VALUES($1,$2,$3,$4) RETURNING id',
+    values: [podcastEpisodeName, Number(episodeNumber), description, externalLink],
   };
+
+  // Execute all the queries
   pool
+  // first insert the generic details of the new episodes
     .query(insertEpisodeQuery)
     .then((result) => {
-      console.log(result);
-      res.redirect('/'); });
+      currPodcastEpisodeId = result.rows[0].id;
+    })
+    // next insert the filename of the uploaded artwork
+    .then(() => {
+      if (req.file) {
+        const { filename } = req.file;
+        const insertEpisodeArtworkQuery = {
+          text: `UPDATE podcast_episodes SET artwork_filename = $1 WHERE id = ${currPodcastEpisodeId}`,
+          values: [filename],
+        };
+        return pool.query(insertEpisodeArtworkQuery);
+      }
+    })
+    // next select/get the serial id of the podcast series
+    .then(() => {
+      const selectPodcastSeriesId = `SELECT id FROM podcast_series WHERE name= '${podcastSeriesName}'`;
+      return pool.query(selectPodcastSeriesId);
+    })
+    // next insert the podcast_series_id (Foreign key)
+    .then((result) => {
+      const insertPodcastSeriesIdForeignKeyQuery = (`UPDATE podcast_episodes SET podcast_series_id=${result.rows[0].id} WHERE podcast_episodes.id = ${currPodcastEpisodeId}`);
+      return pool.query(insertPodcastSeriesIdForeignKeyQuery);
+    })
+    .then(() => {
+      res.redirect('/');
+    })
+    .catch((error) => { console.log(error); });
 });
 
 app.listen(PORT);

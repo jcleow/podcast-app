@@ -51,8 +51,16 @@
   <div class = "col-xs-1 col-sm-3 col-md-2  ">
     <div class="card cardSize">
       
-      <form class= "artworkDisplay d-flex justify-content-center" action ='/'> 
-          <img class="card-img-top artworkDisplay">
+      <form class= "artworkDisplay d-flex justify-content-center" 
+              
+        <% if(episode.episode_artwork) {%>
+        style="background-image:url(<%=episode.episode_artwork%>)"
+        <% } else { %>
+        style="background-image:url(<%=episode.album_artwork%>)"
+        <% } %>
+        
+        action ='/'> 
+          <img class="card-img-top w-auto">
           <button class= "mx-auto" type='submit'>Play</button>
           <input type='hidden' name="episode_id" value="<%=episode.podcast_ext_url%>"/>
       </form>

@@ -212,7 +212,6 @@ h1 .display {
 }
 
 .artworkDisplay {
-  background: url("/artworks/chatwithtraderslogo.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
