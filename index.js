@@ -2,7 +2,11 @@ import pg from 'pg';
 import jsSHA from 'jssha';
 import methodOverride from 'method-override';
 import cookieParser from 'cookie-parser';
-import express from 'express';
+import express, { response } from 'express';
+import multer from 'multer';
+
+// Define upload multer
+const upload = multer({ dest: 'uploads/' });
 
 // Constant Variable of process.env
 const SALT = process.env.MY_ENV_VAR;
@@ -42,6 +46,9 @@ app.use(express.static('public'));
 app.use(methodOverride('_method'));
 // Middleware that allows request.cookies to be parsed
 app.use(cookieParser());
+
+// Getting the uploaded artwork files back into the expressjs app
+app.use(express.static('uploads'));
 
 // Function that converts supplied username into a hash (using a salt)
 const convertUserIdToHash = (userId) => {
@@ -84,9 +91,12 @@ app.use((req, res, next) => {
   next();
 });
 app.get('/', (req, res) => {
+  // Check if the form is submitted by the genre/subgenre selection or the user has already
+  // decided to submit the full form
+  console.log(req.body, 'req.body');
   const episodeToPlay = req.query.episode_id;
   const selectAllPodcastQuery = {
-    text: 'SELECT * FROM podcast_episode',
+    text: 'SELECT * FROM podcast_episodes',
   };
   pool
     .query(selectAllPodcastQuery)
@@ -96,23 +106,102 @@ app.get('/', (req, res) => {
       data.episodes = result.rows;
       data.episodeLinkToPlay = episodeToPlay;
       // Pass all the data into result.rows;
-      console.log(data, 'data');
       res.render('mainpage/main', data);
     })
     .catch((error) => console.log(error));
 });
 
 app.get('/podcast/create', (req, res) => {
-  res.render('navlinks/createPodcastSeries');
+  // first, store all the variables inside a data var
+  const data = {};
+
+  // Next Check if there are data stored in cookies
+  if (req.cookies.previousValues) {
+    data.previousValues = req.cookies.previousValues;
+    console.log(data.previousValues, 'previousValues');
+    if (req.cookies.previousFileSelected) {
+      data.previousFileSelected = req.cookies.previousFileSelected;
+      console.log(data.previousFileSelected, 'previousFileSelected');
+    }
+  }
+  // second, check from cookies if there are any genres/subGenres names selected
+
+  // third query for all the genres and subgenres and store into a temp data var
+
+  pool
+    .query('SELECT id,name FROM genres')
+    .then((result) => { data.genreNames = result.rows.map((row) => row.name);
+    })
+    .then(() => {
+      if (req.cookies.previousValues) {
+        if (req.cookies.previousValues.genreName) {
+          return pool.query(`SELECT subgenres.name FROM subgenres INNER JOIN genres ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreName}'`);
+        } if (req.cookies.previousValues.genreText) {
+          return pool.query(`SELECT subgenres.name FROM subgenres INNER JOIN genres ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreText}'`);
+        }
+      }
+    })
+    .then((result) => {
+      if (result) {
+        data.subgenreNames = result.rows.map((row) => row.name);
+      }
+      res.render('navlinks/createPodcastSeries', data);
+    })
+    .catch((error) => console.log(error));
+});
+
+app.post('/podcast/create', upload.single('artwork'), (req, res) => {
+  // Check if entry is finished through temp data in req.cookies
+  // if entry is not finished, the info will be stored in the cookies
+  if (!req.body.submitOverallForm) {
+    res.cookie('previousValues', req.body);
+    res.cookie('previousFileSelected', req.file);
+    res.redirect('/podcast/create');
+    return;
+  }
+
+  const { podcastSeriesName, description } = req.body;
+
+  const insertNewPodcastDetailsQuery = {
+    text: 'INSERT INTO podcast_series(name,description) VALUES ($1,$2)',
+    values: [podcastSeriesName, description],
+  };
+  pool
+    .query(insertNewPodcastDetailsQuery)
+    .then(() => {
+      // If user uploaded an artwork, then run the query to insert it
+      if (req.file) {
+        const { filename } = req.file;
+        const insertPodcastSeriesArtworkQuery = {
+          text: 'INSERT INTO podcast_series(artwork_filename) VALUES ($1)',
+          values: [filename],
+        };
+        pool
+          .query(insertPodcastSeriesArtworkQuery)
+          .then((result) => {
+            console.log(result);
+            res.redirect('/');
+          })
+          .catch((error) => response.status(503).send(error));
+        return;
+      }
+      // If not, terminate the req-res cycle;
+      res.redirect('/');
+    })
+    .catch((error) => response.status(503).send(error));
+
+  // res.clearCookie('previousValues');
+  // res.clearCookie('previousFileSelected');
+  // res.redirect('/');
+  // return;
 });
 
 app.get('/podcast/episode/create', (req, res) => {
   res.render('navlinks/uploadEpisode');
 });
 
-app.post('/podcast/episode/create', (req, res) => {
+app.post('/podcast/episode/create', upload.single('artwork'), (req, res) => {
   const { soundCloudUrl: rawIframeUrl } = req.body;
-  console.log(req.body, 'req.body');
 
   // searching for the first string that starts with https and ends with true
   // \b stands for word boundary

@@ -229,3 +229,14 @@ h1 .display {
 .artworkDisplay:hover > button {
   display: block;
 }
+
+.genre {
+  padding: 0px;
+  margin: 0px;
+}
+
+.scrollable-menu {
+  height: auto;
+  max-height: 200px;
+  overflow-x: hidden;
+}

@@ -3,3 +3,7 @@
 
 # Dependency directories
 node_modules/
+
+# Save the existence of the uploads directory but not commit any of the actual files
+uploads/*
+
