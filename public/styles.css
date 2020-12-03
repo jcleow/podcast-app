@@ -192,8 +192,10 @@ h1 .display {
 }
 
 .cardSize {
+  position: relative;
   min-height: 200px;
   max-height: 500px;
+  width: auto;
   background-color: transparent;
   border: none;
 }
@@ -205,10 +207,17 @@ h1 .display {
   text-overflow: ellipsis;
 }
 
-.card-text.text-overflow:hover {
-  font-size: 15px;
-  white-space: pre-wrap;
-  overflow: visible;
+.newArtworkDisplay {
+  max-height: 150px;
+  width: auto;
+}
+
+.newArtworkDisplay > button {
+  display: none;
+}
+
+.newArtworkDisplay:hover > button {
+  display: block;
 }
 
 .artworkDisplay {
@@ -225,6 +234,16 @@ h1 .display {
   display: none;
 }
 
+/* .artworkDisplay:hover::after {
+  content: " ";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+} */
+
 .artworkDisplay:hover > button {
   display: block;
 }
@@ -238,4 +257,13 @@ h1 .display {
   height: auto;
   max-height: 200px;
   overflow-x: hidden;
+}
+
+.seriesDescription {
+  height: 300px;
+}
+
+.epArtwork {
+  height: 100px;
+  width: 100px;
 }

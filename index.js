@@ -93,19 +93,59 @@ app.use((req, res, next) => {
   next();
 });
 app.get('/', (req, res) => {
+  // Store all data to be rendered in ejs in data var
+  const data = {};
   // Check if the form is submitted by the genre/subgenre selection or the user has already
   // decided to submit the full form
   const episodeToPlay = req.query.episode_id;
-  const selectAllPodcastQuery = {
-    text: 'SELECT *,podcast_episodes.name AS name, podcast_series.artwork_filename AS album_artwork, podcast_episodes.artwork_filename AS episode_artwork FROM podcast_episodes INNER JOIN podcast_series ON podcast_episodes.podcast_series_id = podcast_series.id',
-  };
+
   pool
-    .query(selectAllPodcastQuery)
+    .query('SELECT * FROM podcast_series')
     .then((result) => {
-      const data = {};
+      data.series = result.rows;
+
+      // Prepare next query for podcast
+      const selectAllPodcastEpisodesQuery = {
+        text: 'SELECT *,podcast_episodes.name AS name, podcast_series.artwork_filename AS album_artwork, podcast_episodes.artwork_filename AS episode_artwork, podcast_episodes.description AS episode_description FROM podcast_episodes INNER JOIN podcast_series ON podcast_episodes.podcast_series_id = podcast_series.id',
+      };
+      return pool.query(selectAllPodcastEpisodesQuery);
+    })
+
+    .then((result) => {
       // Pass all the data from sql query into result.rows;
       data.episodes = result.rows;
       data.episodeLinkToPlay = episodeToPlay;
+    })
+    // Specific case to check if user wants to view podcast series
+    .then(() => {
+    // Check if user wants to view the podcast series description
+      if (req.query) {
+        if (req.query.series_id) {
+          return pool.query(`
+          SELECT 
+          podcast_episodes.id AS episode_id,
+          podcast_episodes.name AS episode_name,
+          podcast_episodes.description AS episode_description,
+          podcast_episodes.artwork_filename AS episode_artwork,
+          podcast_episodes.podcast_ext_url,
+          podcast_series.id AS series_id,
+          podcast_series.name AS series_name,
+          podcast_series.description AS series_description,
+          podcast_series.artwork_filename AS series_artwork
+          FROM podcast_series 
+          INNER JOIN podcast_episodes 
+          ON podcast_series.id=podcast_episodes.podcast_series_id 
+          WHERE podcast_series.id = ${req.query.series_id}`);
+        }
+      }
+    })
+    .then((result) => {
+      if (result) {
+        data.selectedSeries = result.rows;
+        console.log(result.rows, 'query-result');
+      }
+    })
+    .then(() => {
       // Pass all the data into result.rows;
       res.render('mainpage/main', data);
     })
@@ -117,7 +157,8 @@ app.get('/podcast/create', (req, res) => {
   // first, store all the variables inside a data var
   const data = {};
 
-  // Next Check if there are data stored in cookies
+  // Next check if there are data stored in cookies
+  // If yes, pass them in to data var to be rendered via ejs
   if (req.cookies.previousValues) {
     data.previousValues = req.cookies.previousValues;
     if (req.cookies.previousFileSelected) {
@@ -130,6 +171,23 @@ app.get('/podcast/create', (req, res) => {
     // second, check from cookies if there are any genres/subGenres names selected
     .then((result) => { data.genreNames = result.rows.map((row) => row.name);
     // third query for all the genres and subgenres and store into a temp data var
+    })
+    // fourth query to check if the podcastSeriesName already exists
+    .then(() => {
+      if (data.previousValues) {
+        console.log(data.previousValues, 'previousValues');
+        return pool.query(`SELECT name FROM podcast_series WHERE name='${data.previousValues.podcastSeriesName}'`);
+      }
+    })
+    .then((result) => {
+      console.log(result, 'result-1');
+      if (result) {
+        if (result.rows.length > 0) {
+          data.isNameValid = 'false';
+        } if (result.rows.length === 0) {
+          data.isNameValid = 'true';
+        }
+      }
     })
     .then(() => {
       if (req.cookies.previousValues) {
@@ -240,6 +298,7 @@ app.post('/podcast/episode/create', upload.single('artwork'), (req, res) => {
   let currPodcastEpisodeId;
   // Get the iframes soundCloudUrl out first
   const { soundCloudUrl: rawIframeUrl } = req.body;
+  console.log(req.body, 'req-bpdy');
 
   // searching for the first string that starts with https and ends with true
   // \b stands for word boundary
@@ -291,6 +350,12 @@ app.post('/podcast/episode/create', upload.single('artwork'), (req, res) => {
       res.redirect('/');
     })
     .catch((error) => { console.log(error); });
+});
+
+// Route that displays the podcast series with its description and episodes
+app.get('/series/:id', (req, res) => {
+  pool.query('SELECT * ');
+  res.render('podcastSeries', data);
 });
 
 app.listen(PORT);

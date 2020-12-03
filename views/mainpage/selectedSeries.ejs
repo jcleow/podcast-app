@@ -1,0 +1,48 @@
+<div class="container navTopMargin">
+  <div class="row">
+    <div class="col-sm-4 h-auto d-flex align-items-stretch bg-info ">
+        <div class="card-body">
+          <h5 class="card-title"><%= selectedSeries[0].series_name%></h5>
+          <p class="card-text"></p>
+          <img src="/<%=selectedSeries[0].series_artwork%>"/>
+      </div>
+    </div>
+    
+    <div class="col-sm-8 bg-warning">
+        <div class="card-body">
+          <h5 class="card-title">Description</h5>
+          <p class="card-text"><%=selectedSeries[0].series_description%></p>
+      </div>
+    </div>
+  </div>
+  <div class = "row">
+    <div class="col">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" class='text-dark'><div hidden>Logo</div></th>
+            <th scope="col" class='text-dark'><div hidden>Name</div></th>
+            <th scope="col" class='text-dark'><div hidden>Description</div></th>
+            <th scope="col" class='text-dark pr-2'><div hidden>Play</div></th>
+            <!-- <th scope="col" class='text-dark'><i class='fa fa-heart'></i><th> -->
+          </tr>
+        </thead>
+        <tbody>
+          <% selectedSeries.forEach((ep) =>{ %>
+          <tr class=''>            
+              <td><img class= 'epArtwork'src="<%=ep.episode_artwork%>"/></td>
+              <td><%=ep.episode_name%></td>
+              <td><%=ep.episode_description%></td>
+              <td><form action ='/'>
+                <button type='submit'>Play</button>
+                <input type='hidden' name="episode_id" value="<%=ep.podcast_ext_url%>"/>
+              </form>
+            </td>
+            <td class='align-middle'><i class='fa fa-heart-o'></i></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
