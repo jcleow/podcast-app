@@ -1,4 +1,7 @@
 /** @format */
+html {
+  overflow-x: hidden;
+}
 
 .navTopMargin {
   margin-top: 60px;

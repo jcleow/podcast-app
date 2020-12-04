@@ -43,7 +43,28 @@
 
         <div class='form-group'>
             <label for="username">Username:</label> <span class="required">*</span>
-            <input type="text" class="form-control" id="username" placeholder="Username" name="username" required>
+            <input type="text" class="form-control
+            <% if (locals.isFormValid){ %>
+              <% if(isFormValid === false){ %>
+                is-invalid
+                <% } else {%>              
+                is-valid             
+              <% } %>
+            <% } %>                                       
+            " 
+            id="username" placeholder="Username" name="username" 
+            required>
+            <% if (locals.isFormValid){ %>
+              <% if(isFormValid === false){ %>
+                <div class="invalid-feedback">
+                  <%=previousValues.username%> has been taken.
+                </div>
+              <% } else {%>
+                <div class="valid-feedback">
+                  <%=previousValues.username%> looks good!
+                </div>
+              <% } %>
+            <% } %>
         </div>
       
         <div class="form-group">
@@ -63,8 +84,6 @@
           <input type="checkbox" class="form-check-input" id="termsAndConditions" required>
           <label class="form-check-label" for="exampleCheck1">By clicking this you agree to all the terms & conditions</label>
         </div>
-
-
 
          <div class="form-group mx-auto submitBtn" >
             <button type="submit" class="btn btn-primary">Sign up</button>

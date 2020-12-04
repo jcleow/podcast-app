@@ -41,7 +41,7 @@ app.set('view engine', 'ejs');
 // To parse encoded incoming requests  with urlencoded payloads
 app.use(express.urlencoded({ extended: false }));
 
-// To truncate excessive lines
+// To truncate excessive lines (to be included)
 
 // Middleware to allow static images/css files to be served
 app.use(express.static('public'));
@@ -55,7 +55,7 @@ app.use(cookieParser());
 // Getting the uploaded artwork files back into the expressjs app
 app.use(express.static('uploads'));
 
-// Function that converts supplied username into a hash (using a salt)
+// Function that converts supplied userId into a hash (using a salt)
 const convertUserIdToHash = (userId) => {
   const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
   const unhashedCookieString = `${userId}-${SALT}`;
@@ -64,10 +64,19 @@ const convertUserIdToHash = (userId) => {
   return hashedCookieString;
 };
 
+// Function that hashes a variable
+const hashPassword = (reqBodyPassword) => {
+  // Perform hashing of password first
+  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+  shaObj.update(reqBodyPassword);
+  const hash = shaObj.getHash('HEX');
+  return hash;
+};
+
 // Middleware that checks if a user has been logged in and authenticates
 // before granting access to a page for every request
 app.use((req, res, next) => {
-// set the default value
+  // set the default value
   req.middlewareLoggedIn = false;
 
   // check to see if user is logged in but yet to be authenticated
@@ -95,9 +104,17 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// Route that gets the root page
 app.get('/', (req, res) => {
   // Store all data to be rendered in ejs in data var
   const data = {};
+
+  // Check if user is logged in
+  if (req.middlewareLoggedIn === true) {
+    data.loggedInUser = req.loggedInUser;
+    data.loggedInUserId = req.loggedInUserId;
+  }
   // Check if the form is submitted by the genre/subgenre selection or the user has already
   // decided to submit the full form
   const episodeToPlay = req.query.episode_id;
@@ -382,45 +399,157 @@ app.get('/series/:id', (req, res) => {
     })
     .then(() => {
     // Pass all the data into result.rows;
-      console.log(data, 'data');
       res.render('selectedSeries', data);
     })
     .catch((error) => console.log(error));
 });
 
+// Route that renders the login page
 app.get('/login', (req, res) => {
   res.render('navlinks/login');
 });
 
+// Route that submits a new login request
 app.post('/login', (req, res) => {
+  // Convert req.body.password to hashed password first
+  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+  shaObj.update(req.body.password);
+  const hash = shaObj.getHash('HEX');
+  pool
+    .query(`SELECT id from users WHERE username='${req.body.username}' AND password='${hash}'`)
+    .then((result) => {
+      if (!result) {
+        res.status(503).send('error finding this user');
+        return;
+      }
+      // Perform hashing of userId using username + salt
+      // and send out hashString in cookie
 
+      const hashedUserIdString = convertUserIdToHash(result.rows[0].id);
+      res.cookie('loggedInHash', hashedUserIdString);
+      res.cookie('loggedInUserId', result.rows[0].id);
+      res.redirect('/');
+    });
 });
 
+// Route that renders the register page
 app.get('/register', (req, res) => {
   res.render('navlinks/register');
 });
 
+// Route that submits a new user registration
 app.post('/register', upload.single('profilePic'), (req, res) => {
-  console.log(req.body);
-  console.log(req.body);
-
-  // Perform hashing of password first
-  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
-  shaObj.update(req.body.password);
-  const hash = shaObj.getHash('HEX');
-  // Reassign req.body password to the new hash
+  const hash = hashPassword(req.body.password);
   req.body.password = hash;
+  const userValues = Object.entries(req.body).map(([key, value]) => value);
+
+  const checkIfUsernameAndEmailExists = `SELECT username,email_address FROM users WHERE username = '${req.body.username}' OR email_address='${req.body.email_address}'`;
 
   const createNewUserQuery = {
-    text: 'INSERT INTO users(first_name,last_name,username,email_address,profile_pic,username,password)',
-    values: [],
+    text: 'INSERT INTO users(first_name,last_name,email_address,profile_pic,username,password) VALUES($1,$2,$3,$4,$5,$6) RETURNING * ',
+    values: userValues,
   };
-  // pool
-  //   .query('INSERT INTO users');
+
+  pool
+    .query(checkIfUsernameAndEmailExists)
+    .then((result) => {
+      console.log(result.rows, 'check if valid');
+      if (result.rows.length > 0) {
+        return Promise.resolve(false);
+      }
+      return Promise.resolve(true);
+    })
+    .then((isFormValid) => {
+      if (isFormValid === true) {
+        return pool.query(createNewUserQuery);
+      }
+    })
+    .then((result) => {
+      // If form is valid an an create new user query was performed
+      if (result) {
+        const hashedUserIdString = convertUserIdToHash(result.rows[0].id);
+        res.cookie('loggedInHash', hashedUserIdString);
+        res.cookie('loggedInUserId', result.rows[0].id);
+        res.redirect('/');
+        return;
+      }
+      const data = {};
+      data.previousValues = req.body;
+      data.isFormValid = false;
+      res.render('navlinks/register', data);
+    })
+    .catch((error) => res.status(503).send(`${error}`));
 });
 
+// Route that gets the root page
 app.get('/user/:id', (req, res) => {
+  // Store all data to be rendered in ejs in data var
+  const data = {};
 
+  // Check if user is logged in
+  if (req.middlewareLoggedIn === true) {
+    data.loggedInUser = req.loggedInUser;
+    data.loggedInUserId = req.loggedInUserId;
+  }
+  // Check if the form is submitted by the genre/subgenre selection or the user has already
+  // decided to submit the full form
+  const episodeToPlay = req.query.episode_id;
+
+  pool
+    .query('SELECT * FROM podcast_series')
+    .then((result) => {
+      data.series = result.rows;
+
+      // Prepare next query for podcast
+      const selectAllPodcastEpisodesQuery = 'SELECT *,podcast_episodes.name AS name, podcast_series.artwork_filename AS album_artwork, podcast_episodes.artwork_filename AS episode_artwork, podcast_episodes.description AS episode_description FROM podcast_episodes INNER JOIN podcast_series ON podcast_episodes.podcast_series_id = podcast_series.id';
+      return pool.query(selectAllPodcastEpisodesQuery);
+    })
+
+    .then((result) => {
+      // Pass all the data from sql query into result.rows;
+      data.episodes = result.rows;
+      data.episodeLinkToPlay = episodeToPlay;
+    })
+    // Specific case to check if user wants to view podcast series
+    .then(() => {
+    // Check if user wants to view the podcast series description
+      if (req.query) {
+        if (req.query.series_id) {
+          return pool.query(`
+          SELECT 
+          podcast_episodes.id AS episode_id,
+          podcast_episodes.name AS episode_name,
+          podcast_episodes.description AS episode_description,
+          podcast_episodes.artwork_filename AS episode_artwork,
+          podcast_episodes.podcast_ext_url,
+          podcast_series.id AS series_id,
+          podcast_series.name AS series_name,
+          podcast_series.description AS series_description,
+          podcast_series.artwork_filename AS series_artwork
+          FROM podcast_series 
+          INNER JOIN podcast_episodes 
+          ON podcast_series.id=podcast_episodes.podcast_series_id 
+          WHERE podcast_series.id = ${req.query.series_id}`);
+        }
+      }
+    })
+    .then((result) => {
+      if (result) {
+        data.selectedSeries = result.rows;
+        console.log(result.rows, 'query-result');
+      }
+    })
+    .then(() => {
+      // Pass all the data into result.rows;
+      res.render('navlinks/userProfile', data);
+    })
+    .catch((error) => console.log(error));
+});
+
+app.delete('/logout', (req, res) => {
+  res.clearCookie('loggedInHash');
+  res.clearCookie('loggedInUserId');
+  res.redirect('/');
 });
 
 app.listen(PORT);
