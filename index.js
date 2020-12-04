@@ -172,6 +172,10 @@ app.get('/', (req, res) => {
 
 // Route that renders a new form to enter podcast_series details
 app.get('/podcast/create', (req, res) => {
+  if (req.middlewareLoggedIn === false) {
+    res.render('displayNotAuthorized');
+    return;
+  }
   // first, store all the variables inside a data var
   const data = {};
 
@@ -280,6 +284,11 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
 
 // Route that renders a form that creates a new podcast_episode
 app.get('/podcast/episode/create', (req, res) => {
+  if (req.middlewareLoggedIn === false) {
+    res.render('displayNotAuthorized');
+    return;
+  }
+
   // Store all results into a temp object to pass into ejs
   const data = {};
 
@@ -373,7 +382,7 @@ app.post('/podcast/episode/create', upload.single('artwork'), (req, res) => {
 // Route that displays the podcast series with its description and episodes
 app.get('/series/:id', (req, res) => {
   const { id: seriesId } = req.params;
-  console.log(seriesId, 'seriesId');
+
   // Store all data to be rendered in ejs in data var
   const data = {};
   // Check if user wants to view the podcast series description
@@ -395,10 +404,16 @@ app.get('/series/:id', (req, res) => {
     .then((result) => {
       if (result) {
         data.selectedSeries = result.rows;
+        if (req.query) {
+          const { episodeLinkToPlay } = req.query;
+          data.episodeLinkToPlay = episodeLinkToPlay;
+          console.log(data, 'episodeLinkToPlay');
+        }
       }
     })
     .then(() => {
     // Pass all the data into result.rows;
+
       res.render('selectedSeries', data);
     })
     .catch((error) => console.log(error));
@@ -418,8 +433,9 @@ app.post('/login', (req, res) => {
   pool
     .query(`SELECT id from users WHERE username='${req.body.username}' AND password='${hash}'`)
     .then((result) => {
-      if (!result) {
-        res.status(503).send('error finding this user');
+      console.log(result, 'result');
+      if (result.rows.length === 0) {
+        res.render('displayErrorPage');
         return;
       }
       // Perform hashing of userId using username + salt
@@ -443,7 +459,7 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
   req.body.password = hash;
   const userValues = Object.entries(req.body).map(([key, value]) => value);
 
-  const checkIfUsernameAndEmailExists = `SELECT username,email_address FROM users WHERE username = '${req.body.username}' OR email_address='${req.body.email_address}'`;
+  const checkIfUsernameAndEmailExistsQuery = `SELECT username,email_address FROM users WHERE username = '${req.body.username}' OR email_address='${req.body.email_address}'`;
 
   const createNewUserQuery = {
     text: 'INSERT INTO users(first_name,last_name,email_address,profile_pic,username,password) VALUES($1,$2,$3,$4,$5,$6) RETURNING * ',
@@ -451,7 +467,7 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
   };
 
   pool
-    .query(checkIfUsernameAndEmailExists)
+    .query(checkIfUsernameAndEmailExistsQuery)
     .then((result) => {
       console.log(result.rows, 'check if valid');
       if (result.rows.length > 0) {

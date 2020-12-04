@@ -31,12 +31,12 @@
         <tbody>
           <% selectedSeries.forEach((ep) =>{ %>
           <tr class=''>            
-              <td><img class= 'epArtwork'src="<%=ep.episode_artwork%>"/></td>
+              <td><img class= 'epArtwork'src="/<%=ep.episode_artwork%>"/></td>
               <td><%=ep.episode_name%></td>
               <td><%=ep.episode_description%></td>
-              <td><form action ='/'>
+              <td><form action ='/series/<%=ep.series_id%>'>
                 <button type='submit'>Play</button>
-                <input type='hidden' name="episode_id" value="<%=ep.podcast_ext_url%>"/>
+                <input type='hidden' name="episodeLinkToPlay" value="<%=ep.podcast_ext_url%>"/>
               </form>
             </td>
             <td class='align-middle'><i class='fa fa-heart-o'></i></td>
@@ -47,4 +47,8 @@
     </div>
   </div>
 </div>
+<% if (locals.episodeLinkToPlay) {%>
+
+<%- include('soundcloudPlayer')%>
+<% } %>
 <%-include('./mainpage/footer') %>
