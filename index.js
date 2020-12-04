@@ -40,6 +40,9 @@ const PORT = process.argv[2];
 app.set('view engine', 'ejs');
 // To parse encoded incoming requests  with urlencoded payloads
 app.use(express.urlencoded({ extended: false }));
+
+// To truncate excessive lines
+
 // Middleware to allow static images/css files to be served
 app.use(express.static('public'));
 // Middleware to allow static images/css files to be served
@@ -105,9 +108,7 @@ app.get('/', (req, res) => {
       data.series = result.rows;
 
       // Prepare next query for podcast
-      const selectAllPodcastEpisodesQuery = {
-        text: 'SELECT *,podcast_episodes.name AS name, podcast_series.artwork_filename AS album_artwork, podcast_episodes.artwork_filename AS episode_artwork, podcast_episodes.description AS episode_description FROM podcast_episodes INNER JOIN podcast_series ON podcast_episodes.podcast_series_id = podcast_series.id',
-      };
+      const selectAllPodcastEpisodesQuery = 'SELECT *,podcast_episodes.name AS name, podcast_series.artwork_filename AS album_artwork, podcast_episodes.artwork_filename AS episode_artwork, podcast_episodes.description AS episode_description FROM podcast_episodes INNER JOIN podcast_series ON podcast_episodes.podcast_series_id = podcast_series.id';
       return pool.query(selectAllPodcastEpisodesQuery);
     })
 
@@ -354,8 +355,72 @@ app.post('/podcast/episode/create', upload.single('artwork'), (req, res) => {
 
 // Route that displays the podcast series with its description and episodes
 app.get('/series/:id', (req, res) => {
-  pool.query('SELECT * ');
-  res.render('podcastSeries', data);
+  const { id: seriesId } = req.params;
+  console.log(seriesId, 'seriesId');
+  // Store all data to be rendered in ejs in data var
+  const data = {};
+  // Check if user wants to view the podcast series description
+  pool.query(`
+  SELECT 
+  podcast_episodes.id AS episode_id,
+  podcast_episodes.name AS episode_name,
+  podcast_episodes.description AS episode_description,
+  podcast_episodes.artwork_filename AS episode_artwork,
+  podcast_episodes.podcast_ext_url,
+  podcast_series.id AS series_id,
+  podcast_series.name AS series_name,
+  podcast_series.description AS series_description,
+  podcast_series.artwork_filename AS series_artwork
+  FROM podcast_series 
+  INNER JOIN podcast_episodes 
+  ON podcast_series.id=podcast_episodes.podcast_series_id 
+  WHERE podcast_series.id = ${seriesId}`)
+    .then((result) => {
+      if (result) {
+        data.selectedSeries = result.rows;
+      }
+    })
+    .then(() => {
+    // Pass all the data into result.rows;
+      console.log(data, 'data');
+      res.render('selectedSeries', data);
+    })
+    .catch((error) => console.log(error));
+});
+
+app.get('/login', (req, res) => {
+  res.render('navlinks/login');
+});
+
+app.post('/login', (req, res) => {
+
+});
+
+app.get('/register', (req, res) => {
+  res.render('navlinks/register');
+});
+
+app.post('/register', upload.single('profilePic'), (req, res) => {
+  console.log(req.body);
+  console.log(req.body);
+
+  // Perform hashing of password first
+  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+  shaObj.update(req.body.password);
+  const hash = shaObj.getHash('HEX');
+  // Reassign req.body password to the new hash
+  req.body.password = hash;
+
+  const createNewUserQuery = {
+    text: 'INSERT INTO users(first_name,last_name,username,email_address,profile_pic,username,password)',
+    values: [],
+  };
+  // pool
+  //   .query('INSERT INTO users');
+});
+
+app.get('/user/:id', (req, res) => {
+
 });
 
 app.listen(PORT);

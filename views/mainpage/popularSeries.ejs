@@ -18,16 +18,18 @@
 <div class="card-deck">
 <div class = "row d-flex flex-row flex-nowrap overflow-auto">
  <% series.forEach((title)=>{ %>
-  <div class = "col-xs-1 col-sm-3 col-md-2  ">
+  <div class = "col">
     <div class="card cardSize">
       <form class= "artworkDisplay d-flex justify-content-center"      
         <% if(title.artwork_filename) { %>
         style="background-image:url(<%=title.artwork_filename%>)"
         <% } %>
         action ='/'> 
-          <img class="card-img-top w-auto">
-          <button class= "mx-auto" type='submit'>View</button>
-          <input type='hidden' name="series_id" value="<%=title.id%>"/>
+          
+            <img class="card-img-top w-auto">
+        
+          <a href="/series/<%=title.id%>" role="button" class="btn btn-primary mx-auto" type="submit">View</a>
+          
       </form>
       <div class="card-body">
         <h5 class="card-title"><%=title.name%></h5>

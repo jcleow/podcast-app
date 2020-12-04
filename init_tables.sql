@@ -3,7 +3,8 @@ CREATE TABLE users(
 id                    SERIAL PRIMARY KEY,
 first_name            TEXT,
 last_name             TEXT,
-profile_pic_url       TEXT,
+username              TEXT,
+profile_pic           TEXT,
 email_address         TEXT,
 password              TEXT,
 created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()

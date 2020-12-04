@@ -20,15 +20,6 @@
  <!-- Navbar links on the left -->
     <div class = "collapse navbar-collapse w-100 order-1 order-md-0" id="collapsibleNavbar">
       <ul class="navbar-nav mr-auto">
-        <!-- collapsible side bar -->
-        <li class="nav-item ">
-          <button role="button" data-toggle="collapse" data-target="#demo">
-          <span class="navbar-toggler-icon sidebarIcon "></span>
-          </button>
-          <div id="demo" class="collapse width ">              
-              <div class='sidebar bg-warning'></div>
-          </div>
-        </li>        
         <li class="nav-item">
           <a class="nav-link createPodcast" href="/podcast/create" class="text-dark"> Create Podcast</a>
         </li>
@@ -37,6 +28,7 @@
         </li>
       </ul>
     </div>
+
 <!--NavBar Brand-->
   <div class="mx-auto order-0">
     <a class="navbar-brand mx-auto" href="/">
@@ -50,13 +42,13 @@
       <li class="nav-item ml-auto">
 
         <div class="btn-group">
-          <button type="button" class="btn btn-outline-light">Account</button>
-          <button type="button" class="btn btn-outline-light dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="btn btn-outline-info">Account</button>
+          <button type="button" class="btn btn-outline-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
           <div class="dropdown-menu">
-            <a class="dropdown-item" href="#">Login</a>
-            <a class="dropdown-item" href="#">Signup</a>
+            <a class="dropdown-item" href="/login">Login</a>
+            <a class="dropdown-item" href="/register">Register</a>
             <a class="dropdown-item" href="#">My profile</a>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" href="#">Log out</a>
