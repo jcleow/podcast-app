@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/styles.css" />
 
   <!--NavBar-->
-  <nav class="navbar navbar-expand-sm navbar-light on-top ">
+  <nav class="navbar navbar-expand-sm navbar-light on-top">
 
   <!-- Toggler/collapsibe Button -->
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
@@ -20,19 +20,21 @@
  <!-- Navbar links on the left -->
     <div class = "collapse navbar-collapse w-100 order-1 order-md-0" id="collapsibleNavbar">
       <ul class="navbar-nav mr-auto">
+        <!-- collapsible side bar -->
+        <li class="nav-item ">
+          <button role="button" data-toggle="collapse" data-target="#demo">
+          <span class="navbar-toggler-icon sidebarIcon "></span>
+          </button>
+          <div id="demo" class="collapse width ">              
+              <div class='sidebar bg-warning'></div>
+          </div>
+        </li>        
         <li class="nav-item">
-          <a class="nav-link" href="/podcast/create" class="text-dark"> Create Podcast</a>
+          <a class="nav-link createPodcast" href="/podcast/create" class="text-dark"> Create Podcast</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/podcast/episode/create" class="text-dark">Upload Episode</a>
+          <a class="nav-link createPodcast" href="/podcast/episode/create" class="text-dark">Upload Episode</a>
         </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link" href="/podcast/episode/create" class="text-dark">Create New Genre</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/podcast/episode/create" class="text-dark">Create New Sub-Genre</a>
-        </li> -->
-
       </ul>
     </div>
 <!--NavBar Brand-->
@@ -60,39 +62,7 @@
             <a class="dropdown-item" href="#">Log out</a>
           </div>
         </div>
-      </li>
-
-    
-      <!-- <li class="nav-item ml-auto">
-        <a class="nav-link" href="/login">Login</a>
-      </li>
-      
- 
-      
-      <li class="nav-item ml-auto">
-        <a class="nav-link" href="/signup">Sign Up</a>
-      </li>
-
-
- 
-      <li class="nav-item ml-auto my-auto">
-        Welcome
-      </li>
-
-
- 
-      <li class="nav-item ml-auto my-auto">
-       <a class="nav-link" href="/users/">My Sightings</a>
-      </li>
-
-
-
-      <li class="nav-item ml-auto">
-        <form action="/logout?_method=DELETE" method="POST">
-        <button class="nav-link logoutBtn" type="submit" name="_method">Log out</button>
-        </form>
-      </li> -->
-  
+      </li>  
     </ul>
     </div>
   </nav>

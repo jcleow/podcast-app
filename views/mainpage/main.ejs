@@ -8,28 +8,16 @@
 <!-- First section for Recommended Podcasts by Series -->
 <%-include('popularSeries')%>
 <!-- Second section for Recommended Podcasts by Episodes -->
-<%- include('recommendation') %>
+<%-include('recommendation') %>
 <!-- Third Section on Social Activity-->
 <%-include('socialActivity') %>
 
-<!-- To be removed -->
-<section>
-  <div class="videoDisplay">
-    <p><span class="display"></span></p>
-  </div>
-</section>
-
 </div>
 </body>
-<div class="fixed-bottom bg-dark">
-  <div class ="container">
-    <div class="row">
-      <div class="col d-flex justify-content-center  ">
-  <iframe class ="mt-2" width="50%" height="90%" scrolling="no" frameborder="no" allow="autoplay" src='<%=episodeLinkToPlay%>'></iframe>
- 
-</div>
-    </div>
-  </div>
-</div>
+
+<div class="spacing"></div>
+
+<span class="fixed-bottom d-flex justify-content-center">
+    <iframe class ="mt-2 " width="30%" height="90%" scrolling="no" frameborder="no" allow="autoplay" src='<%=episodeLinkToPlay%>'></iframe>
+</span>
 <%-include('footer') %>
-  

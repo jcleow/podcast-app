@@ -31,9 +31,9 @@
           <button class= "mx-auto" type='submit'>Play</button>
           <input type='hidden' name="episode_id" value="<%=episode.podcast_ext_url%>"/>
       </form>
-      <div class="card-body">
-        <h5 class="card-title"><%=episode.name%></h5>
-        <p class="card-text"><%=episode.episode_description%></p>
+      <div class="card-body h-50">
+        <h6 class="card-title"><%=episode.name%></h6>
+        <div class="card-text text-overflow"><%=episode.episode_description%></div>
       </div>
     </div>
   </div>
