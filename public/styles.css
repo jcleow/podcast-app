@@ -266,3 +266,28 @@ h1 .display {
 .spacing {
   padding-bottom: 500px;
 }
+
+.episodeDescription {
+  font-size: 2rem;
+}
+
+.favouriteBtn {
+  font-size: 30px;
+  color: red;
+  font-family: "Font Awesome";
+  content: "\f08a";
+}
+
+.favouriteBtn:hover {
+  color: red;
+  font-size: 40px;
+  border-style: none;
+}
+
+.favouriteBtn:focus,
+.favouriteBtn:active {
+  color: red;
+  font-size: 40px;
+  outline: none;
+  box-shadow: none;
+}
