@@ -73,6 +73,13 @@ const hashPassword = (reqBodyPassword) => {
   return hash;
 };
 
+// Function that includes loggedInUser from req.body to data obj to be passed into ejs
+const assignUserDetails = (hostObject, req) => {
+  hostObject.loggedInUser = req.loggedInUser;
+  hostObject.loggedInUserId = req.loggedInUserId;
+  return hostObject;
+};
+
 // Middleware that checks if a user has been logged in and authenticates
 // before granting access to a page for every request
 app.use((req, res, next) => {
@@ -177,7 +184,7 @@ app.get('/podcast/create', (req, res) => {
     return;
   }
   // first, store all the variables inside a data var
-  const data = {};
+  let data = {};
 
   // Next check if there are data stored in cookies
   // If yes, pass them in to data var to be rendered via ejs
@@ -224,6 +231,8 @@ app.get('/podcast/create', (req, res) => {
       if (result) {
         data.subgenreNames = result.rows.map((row) => row.name);
       }
+      // Assign loggedinUser(name) and id to data obj
+      data = assignUserDetails(data, req);
       res.render('navlinks/createPodcastSeries', data);
     })
     .catch((error) => console.log(error));
@@ -283,14 +292,14 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
 });
 
 // Route that renders a form that creates a new podcast_episode
-app.get('/podcast/episode/create', (req, res) => {
+app.get('/podcast/episode/upload', (req, res) => {
   if (req.middlewareLoggedIn === false) {
     res.render('displayNotAuthorized');
     return;
   }
 
   // Store all results into a temp object to pass into ejs
-  const data = {};
+  let data = {};
 
   if (req.cookies.previousValues) {
     data.previousValues = req.cookies.previousValues;
@@ -307,25 +316,26 @@ app.get('/podcast/episode/create', (req, res) => {
     .then((result) => {
       const allExistingSeries = result.rows.map((row) => row.name);
       data.allExistingSeries = allExistingSeries;
+      // Assign loggedinUser(name) and id to data obj
+      data = assignUserDetails(data, req);
       res.render('navlinks/uploadEpisode', data);
     })
     .catch((error) => console.log(error));
 });
 
 // Route that submits a request that creates a new podcast_episode entry
-app.post('/podcast/episode/create', upload.single('artwork'), (req, res) => {
+app.post('/podcast/episode/upload', upload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
     res.cookie('previousValues', req.body);
-    res.redirect('/podcast/episode/create');
+    res.redirect('/podcast/episode/upload');
     return;
   }
   // Track the podcastEpisodeId being inserted
   let currPodcastEpisodeId;
   // Get the iframes soundCloudUrl out first
   const { soundCloudUrl: rawIframeUrl } = req.body;
-  console.log(req.body, 'req-bpdy');
 
   // searching for the first string that starts with https and ends with true
   // \b stands for word boundary
@@ -403,6 +413,7 @@ app.get('/series/:id', (req, res) => {
   WHERE podcast_series.id = ${seriesId}`)
     .then((result) => {
       if (result) {
+        console.log(result.rows, 'test-10');
         data.selectedSeries = result.rows;
         if (req.query) {
           const { episodeLinkToPlay } = req.query;
@@ -458,8 +469,10 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
   const hash = hashPassword(req.body.password);
   req.body.password = hash;
   const userValues = Object.entries(req.body).map(([key, value]) => value);
-
-  const checkIfUsernameAndEmailExistsQuery = `SELECT username,email_address FROM users WHERE username = '${req.body.username}' OR email_address='${req.body.email_address}'`;
+  console.log(req.body, 'test-40');
+  const checkIfUsernameAndEmailExistsQuery = {
+    text: `SELECT username,email_address FROM users WHERE (username ='${req.body.username}') OR (email_address='${req.body.emailAddress}')`,
+  };
 
   const createNewUserQuery = {
     text: 'INSERT INTO users(first_name,last_name,email_address,profile_pic,username,password) VALUES($1,$2,$3,$4,$5,$6) RETURNING * ',
@@ -469,32 +482,64 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
   pool
     .query(checkIfUsernameAndEmailExistsQuery)
     .then((result) => {
-      console.log(result.rows, 'check if valid');
-      if (result.rows.length > 0) {
-        return Promise.resolve(false);
+      // Consolidate and filter the existing usernames from query into an array
+      const arrayOfExistingUsernames = result.rows.filter((row) => row.username === req.body.username);
+
+      // Consolidate and filter the existing usernames from query into an array
+      const arrayOfExistingEmailAddresses = result.rows.filter((row) => row.email_address === req.body.emailAddress);
+
+      // Test whether username and email addresses already exists by their array lengths
+      if (arrayOfExistingUsernames.length === 0 && arrayOfExistingEmailAddresses.length === 0) {
+        return Promise.resolve('true');
       }
-      return Promise.resolve(true);
+      if (arrayOfExistingUsernames.length > 0 && arrayOfExistingEmailAddresses.length > 0) {
+        return Promise.reject('Email & Username already exists.');
+      }
+
+      if (arrayOfExistingUsernames.length > 0) {
+        return Promise.reject('Username already exists.');
+      }
+
+      if (arrayOfExistingEmailAddresses.length > 0) {
+        return Promise.reject('Email already exists.');
+      }
     })
     .then((isFormValid) => {
-      if (isFormValid === true) {
+      if (isFormValid === 'true') {
         return pool.query(createNewUserQuery);
       }
     })
     .then((result) => {
       // If form is valid an an create new user query was performed
       if (result) {
-        const hashedUserIdString = convertUserIdToHash(result.rows[0].id);
-        res.cookie('loggedInHash', hashedUserIdString);
-        res.cookie('loggedInUserId', result.rows[0].id);
-        res.redirect('/');
-        return;
+        if (result.rows.length > 0) {
+          const hashedUserIdString = convertUserIdToHash(result.rows[0].id);
+          res.cookie('loggedInHash', hashedUserIdString);
+          res.cookie('loggedInUserId', result.rows[0].id);
+          res.clearCookie('previousValues');
+          res.redirect('/');
+        }
       }
-      const data = {};
-      data.previousValues = req.body;
-      data.isFormValid = false;
-      res.render('navlinks/register', data);
     })
-    .catch((error) => res.status(503).send(`${error}`));
+    .catch((error) => {
+      // Else form was invalid and a new user creation query was not performed
+      const data = {};
+      // Set both username and email to valid by default
+      data.isUsernameValid = 'true';
+      data.isEmailValid = 'true';
+      data.previousValues = req.body;
+      // Perform validation checking for email and username
+      if (error === 'Email & Username already exists.') {
+        data.isEmailValid = 'false';
+        data.isUsernameValid = 'false';
+      } else if (error === 'Email already exists.') {
+        data.isEmailValid = 'false';
+      } else if (error === 'Username already exists.') {
+        data.isUsernameValid = 'false';
+      }
+      console.log(error, 'error');
+      res.render('navlinks/register', data);
+    });
 });
 
 // Route that gets the root page

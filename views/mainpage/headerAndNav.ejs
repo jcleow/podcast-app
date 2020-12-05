@@ -24,7 +24,7 @@
           <a class="nav-link" href="/podcast/create" class="text-dark"> Create Podcast</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/podcast/episode/create" class="text-dark">Upload Episode</a>
+          <a class="nav-link" href="/podcast/episode/upload" class="text-dark">Upload Episode</a>
         </li>
       </ul>
     </div>
@@ -54,8 +54,10 @@
             <span class="sr-only">Toggle Dropdown</span>
           </button>
           <div class="dropdown-menu">
-            <a class="dropdown-item" href="/login">Login</a>
-            <a class="dropdown-item" href="/register">Register</a>
+            <% if(!locals.loggedInUserId) { %>
+              <a class="dropdown-item" href="/login">Login</a>
+              <a class="dropdown-item" href="/register">Register</a>
+            <% } %>
             <% if(locals.loggedInUserId) {%>
             <a class="dropdown-item" href="/user/<%=loggedInUserId%>">My profile</a>
               <div class="dropdown-divider"></div>

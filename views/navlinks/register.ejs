@@ -32,8 +32,38 @@
       </div>
         <div class='form-group'>
             <label for="emailAddress">Email address:</label> <span class="required">*</span>
-            <input type="email" class="form-control" id="emailAddress" aria-describedby="emailHelp" placeholder="Enter email" name="emailAddress" required>
-            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>  
+            <input type="email" 
+            
+            class="form-control 
+            <% if (locals.isEmailValid){ %>
+              <% if(isEmailValid === 'false'){ %>
+                is-invalid
+                <% } else {%>              
+                is-valid             
+              <% } %>
+            <% } %>  
+            "
+
+            id="emailAddress" aria-describedby="emailHelp" placeholder="Enter email" name="emailAddress" 
+             <% if(locals.previousValues){ %>
+            value="<%=previousValues.emailAddress%>"
+            <% } %>
+
+            required> 
+            <% if (locals.isEmailValid){ %>              
+              <% if(isEmailValid === 'false'){ %>
+                <div class="invalid-feedback">
+                  <%=previousValues.emailAddress%> has been taken.
+                </div>
+              <% } else {%>
+                <div class="valid-feedback">
+                  <%=previousValues.emailAddress%> looks good!
+                </div>
+              <% } %>             
+            <% } else { %>            
+               <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>  
+            <% } %>
+            
         </div>
 
         <div class="form-group">
@@ -44,8 +74,8 @@
         <div class='form-group'>
             <label for="username">Username:</label> <span class="required">*</span>
             <input type="text" class="form-control
-            <% if (locals.isFormValid){ %>
-              <% if(isFormValid === false){ %>
+            <% if (locals.isUsernameValid){ %>
+              <% if(isUsernameValid === 'false'){ %>
                 is-invalid
                 <% } else {%>              
                 is-valid             
@@ -53,9 +83,13 @@
             <% } %>                                       
             " 
             id="username" placeholder="Username" name="username" 
+            <% if(locals.isUsernameValid){ %>
+            value="<%=previousValues.username%>"
+            <% } %>
             required>
-            <% if (locals.isFormValid){ %>
-              <% if(isFormValid === false){ %>
+
+            <% if (locals.isUsernameValid){ %>
+              <% if(isUsernameValid === 'false'){ %>
                 <div class="invalid-feedback">
                   <%=previousValues.username%> has been taken.
                 </div>
