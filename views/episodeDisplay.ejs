@@ -36,13 +36,20 @@
               </div>
             <div class="align-self-center">
               <form action='/podcast/episode/<%=selectedEpisode.id%>/favourite' method="POST">
-                <button class="favouriteBtn bg-transparent border-0 shadow-none" type="submit">
+                <button class="favouriteBtn bg-transparent border-0 shadow-none"                             
+                type="submit"
+                <% if(!locals.loggedInUser) {%>
+                  disabled
+                <% } %>
+                >
                   <% if(locals.isEpisodeFavourited !== undefined) { %>
                     <% if(isEpisodeFavourited === true ){ %>
                     <i class="fa fa-heart"></i>
                     <% } else if(isEpisodeFavourited === false) { %>
                     <i class="fa fa-heart-o"></i>
                     <% } %>
+                  <% } else { %>
+                    <i class="fa fa-heart-o"></i>
                   <% } %>
                 </button>              
                 <input type="hidden" name="favouriteSeries"/>                              
@@ -62,7 +69,7 @@
           <div class="form-group">
             <textarea class="form-control commentBox" rows="1" id="comment" name="comment" placeholder='Add a public comment'></textarea>
             <% if(!locals.loggedInUser){%>
-            <small class= 'text-danger' >You must be logged in to make a comment</small>
+            <small class= 'text-danger' >You must be logged in to favourite or make a comment.</small>
             <% } %>
           </div>
         </div>
@@ -88,14 +95,27 @@
        </form>
     </div>
   </div>
+
 <!-- Insert comments -->
   <div class="container">
     <%if (locals.comments) {%>
     <% comments.forEach((comment)=>{ %>
-    <div class="row mb-3">
-      <div class="col">
-        <small><%=comment.username%></small>
-        <div> <%=comment.comment%> </div>
+    <div class="row">
+      <div class="col-sm-2 mb-3 d-flex justify-content-end align-self-center pr-2">
+        <img class="profilePic rounded-circle" src='/<%=comment.profile_pic%>'>
+      </div>
+      <div class="col-sm-10 mb-3">
+          <div class="row">
+            <div class="col-md-4 pl-0">
+              <small class="commentsDisplay"><b><%=comment.username%></b></small>
+            </div>
+          </div>
+            <div class="row">
+              <div class="col-md-4 pl-0">
+                <small class='commentsDisplay'><%=comment.comment%></small>
+              </div>
+            </div>
+          </div>
       </div>
     </div>
     <% }); %>

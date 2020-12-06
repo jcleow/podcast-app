@@ -42,18 +42,18 @@
       <li class="nav-item ml-auto">
 
         <div class="btn-group">
-          <button type="button" class="btn btn-outline-info">
-            <% if(locals.loggedInUser){ %>
-              <%= loggedInUser %>
+          <button type="button" class="btn bg-transparent">
+            <% if(locals.loggedInUserProfilePic) { %>
+              <img class="profilePic rounded-circle"  src='/<%=loggedInUserProfilePic%>'/>
             <% } else { %>
               Account
             <% } %>
 
           </button>
-          <button type="button" class="btn btn-outline-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="btn bg-transparent dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
-          <div class="dropdown-menu">
+          <div class="dropdown-menu dropdown-menu-left">
             <% if(!locals.loggedInUserId) { %>
               <a class="dropdown-item" href="/login">Login</a>
               <a class="dropdown-item" href="/register">Register</a>

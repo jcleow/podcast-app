@@ -77,6 +77,7 @@ const hashPassword = (reqBodyPassword) => {
 const assignUserDetails = (hostObject, req) => {
   hostObject.loggedInUser = req.loggedInUser;
   hostObject.loggedInUserId = req.loggedInUserId;
+  hostObject.loggedInUserProfilePic = req.loggedInUserProfilePic;
   return hostObject;
 };
 
@@ -96,13 +97,14 @@ app.use((req, res, next) => {
       // Look for this user in the database
       const { loggedInUserId } = req.cookies;
       // Try to get the user
-      pool.query(`SELECT id,username FROM users WHERE id = ${loggedInUserId}`, (error, result) => {
+      pool.query(`SELECT id,username,profile_pic FROM users WHERE id = ${loggedInUserId}`, (error, result) => {
         if (error || result.rows.length < 1) {
           res.status(503).send('sorry an error occurred');
         }
         // set the user as a key in the req object so that it is accessible
         req.loggedInUserId = result.rows[0].id;
         req.loggedInUser = result.rows[0].username;
+        req.loggedInUserProfilePic = result.rows[0].profile_pic;
         next();
       });
       // make sure we don't get down to the next () below
@@ -115,13 +117,11 @@ app.use((req, res, next) => {
 // Route that gets the root page
 app.get('/', (req, res) => {
   // Store all data to be rendered in ejs in data var
-  const data = {};
+  let data = {};
 
-  // Check if user is logged in
-  if (req.middlewareLoggedIn === true) {
-    data.loggedInUser = req.loggedInUser;
-    data.loggedInUserId = req.loggedInUserId;
-  }
+  // Check if user is logged in and if so assign user specific details to display
+  data = assignUserDetails(data, req);
+
   // Check if the form is submitted by the genre/subgenre selection or the user has already
   // decided to submit the full form
   const episodeToPlay = req.query.episode_id;
@@ -170,7 +170,6 @@ app.get('/', (req, res) => {
     .then((result) => {
       if (result) {
         data.selectedSeries = result.rows;
-        console.log(result.rows, 'query-result');
       }
     })
     .then(() => {
@@ -209,12 +208,10 @@ app.get('/podcast/create', (req, res) => {
     // fourth query to check if the podcastSeriesName already exists
     .then(() => {
       if (data.previousValues) {
-        console.log(data.previousValues, 'previousValues');
         return pool.query(`SELECT name FROM podcast_series WHERE name='${data.previousValues.podcastSeriesName}'`);
       }
     })
     .then((result) => {
-      console.log(result, 'result-1');
       if (result) {
         if (result.rows.length > 0) {
           data.isNameValid = 'false';
@@ -421,12 +418,10 @@ app.get('/series/:id', (req, res) => {
   WHERE podcast_series.id = ${seriesId}`)
     .then((result) => {
       if (result) {
-        console.log(result.rows, 'test-10');
         data.selectedSeries = result.rows;
         if (req.query) {
           const { episodeLinkToPlay } = req.query;
           data.episodeLinkToPlay = episodeLinkToPlay;
-          console.log(data, 'episodeLinkToPlay');
         }
       }
     })
@@ -472,9 +467,7 @@ app.get('/podcast/episode/:id', (req, res) => {
       // Check if result was queried (i.e only when user is logged in)
       if (result && result.rows.length > 0) {
         data.isEpisodeFavourited = result.rows[0].favourited;
-        console.log();
       }
-      console.log(data, 'test-23');
       res.render('episodeDisplay', data);
     });
 });
@@ -494,7 +487,6 @@ app.post('/login', (req, res) => {
   pool
     .query(`SELECT id from users WHERE username='${req.body.username}' AND password='${hash}'`)
     .then((result) => {
-      console.log(result, 'result');
       if (result.rows.length === 0) {
         res.render('error/displayErrorPage');
         return;
@@ -518,14 +510,18 @@ app.get('/register', (req, res) => {
 app.post('/register', upload.single('profilePic'), (req, res) => {
   const hash = hashPassword(req.body.password);
   req.body.password = hash;
+  // Reassign profile_pic to the hashed filename by multer in req.body
+  // if a profile picture was uploaded
+  if (req.file) {
+    req.body.profilePic = req.file.filename;
+  }
   const userValues = Object.entries(req.body).map(([key, value]) => value);
-  console.log(req.body, 'test-40');
   const checkIfUsernameAndEmailExistsQuery = {
     text: `SELECT username,email_address FROM users WHERE (username ='${req.body.username}') OR (email_address='${req.body.emailAddress}')`,
   };
 
   const createNewUserQuery = {
-    text: 'INSERT INTO users(first_name,last_name,email_address,profile_pic,username,password) VALUES($1,$2,$3,$4,$5,$6) RETURNING * ',
+    text: 'INSERT INTO users(first_name,last_name,email_address,username,password,profile_pic) VALUES($1,$2,$3,$4,$5,$6) RETURNING * ',
     values: userValues,
   };
 
@@ -644,7 +640,6 @@ app.get('/user/:id', (req, res) => {
     .then((result) => {
       if (result) {
         data.selectedSeries = result.rows;
-        console.log(result.rows, 'query-result');
       }
     })
     .then(() => {

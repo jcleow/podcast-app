@@ -13,7 +13,7 @@
     <div class="row navTopMargin">
       <div class='col-12 d-flex justify-content-center'>
 
-    <form action="/register" method="POST"
+    <form action="/register" method="POST" enctype="multipart/form-data"
         oninput='confirmPassword.setCustomValidity(confirmPassword.value != password.value ? "Passwords do not match." : "")'>
       <div class ="form-row">
         <div class ="col-6">

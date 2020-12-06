@@ -291,3 +291,12 @@ h1 .display {
   outline: none;
   box-shadow: none;
 }
+
+.profilePic {
+  height: 40px;
+  width: 40px;
+}
+
+.commentsDisplay {
+  font-size: 15px;
+}
