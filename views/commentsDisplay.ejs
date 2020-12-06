@@ -1,0 +1,48 @@
+<!-- Comments display -->
+  <div class="container">
+    
+    
+    <div class="row">
+      <div class="col-sm-2 mb-3 d-flex justify-content-end align-self-start mt-1 pr-2">
+         <a href='/user/<%=comment.poster_id%>'>
+          <img class="profilePic rounded-circle" src='/<%=comment.profile_pic%>'>
+        </a>
+      </div>
+      <div class="col-sm-10 mb-3">
+        <div class="row">
+          <div class="col-md-4 pl-0">
+            <a href='/user/<%=comment.poster_id%>'>
+              <small class="commentsDisplay"><b><%=comment.username%></b></small>
+            </a>
+          </div>
+        </div>
+          <div class="row">
+            <div class="col-md-4 pl-0">
+              <small class='commentsDisplay'><%=comment.comment%></small>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 pl-0">
+              <small class='commentsDisplay'>
+                <form action='/podcast/episode/<%=selectedEpisode.id%>/comment/<%=comment.user_episode_comment_id%>/favourite?_method=PUT' method="POST" >
+                <button class="bg-transparent border-0 shadow-none commentFavouriteBtn" type="submit">
+                  <% if(comment.isFavourited !== undefined){ %>
+                    <% if(comment.isFavourited === true) { %>
+                      <i class="fa fa-heart"></i>
+                    <% } else { %>
+                      <i class="fa fa-heart-o"></i>
+                    <% } %>
+                  <% } else { %>
+                  <i class="fa fa-heart-o"></i>
+                  <% } %>
+                </button>
+                <input type="hidden" name="favouriteComment"/>
+                </form>
+              </small>
+            </div>
+          </div>          
+        </div>
+      </div>
+    
+    
+  </div>

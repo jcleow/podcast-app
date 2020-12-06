@@ -311,3 +311,7 @@ h1 .display {
   outline: none;
   box-shadow: none;
 }
+
+.profilePageDisplay {
+  min-height: 800px;
+}
