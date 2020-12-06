@@ -850,7 +850,6 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
       WHERE favourited=true`,
     )
     .then((result) => {
-      console.log(result.rows, 'all favourited podcast episodes');
       data.episodes = result.rows;
       if (req.query) {
         data.episodeLinkToPlay = req.query.podcast_ext_url;
@@ -869,7 +868,8 @@ app.get('/user/:id/favouriteComments', (req, res) => {
   if (req.query) {
     data.episodeLinkToPlay = req.query.podcast_ext_url;
   }
-  // First query from table all the comments that were favourited before
+  // First query from table all the comments that were favourited before by the user
+  // whose profile page we are accessing
   pool
     .query(
       `SELECT poster_id,favourited,comment
@@ -886,10 +886,26 @@ app.get('/user/:id/favouriteComments', (req, res) => {
       if (result.rows.length > 0) {
         // Store all the queries as promises in an array
         arrayOfPosterQuery = result.rows.map((row) => pool
-          .query(`SELECT username,profile_pic FROM users WHERE id=${row.poster_id} `)
+          .query(
+            `SELECT 
+            username,
+            profile_pic,
+            podcast_episodes.name AS episode_name,
+            podcast_series.name AS series_name 
+            FROM users
+            INNER JOIN listener_podcast_episodes
+            ON users.id = listener_podcast_episodes.listener_id
+            INNER JOIN podcast_episodes 
+            ON listener_podcast_episodes.podcast_episode_id = podcast_episodes.id
+            INNER JOIN podcast_series
+            ON podcast_episodes.podcast_series_id = podcast_series.id             
+            WHERE users.id=${row.poster_id} `,
+          )
           .then((posterResult) => {
             row.username = posterResult.rows[0].username;
             row.profile_pic = posterResult.rows[0].profile_pic;
+            row.episodeName = posterResult.rows[0].episode_name;
+            row.seriesName = posterResult.rows[0].series_name;
             // return the result later
             return row;
           })
@@ -902,7 +918,6 @@ app.get('/user/:id/favouriteComments', (req, res) => {
     // we can obtain all the favourited comments by the user, c/w with the original
     // commenter's username and profile picture
     .then((arrayResult) => {
-      console.log(arrayResult, 'arrayResult');
       data.comments = arrayResult;
       res.render('userProfile/favouriteComments', data);
     })
