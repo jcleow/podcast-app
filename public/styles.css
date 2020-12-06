@@ -297,6 +297,17 @@ h1 .display {
   width: 40px;
 }
 
+.profilePic:hover {
+  height: 80px;
+  width: 80px;
+}
+
 .commentsDisplay {
   font-size: 15px;
+}
+
+.commentFavouriteBtn:focus,
+.commentFavouriteBtn:active {
+  outline: none;
+  box-shadow: none;
 }

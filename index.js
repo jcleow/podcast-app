@@ -454,19 +454,51 @@ app.get('/podcast/episode/:id', (req, res) => {
       }
 
       // Prepare and perform selection of all existing comments relating to this episode
-      return pool.query(`SELECT * FROM user_episode_comments INNER JOIN users ON poster_id = users.id  WHERE podcast_episode_id=${currEpisodeId}`);
+      return pool.query(
+        `SELECT *,
+      user_episode_comments.id AS user_episode_comment_id,
+      users.id AS user_id
+      FROM user_episode_comments 
+      INNER JOIN users 
+      ON poster_id = users.id 
+      WHERE podcast_episode_id=${currEpisodeId} ORDER BY user_episode_comments.id DESC`,
+      );
     })
     .then((result) => {
       data.comments = result.rows;
       if (req.middlewareLoggedIn === true) {
         // Query for current user whether he/she has favourited this episode before
-        return pool.query(`SELECT favourited FROM listener_podcast_episodes WHERE listener_id=${req.loggedInUserId} AND podcast_episode_id = ${currEpisodeId}`);
+        return pool.query(
+          `SELECT favourited
+           FROM listener_podcast_episodes
+           WHERE listener_id=${req.loggedInUserId}
+           AND podcast_episode_id = ${currEpisodeId}`,
+        );
       }
     })
     .then((result) => {
-      // Check if result was queried (i.e only when user is logged in)
+      // Check if episode was favourited was queried (i.e only when user is logged in)
       if (result && result.rows.length > 0) {
         data.isEpisodeFavourited = result.rows[0].favourited;
+      }
+      // Query for current user which comments he favourited before
+      return pool.query(`
+      SELECT user_episode_comments.id,favourited
+      FROM favourite_comments
+      INNER JOIN user_episode_comments
+      ON user_episode_comments.id=user_episode_comment_id
+      WHERE favourite_comments.user_id = ${req.loggedInUserId}
+      `);
+    })
+    .then((result) => {
+      if (result && result.rows.length > 0) {
+        result.rows.forEach((row) => {
+          data.comments.forEach((comment) => {
+            if (comment.user_episode_comment_id === row.id && row.favourited === true) {
+              comment.isFavourited = true;
+            }
+          });
+        });
       }
       res.render('episodeDisplay', data);
     });
@@ -694,6 +726,24 @@ app.post('/podcast/episode/:id/favourite', (req, res) => {
       }
     }).then(() => {
       res.redirect(`/podcast/episode/${currPodcastEpisodeId}`);
+    });
+});
+
+app.post('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
+  const { commentId: currCommentId } = req.params;
+  const { id: currEpisodeId } = req.params;
+  console.log(currCommentId, 'currCommentId');
+  pool
+    .query(
+      `INSERT INTO favourite_comments(favourited,user_episode_comment_id,user_id) 
+       VALUES(true,${Number(currCommentId)},${req.loggedInUserId}) RETURNING *`,
+    )
+    .then((result) => {
+      res.redirect(`/podcast/episode/${currEpisodeId}`);
+    })
+    .catch((error) => {
+      res.status(503).send('Error favouriting comment');
+      console.log(error);
     });
 });
 

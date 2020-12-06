@@ -57,6 +57,7 @@ created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 --1 to many Join table for between comments join table above and users on favoriting a comment
 CREATE TABLE favourite_comments(
 id                          SERIAL PRIMARY KEY,
+favourited                  BOOLEAN,
 user_episode_comment_id     INTEGER,
 user_id                     INTEGER, 
 created_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW()
