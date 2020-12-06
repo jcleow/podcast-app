@@ -122,7 +122,7 @@
           <div class="row">
             <div class="col-md-4 pl-0">
               <small class='commentsDisplay'>
-                <form action='/podcast/episode/<%=selectedEpisode.id%>/comment/<%=comment.user_episode_comment_id%>/favourite' method="POST" >
+                <form action='/podcast/episode/<%=selectedEpisode.id%>/comment/<%=comment.user_episode_comment_id%>/favourite?_method=PUT' method="POST" >
                 <button class="bg-transparent border-0 shadow-none commentFavouriteBtn" type="submit">
                   <% if(comment.isFavourited !== undefined){ %>
                     <% if(comment.isFavourited === true) { %>

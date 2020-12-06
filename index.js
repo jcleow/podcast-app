@@ -693,14 +693,25 @@ app.delete('/logout', (req, res) => {
 
 app.post('/podcast/episode/:id/comment', (req, res) => {
   const insertCommentQuery = {
-    text: 'INSERT INTO user_episode_comments(comment,podcast_episode_id,poster_id) VALUES ($1,$2,$3) RETURNING *',
+    text: 'INSERT INTO user_episode_comments(comment,podcast_episode_id,poster_id) VALUES ($1,$2,$3) RETURNING id AS curr_episode_comment_id',
     values: [req.body.comment, req.params.id, req.loggedInUserId],
   };
 
   pool
     .query(insertCommentQuery)
     .then((result) => {
+      const currCommentId = result.rows[0].curr_episode_comment_id;
+      // Insert a default blank favourite entry into favourite join table as well
+      return pool.query(
+        `INSERT INTO favourite_comments(favourited,user_episode_comment_id,user_id) 
+        VALUES(false,${Number(currCommentId)},${req.loggedInUserId}) RETURNING *`,
+      );
+    })
+    .then(() => {
       res.redirect(`/podcast/episode/${req.params.id}`);
+    })
+    .catch((error) => {
+      console.log(error);
     });
 });
 
@@ -729,21 +740,28 @@ app.post('/podcast/episode/:id/favourite', (req, res) => {
     });
 });
 
-app.post('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
-  const { commentId: currCommentId } = req.params;
-  const { id: currEpisodeId } = req.params;
-  console.log(currCommentId, 'currCommentId');
+app.put('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
+  let newFavouriteStatus;
   pool
-    .query(
-      `INSERT INTO favourite_comments(favourited,user_episode_comment_id,user_id) 
-       VALUES(true,${Number(currCommentId)},${req.loggedInUserId}) RETURNING *`,
-    )
+    .query(`SELECT favourited FROM favourite_comments 
+  WHERE user_id=${req.loggedInUserId}
+  AND user_episode_comment_id = ${req.params.commentId}
+  `)
     .then((result) => {
-      res.redirect(`/podcast/episode/${currEpisodeId}`);
+      if (result.rows[0].favourited === true) {
+        newFavouriteStatus = false;
+      } else {
+        newFavouriteStatus = true;
+      }
     })
-    .catch((error) => {
-      res.status(503).send('Error favouriting comment');
-      console.log(error);
+    .then(() => pool.query(`UPDATE
+  favourite_comments 
+  SET favourited = ${newFavouriteStatus}
+  WHERE user_episode_comment_id = ${req.params.commentId} 
+  AND user_id = ${req.loggedInUserId} RETURNING * `))
+    .then((result) => {
+      console.log(result);
+      res.redirect(`/podcast/episode/${req.params.id}`);
     });
 });
 
