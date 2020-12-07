@@ -315,3 +315,8 @@ h1 .display {
 .profilePageDisplay {
   min-height: 800px;
 }
+
+.displayPic {
+  height: 200px;
+  width: 200px;
+}

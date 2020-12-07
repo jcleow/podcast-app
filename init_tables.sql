@@ -116,9 +116,10 @@ created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 --#13
-CREATE TABLE friendships(
+CREATE TABLE fellowships(
 id                    SERIAL PRIMARY KEY,
-user1_id              INTEGER,
-user2_id              INTEGER,
+following_user_id     INTEGER,
+follower_user_id      INTEGER,
+isfollowing           BOOLEAN,
 created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

@@ -1,0 +1,26 @@
+<!-- User profile info display -->
+  <div class="row w-100 h-100 mb-5 ">
+    <div class="col-sm-3">
+      <img class="displayPic rounded-circle" src='/<%=currUserProfilePic%>'>       
+    </div>
+    <div class="col-sm-9 bg-warning d-flex flex-column justify-content-around">
+      <div class="row">
+        <div class="col">
+          User: <%=currUsername%>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <form action='/user/<%=currUserId%>/follow?_method=PUT' method='POST'>
+            <% if (locals.isfollowing !== undefined) { %>
+              <% if(isfollowing === true) {%>
+            <button class='btn btn-secondary' type="submit">Following</button>
+              <% } else { %>
+                <button class='btn btn-primary' type="submit">Follow</button>
+              <% } %>
+            <% } %>
+          </form>
+        </div>
+      </div>                                       
+    </div>
+  </div>

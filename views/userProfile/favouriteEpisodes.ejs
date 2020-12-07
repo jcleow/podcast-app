@@ -1,18 +1,19 @@
 <%- include('../mainpage/headerAndNav') %>
 <body class='bg'>  
  <div class="container navTopMargin ">
+<%- include('userInfoDisplay')%>
      <div class="row d-flex justify-content-center pb-3 ">
          <div class="col d-flex justify-content-center">
              <a href="#">My Playlists</a>
         </div>
         <div class="col d-flex justify-content-center">
-             <a href="/user/<%=loggedInUserId%>/favouriteEpisodes">All Favourite Episodes</a>
+             <a href="/user/<%=currUserId%>/favouriteEpisodes">All Favourite Episodes</a>
         </div>
         <div class="col d-flex justify-content-center">
-             <a href="/user/<%=loggedInUserId%>/favouriteComments">All Favourite Comments</a>
+             <a href="/user/<%=currUserId%>/favouriteComments">All Favourite Comments</a>
         </div>
         <div class="col d-flex justify-content-center">
-             <a href="/user/<%=loggedInUserId%>/friends">My Friends</a>
+             <a href="/user/<%=currUserId%>/friends">My Friends</a>
         </div>
     </div>  
  </div>
