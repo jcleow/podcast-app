@@ -856,7 +856,8 @@ app.get('/user/:id/favouriteComments', (req, res) => {
 
 // Route that renders all of user's friends
 app.get('/user/:id/following', (req, res) => {
-  const data = {};
+  let data = {};
+  data = assignUserDetails(data, req);
   const currUserId = req.params.id;
   pool
   // First query for all the people who are following currUserId
@@ -866,7 +867,6 @@ app.get('/user/:id/following', (req, res) => {
     AND isfollowing = true`)
 
     .then((followerResult) => {
-      console.log(followerResult.rows, 'followerResult-10');
       let arrayOfFollowerDetailPromises = [];
       // Next, perform a query for each of their username and profile picture
       // subsumed into a Promise.all
@@ -887,8 +887,23 @@ app.get('/user/:id/following', (req, res) => {
       return Promise.all(arrayOfFollowerDetailPromises);
     })
     .then((arrayResult) => {
+      console.log(arrayResult, 'arrayResults2');
       if (arrayResult) {
-        data.followers = arrayResult.rows;
+        data.followers = arrayResult;
+        console.log(data.followers, 'data');
+      }
+      // Query for current profile page's username and profile_pic details
+      return pool.query(`
+      SELECT username AS curr_username,profile_pic
+      FROM users
+      WHERE users.id = ${currUserId}`);
+    })
+    .then((result) => {
+      data.currUsername = result.rows[0].curr_username;
+      data.currUserProfilePic = result.rows[0].profile_pic;
+      data.currUserId = currUserId;
+      if (req.query) {
+        data.episodeLinkToPlay = req.query.podcast_ext_url;
       }
       res.render('userProfile/followingDisplay', data);
     });
