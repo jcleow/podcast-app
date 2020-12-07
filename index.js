@@ -751,17 +751,23 @@ app.put('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
   AND user_episode_comment_id = ${req.params.commentId}
   `)
     .then((result) => {
-      if (result.rows[0].favourited === true) {
-        newFavouriteStatus = false;
-      } else {
-        newFavouriteStatus = true;
-      }
-    })
-    .then(() => pool.query(`UPDATE
+      console.log(result.rows, 'test-29');
+      if (result && result.rows && result.rows.length !== 0) {
+        if (result.rows[0].favourited === true) {
+          newFavouriteStatus = false;
+        } else {
+          newFavouriteStatus = true;
+        }
+        return pool.query(`UPDATE
   favourite_comments 
   SET favourited = ${newFavouriteStatus}
   WHERE user_episode_comment_id = ${req.params.commentId} 
-  AND user_id = ${req.loggedInUserId} RETURNING * `))
+  AND user_id = ${req.loggedInUserId} RETURNING * `);
+      }
+      return pool.query(`
+        INSERT INTO favourite_comments(favourited,user_episode_comment_id,user_id)
+        VALUES(true,${req.params.commentId},${req.loggedInUserId}) RETURNING *`);
+    })
     .then((result) => {
       console.log(result);
       res.redirect(`/podcast/episode/${req.params.id}`);
@@ -769,7 +775,6 @@ app.put('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
 });
 
 // **************************** Adding friends **************************** /
-// Route that renders the login page
 
 // **** Displaying user profile page ***/
 // Route that gets a user's profile page
