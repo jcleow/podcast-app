@@ -81,6 +81,18 @@ const assignUserDetails = (hostObject, req) => {
   return hostObject;
 };
 
+// Function that assigns current username,profile pic and id
+// to data to render in ejs in a supplied 'hostObj' using the query 'result'
+const assignCurrentProfilePageUserInfo = (hostObj, result, req) => {
+  hostObj.currUsername = result.rows[0].curr_username;
+  hostObj.currUserProfilePic = result.rows[0].profile_pic;
+  hostObj.currUserId = Number(req.params.id);
+  if (req.query) {
+    hostObj.episodeLinkToPlay = req.query.podcast_ext_url;
+  }
+  return hostObj;
+};
+
 // Middleware that checks if a user has been logged in and authenticates
 // before granting access to a page for every request
 app.use((req, res, next) => {
@@ -728,7 +740,7 @@ app.get('/user/:id/playlists');
 app.get('/user/:id/favouriteEpisodes', (req, res) => {
   const { id: currUserId } = req.params;
   let data = {};
-  data.currUserId = currUserId;
+
   data = assignUserDetails(data, req);
   pool
   // Querying for  all the favourited episodes
@@ -743,9 +755,6 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
       if (result && result.rows) {
         data.episodes = result.rows;
       }
-      if (req.query) {
-        data.episodeLinkToPlay = req.query.podcast_ext_url;
-      }
       // Query for current profile page's username and profile_pic details
       return pool.query(`
       SELECT username AS curr_username,profile_pic
@@ -753,8 +762,7 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
       WHERE users.id = ${currUserId}`);
     })
     .then((result) => {
-      data.currUsername = result.rows[0].curr_username;
-      data.currUserProfilePic = result.rows[0].profile_pic;
+      data = assignCurrentProfilePageUserInfo(data, result, req);
       return pool.query(`
       SELECT * FROM fellowships WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`);
     })
@@ -774,10 +782,6 @@ app.get('/user/:id/favouriteComments', (req, res) => {
   const { id: currUserId } = req.params;
   let data = {};
   data = assignUserDetails(data, req);
-  data.currUserId = currUserId;
-  if (req.query) {
-    data.episodeLinkToPlay = req.query.podcast_ext_url;
-  }
   // First query from table all the comments that were favourited before by the user
   // whose profile page we are accessing
   pool
@@ -836,8 +840,7 @@ app.get('/user/:id/favouriteComments', (req, res) => {
       WHERE users.id = ${currUserId}`);
     })
     .then((result) => {
-      data.currUsername = result.rows[0].curr_username;
-      data.currUserProfilePic = result.rows[0].profile_pic;
+      data = assignCurrentProfilePageUserInfo(data, result, req);
       return pool.query(`
       SELECT * FROM fellowships WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`);
     })
@@ -854,7 +857,7 @@ app.get('/user/:id/favouriteComments', (req, res) => {
       console.log(error); });
 });
 
-// Route that renders all of user's friends
+// Route that renders all of user's followings and followers
 app.get('/user/:id/following', (req, res) => {
   let data = {};
   data = assignUserDetails(data, req);
@@ -887,24 +890,32 @@ app.get('/user/:id/following', (req, res) => {
       return Promise.all(arrayOfFollowerDetailPromises);
     })
     .then((arrayResult) => {
-      console.log(arrayResult, 'arrayResults2');
       if (arrayResult) {
         data.followers = arrayResult;
-        console.log(data.followers, 'data');
       }
-      // Query for current profile page's username and profile_pic details
-      return pool.query(`
+    })
+    // Query for all the username details of people CurrUserPage is following
+    .then(() => pool.query(
+      `SELECT following_user_id, users.username ,users.profile_pic
+      FROM fellowships 
+      INNER JOIN users 
+      ON following_user_id = users.id
+      WHERE follower_user_id = ${currUserId}
+      AND isfollowing = true`,
+    ))
+    .then((userFollowingResult) => {
+      if (userFollowingResult.rows.length > 0) {
+        data.followings = userFollowingResult.rows;
+      }
+      console.log(userFollowingResult.rows, 'people that suzy is following');
+    })
+  // Query for current profile page's username and profile_pic details
+    .then(() => pool.query(`
       SELECT username AS curr_username,profile_pic
       FROM users
-      WHERE users.id = ${currUserId}`);
-    })
+      WHERE users.id = ${currUserId}`))
     .then((result) => {
-      data.currUsername = result.rows[0].curr_username;
-      data.currUserProfilePic = result.rows[0].profile_pic;
-      data.currUserId = currUserId;
-      if (req.query) {
-        data.episodeLinkToPlay = req.query.podcast_ext_url;
-      }
+      data = assignCurrentProfilePageUserInfo(data, result, req);
       res.render('userProfile/followingDisplay', data);
     });
 });
