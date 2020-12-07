@@ -855,19 +855,52 @@ app.get('/user/:id/favouriteComments', (req, res) => {
 });
 
 // Route that renders all of user's friends
-app.get('/user/:id/friends', (req, res) => {
+app.get('/user/:id/following', (req, res) => {
+  const data = {};
+  const currUserId = req.params.id;
   pool
-    .query('SELECT * FROM fellowships');
-  res.render('userProfile/allFriends');
+  // First query for all the people who are following currUserId
+    .query(`
+    SELECT follower_user_id FROM fellowships 
+    WHERE following_user_id = ${currUserId}
+    AND isfollowing = true`)
+
+    .then((followerResult) => {
+      console.log(followerResult.rows, 'followerResult-10');
+      let arrayOfFollowerDetailPromises = [];
+      // Next, perform a query for each of their username and profile picture
+      // subsumed into a Promise.all
+      if (followerResult.rows.length > 0) {
+        arrayOfFollowerDetailPromises = followerResult.rows.map((follower) => pool
+          .query(
+            `SELECT username,profile_pic 
+            FROM users WHERE id=${follower.follower_user_id}`,
+          )
+          .then((followerDetailResult) => {
+            console.log(followerDetailResult.rows, 'followerDetailResult');
+            follower.username = followerDetailResult.rows[0].username;
+            follower.profile_pic = followerDetailResult.rows[0].profile_pic;
+            return follower;
+          })
+          .catch((error) => console.log(error, 'error in getting follower details')));
+      }
+      return Promise.all(arrayOfFollowerDetailPromises);
+    })
+    .then((arrayResult) => {
+      if (arrayResult) {
+        data.followers = arrayResult.rows;
+      }
+      res.render('userProfile/followingDisplay', data);
+    });
 });
 
 // Route that handles the adding of friends
 app.put('/user/:id/follow', (req, res) => {
-  const currUserProfilePageId = Number(req.params.id);
+  const currUserId = Number(req.params.id);
   // First check if loggedInUser is already friends with the person in the profile page
   pool.query(`SELECT * FROM fellowships 
   WHERE 
-  (following_user_id=${currUserProfilePageId}
+  (following_user_id=${currUserId}
   AND follower_user_id=${req.loggedInUserId})
   `)
     .then((result) => {
@@ -888,7 +921,7 @@ app.put('/user/:id/follow', (req, res) => {
           UPDATE fellowships 
           SET isfollowing=false 
           WHERE 
-          (following_user_id=${currUserProfilePageId}
+          (following_user_id=${currUserId}
           AND follower_user_id=${req.loggedInUserId})
           RETURNING *`);
         } if (result.rows[0].isfollowing === false) {
@@ -896,7 +929,7 @@ app.put('/user/:id/follow', (req, res) => {
             `UPDATE fellowships
           SET isfollowing=true
           WHERE 
-          (following_user_id=${currUserProfilePageId}
+          (following_user_id=${currUserId}
           AND follower_user_id=${req.loggedInUserId})
           RETURNING *`,
           );
