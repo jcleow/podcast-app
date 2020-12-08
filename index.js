@@ -83,9 +83,10 @@ const assignLoggedInUserDetails = (hostObject, req) => {
 
 // Function that assigns current username,profile pic and id
 // to data to render in ejs in a supplied 'hostObj' using the query 'result'
-const assignCurrentProfilePageUserInfo = (hostObj, result, req) => {
-  hostObj.currUsername = result.rows[0].curr_username;
-  hostObj.currUserProfilePic = result.rows[0].profile_pic;
+// to be used in tandem with select query for curr user details
+const assignCurrentProfilePageUserInfo = (hostObj, currUserDetailResult, req) => {
+  hostObj.currUsername = currUserDetailResult.rows[0].curr_username;
+  hostObj.currUserProfilePic = currUserDetailResult.rows[0].profile_pic;
   hostObj.currUserId = Number(req.params.id);
   if (req.query) {
     hostObj.episodeLinkToPlay = req.query.podcast_ext_url;
@@ -691,7 +692,9 @@ app.get('/podcast/episode/:id/edit', (req, res) => {
     // consolidate the names into an array and assign to var data
     .then((result) => {
       data.currEpisode = result.rows[0];
-      data.currEpisode.podcast_series_name = req.cookies.previousValues.seriesName;
+      if (req.cookies.previousValues) {
+        data.currEpisode.podcast_series_name = req.cookies.previousValues.seriesName;
+      }
       res.render('editExistingEpisode', data);
     });
 });
@@ -1226,6 +1229,24 @@ app.put('/user/:id/follow', (req, res) => {
       }
       res.redirect(`/user/${req.params.id}`);
     });
+});
+
+app.get('/user/:id/myPlaylists', (req, res) => {
+  let data = {};
+  const currUserId = req.params.id;
+  pool.query(`
+      SELECT username AS curr_username,profile_pic
+      FROM users
+      WHERE users.id = ${currUserId}`)
+    .then((currUserDetailsResult) => {
+      data = assignCurrentProfilePageUserInfo(data, currUserDetailsResult, req);
+      res.render('userProfile/myPlaylists', data);
+    })
+    .catch((error) => console.log(error));
+});
+
+app.get('/podcast/episode/:id/addToPlaylist', (req, res) => {
+  res.render('addToPlaylist');
 });
 
 app.listen(PORT);
