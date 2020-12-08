@@ -440,14 +440,160 @@ app.get('/series/:id', (req, res) => {
     })
     .then(() => {
     // Pass all the data into result.rows;
-
       res.render('selectedSeries', data);
     })
     .catch((error) => console.log(error));
 });
 
+app.get('/series/:id/edit', (req, res) => {
+  if (req.middlewareLoggedIn === false) {
+    res.render('errors/displayNotAuthorized');
+    return;
+  }
+  // first, store all the variables inside a data var
+  let data = {};
+  // Assign loggedinUser(name) and id to data obj
+  data = assignLoggedInUserDetails(data, req);
+
+  // Next check if there are data stored in cookies
+  // If yes, pass them in to data var to be rendered via ejs
+  if (req.cookies.previousValues) {
+    data.previousValues = req.cookies.previousValues;
+    if (req.cookies.previousFileSelected) {
+      data.previousFileSelected = req.cookies.previousFileSelected;
+    }
+  }
+
+  pool
+    .query('SELECT id,name FROM genres')
+    // second, check from cookies if there are any genres/subGenres names selected
+    .then((result) => { data.genreNames = result.rows.map((row) => row.name);
+    // third query for all the genres and subgenres and store into a temp data var
+    })
+    // fourth query to check if the podcastSeriesName already exists
+    .then(() => {
+      if (data.previousValues) {
+        return pool.query(`SELECT name FROM podcast_series WHERE name='${data.previousValues.podcastSeriesName}'`);
+      }
+    })
+    .then((result) => {
+      if (result) {
+        if (result.rows.length > 0) {
+          console.log(result.rows.length, '1222');
+          data.isNameValid = 'false';
+          return pool.query(`SELECT name from podcast_series WHERE id=${req.params.id}`);
+        } if (result.rows.length === 0) {
+          data.isNameValid = 'true';
+        }
+      }
+    })
+    // perform secondary query to check in the event name is taken, it is not the same as the existing one in the database
+    // Otherwise, set isNameValid to true
+    .then((sameNameResult) => {
+      if (sameNameResult) {
+        if (sameNameResult.rows[0].name === data.previousValues.podcastSeriesName) {
+          data.isNameValid = 'true';
+        }
+      }
+    })
+    .then(() => {
+      if (req.cookies.previousValues) {
+        if (req.cookies.previousValues.genreName) {
+          return pool.query(`SELECT subgenres.name FROM subgenres INNER JOIN genres ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreName}'`);
+        } if (req.cookies.previousValues.genreText) {
+          return pool.query(`SELECT subgenres.name FROM subgenres INNER JOIN genres ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreText}'`);
+        }
+      }
+    })
+    .then((result) => {
+      if (result) {
+        data.subgenreNames = result.rows.map((row) => row.name);
+      }
+    })
+    .then(() => pool.query(`SELECT * FROM podcast_series WHERE id=${req.params.id}`))
+    .then((result) => {
+      if (!req.cookies.previousValues) {
+        data.previousValues = result.rows[0];
+        data.previousValues.podcastSeriesName = result.rows[0].name;
+      }
+      // query for existing genre and subgenres
+      return pool.query(`
+      SELECT subgenre_id,subgenres.name AS subgenreText,genres.name as genreText
+      FROM podcast_series_subgenres
+      INNER JOIN subgenres
+      ON subgenres.id = podcast_series_subgenres.subgenre_id
+      INNER JOIN genres
+      ON genres.id = genre_id
+      WHERE podcast_series_id=${req.params.id} `);
+    })
+    .then((genreAndSubGenreResult) => {
+      // Assign the existing genre and subgenre text into the existing form
+      if (!req.cookies.previousValues) {
+        // Store and display the subgenre text
+        data.previousValues.subgenreText = genreAndSubGenreResult.rows[0].subgenretext;
+        // Store and display the subgenre id
+        data.previousValues.subgenreId = genreAndSubGenreResult.rows[0].subgenre_id;
+        // Store and display the genre text
+        data.previousValues.genreText = genreAndSubGenreResult.rows[0].genretext;
+      }
+    })
+    .then(() => {
+      // For the form to submit back to the same series Id
+      data.currSeriesId = req.params.id;
+      console.log(data, 'test3333');
+      res.render('editExistingSeries', data);
+    })
+    .catch((error) => console.log(error));
+});
+
+// Route that edits an existing podcast_series
+app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
+  console.log(req.body, 'test-3');
+  // Check if entry is finished through temp data in req.cookies
+  // if entry is not finished, the info will be stored in the cookies
+  if (!req.body.submitOverallForm) {
+    res.cookie('previousValues', req.body);
+    res.cookie('previousFileSelected', req.file);
+    res.redirect(`/series/${req.params.id}/edit`);
+    return;
+  }
+
+  // Update new podcast details into podcast_series body
+  const { podcastSeriesName, description, subgenreText } = req.body;
+  const updateCurrPodcastDetailsQuery = {
+    text: `UPDATE podcast_series 
+    SET name='${podcastSeriesName}',
+    description='${description}'
+    WHERE id='${Number(req.params.id)}'
+    RETURNING * `,
+  };
+  console.log('test-4');
+  // Execute all queries
+  pool
+    .query(updateCurrPodcastDetailsQuery)
+    .then((result) => {
+      console.log(result.rows, 'result.rows');
+      return pool.query(`SELECT subgenres.id FROM subgenres WHERE subgenres.name ='${subgenreText}'`);
+    })
+    .then((result) => {
+      const newSubgenreId = result.rows[0].id;
+      return pool.query(`UPDATE podcast_series_subgenres SET subgenre_id =${newSubgenreId} WHERE podcast_series_id= ${req.params.id}`);
+    })
+    .then(() => {
+      // If not, terminate the req-res cycle and clear cookies relating to create podcast form
+      res.clearCookie('previousValues');
+      res.clearCookie('previousFileSelected');
+      res.redirect('/');
+    })
+    .catch((error) => response.status(503).send(error));
+});
+
+app.delete('/series/:id/delete', (req, res) => {
+
+});
 // **************************** Podcast episode CRUD **************************** /
 // Route that displays an individual podcast episode with its comments
+
 app.get('/podcast/episode/:id', (req, res) => {
   const currEpisodeId = req.params.id;
   // Store data to be rendered into ejs into a var
