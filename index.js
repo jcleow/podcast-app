@@ -479,7 +479,6 @@ app.get('/series/:id/edit', (req, res) => {
     .then((result) => {
       if (result) {
         if (result.rows.length > 0) {
-          console.log(result.rows.length, '1222');
           data.isNameValid = 'false';
           return pool.query(`SELECT name from podcast_series WHERE id=${req.params.id}`);
         } if (result.rows.length === 0) {
@@ -540,7 +539,6 @@ app.get('/series/:id/edit', (req, res) => {
     .then(() => {
       // For the form to submit back to the same series Id
       data.currSeriesId = req.params.id;
-      console.log(data, 'test3333');
       res.render('editExistingSeries', data);
     })
     .catch((error) => console.log(error));
@@ -548,7 +546,6 @@ app.get('/series/:id/edit', (req, res) => {
 
 // Route that edits an existing podcast_series
 app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
-  console.log(req.body, 'test-3');
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
@@ -570,10 +567,7 @@ app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
   // Execute all queries
   pool
     .query(updateCurrPodcastDetailsQuery)
-    .then((result) => {
-      console.log(result.rows, 'result.rows');
-      return pool.query(`SELECT subgenres.id FROM subgenres WHERE subgenres.name ='${subgenreText}'`);
-    })
+    .then((result) => pool.query(`SELECT subgenres.id FROM subgenres WHERE subgenres.name ='${subgenreText}'`))
     .then((result) => {
       const newSubgenreId = result.rows[0].id;
       return pool.query(`UPDATE podcast_series_subgenres SET subgenre_id =${newSubgenreId} WHERE podcast_series_id= ${req.params.id}`);
@@ -969,7 +963,6 @@ app.put('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
   AND user_episode_comment_id = ${req.params.commentId}
   `)
     .then((result) => {
-      console.log(result.rows, 'test-29');
       if (result && result.rows && result.rows.length !== 0) {
         if (result.rows[0].favourited === true) {
           newFavouriteStatus = false;
@@ -987,7 +980,6 @@ app.put('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
         VALUES(true,${req.params.commentId},${req.loggedInUserId}) RETURNING *`);
     })
     .then((result) => {
-      console.log(result);
       res.redirect(`/podcast/episode/${req.params.id}`);
     });
 });
@@ -1063,7 +1055,6 @@ app.get('/user/:id/favouriteComments', (req, res) => {
     // However the join tables does not contain the original poster's username and picture
     // so for each favourited comment, we have to perform a query to get the relevant deets
     .then((result) => {
-      console.log(result.rows, 'nam-do-san');
       let arrayOfPosterQuery = [];
       if (result.rows.length > 0) {
         // Store all the queries as promises in an array
@@ -1084,7 +1075,6 @@ app.get('/user/:id/favouriteComments', (req, res) => {
             WHERE users.id=${row.poster_id} `,
           )
           .then((posterResult) => {
-            console.log(posterResult.rows, 'test-123');
             row.username = posterResult.rows[0].username;
             row.profile_pic = posterResult.rows[0].profile_pic;
             row.episodeName = posterResult.rows[0].episode_name;
@@ -1101,7 +1091,6 @@ app.get('/user/:id/favouriteComments', (req, res) => {
     // commenter's username and profile picture
     .then((arrayResult) => {
       if (arrayResult) {
-        console.log(arrayResult, 'result-231');
         data.comments = arrayResult;
       }
       return pool.query(`
@@ -1121,7 +1110,6 @@ app.get('/user/:id/favouriteComments', (req, res) => {
       } else {
         data.isfollowing = result.rows[0].isfollowing;
       }
-      console.log(data, 'result-252');
       res.render('userProfile/favouriteComments', data);
     })
     .catch((error) => {
@@ -1152,7 +1140,6 @@ app.get('/user/:id/following', (req, res) => {
             FROM users WHERE id=${follower.follower_user_id}`,
           )
           .then((followerDetailResult) => {
-            console.log(followerDetailResult.rows, 'followerDetailResult');
             follower.username = followerDetailResult.rows[0].username;
             follower.profile_pic = followerDetailResult.rows[0].profile_pic;
             return follower;
@@ -1179,7 +1166,6 @@ app.get('/user/:id/following', (req, res) => {
       if (userFollowingResult.rows.length > 0) {
         data.followings = userFollowingResult.rows;
       }
-      console.log(userFollowingResult.rows, 'people that suzy is following');
     })
   // Query for current profile page's username and profile_pic details
     .then(() => pool.query(`
@@ -1203,7 +1189,6 @@ app.put('/user/:id/follow', (req, res) => {
   AND follower_user_id=${req.loggedInUserId})
   `)
     .then((result) => {
-      console.log(result.rows, 'test-result-885');
       // If no friendship was created in the first place
       if (result.rows.length === 0) {
         return pool.query(`
