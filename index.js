@@ -560,7 +560,7 @@ app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
     res.redirect(`/podcast/episode/${req.params.id}/edit`);
     return;
   }
-  // Remove artwork file first in case user does not upload
+  // Remove artwork file, seriesName and seriesText first in case user does not upload as well as further obtaining the seriesName subsequently
   const arrayOfEpisodeAttributes = Object.entries(req.body).filter(([key, value]) => key !== 'artwork' && key !== 'seriesName' && key !== 'seriesText');
   const refinedArray = arrayOfEpisodeAttributes.map((array) => array[1]);
 
@@ -574,7 +574,9 @@ app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
   RETURNING *`);
 
   pool
+  // First edit the episode excl. artwork and seriesName & seriesId
     .query(editEpisodeQuery, refinedArray)
+    // Second, query for the podcast_series name based on seriesText supplied
     .then((result) => {
       if (req.body.seriesText) {
         return pool.query(`
@@ -584,6 +586,7 @@ app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
         `);
       }
     })
+    // Thirdly, update podcast episodes series Id
     .then((seriesIdResult) => {
       if (seriesIdResult) {
         const seriesId = Number(seriesIdResult.rows[0].id);
@@ -593,6 +596,7 @@ app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
         WHERE id = ${req.params.id}`);
       }
     })
+    // Fourth, if user chose to upload a new artwork, update it
     .then(() => {
       if (req.file) {
         return pool.query(
@@ -604,12 +608,28 @@ app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
       }
     })
     .then(() => {
+      // Clear all cookies relating to the edit form
       res.clearCookie('previousValues');
       res.clearCookie('previousFileSelected');
       res.redirect(`/podcast/episode/${req.params.id}`);
     });
 });
 
+app.delete('/podcast/episode/:id/delete', (req, res) => {
+  pool
+    .query(`
+    DELETE FROM podcast_episodes 
+    WHERE id=${req.params.id}`)
+    .then(() => pool.query(`DELETE FROM listener_podcast_episodes WHERE podcast_episode_id = ${req.params.id}`))
+    .then(() => pool.query(`
+      DELETE FROM favourite_comments 
+      USING user_episode_comments 
+      WHERE user_episode_comments.id = user_episode_comment_id`))
+    .then(() => {
+      res.redirect('/');
+    })
+    .catch((error) => { console.log(error, 'error in deleting podcast'); });
+});
 // **************************** User Login & Registration **************************** /
 // Route that renders the login page
 app.get('/login', (req, res) => {
