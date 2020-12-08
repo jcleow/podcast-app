@@ -564,10 +564,9 @@ app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
     text: `UPDATE podcast_series 
     SET name='${podcastSeriesName}',
     description='${description}'
-    WHERE id='${Number(req.params.id)}'
+    WHERE id='${req.params.id}'
     RETURNING * `,
   };
-  console.log('test-4');
   // Execute all queries
   pool
     .query(updateCurrPodcastDetailsQuery)
