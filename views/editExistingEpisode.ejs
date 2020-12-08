@@ -1,0 +1,70 @@
+<%- include('./mainpage/headerAndNav') %>
+  <!-- Body-->
+  <body>
+    <div class="container navTopMargin">
+      <div class="row">
+        <div class="col d-flex justify-content-center submitSighting">
+          Edit Existing Podcast Episode
+        </div>
+      </div>
+
+<form action="/podcast/episode/<%=currEpisode.id%>/edit?_method=PUT" method="POST" enctype="multipart/form-data">
+    <div class="form-group ">
+    <div>
+      <label for="Podcast Series">Podcast Series</label>
+    </div>
+    <div class="form-check form-check-inline w-100">
+      <div class="container-fluid genre">
+        <div class="row">
+            <div class="col-md-12">
+              <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <button class="btn btn-outline-secondary dropdown-toggle pr-5" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select a Series</button>
+                    <div class="dropdown-menu scrollable-menu">                     
+                    <% allExistingSeries.forEach((series)=>{ %>
+                       <input class="dropdown-item"  type="submit" name="seriesName" value="<%=series.name%>">
+                    <% }); %>               
+                    </div>
+                  </div>  
+              <input type="text" class="form-control" id="seriesText" name='seriesText' 
+              <% if(locals.currEpisode){ %>
+                value = "<%=currEpisode.podcast_series_name%>"                     
+              <% } %>
+              readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+   </div>
+
+  <div class="form-group">
+    <label for='episodeName'>Episode Name<span class="required">*</span></label>
+    <input type='text' class="form-control" id='episodeName' name='episodeName' value='<%=currEpisode.name%>'>
+  </div>
+  <div class="form-group">
+    <label for="episodeNumber">Episode Number<span class="required">*</span></label>
+    <input type="number" class="form-control" id="episodeNumber" name='episodeNumber' value='<%=currEpisode.episode_number%>'>
+  </div>
+
+   <div class="form-group">
+    <label for="description">Description of Episode</label>
+    <textarea class="form-control" id="episodeDescription" name='episodeDescription' value='<%=currEpisode.description%>'></textarea>
+  </div>
+
+   <div class="form-group">
+    <label for="soundCloudUrl">Paste SoundCloud Link<span class="required">*</span></label>
+    <textarea class="form-control" id="soundCloudUrl" name='soundCloudUrl' formaction='/updateEpisodePicture'> <%=currEpisode.podcast_ext_url%></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="photo">Upload a New Episode Artwork</label><br/>
+    <input type="file" name="artwork"/>
+  </div>
+
+  <input type="submit" class="btn btn-primary" value="Submit"/>
+</form>
+    </div>
+  </body>
+  
+<%-include('./mainpage/footer') %>
