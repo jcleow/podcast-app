@@ -123,3 +123,11 @@ follower_user_id      INTEGER,
 isfollowing           BOOLEAN,
 created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+--#14
+CREATE TABLE user_playlists(
+  id                  SERIAL PRIMARY KEY,
+  playlist_id         INTEGER,
+  user_id             INTEGER,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)

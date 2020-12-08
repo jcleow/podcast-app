@@ -654,6 +654,19 @@ app.get('/podcast/episode/:id', (req, res) => {
           });
         });
       }
+      // Query for all the playlists current loggedInUser has
+      return pool.query(`
+      SELECT playlists.name FROM playlists
+      INNER JOIN user_playlists
+      ON playlist_id = playlists.id
+      WHERE user_id = ${req.loggedInUserId} `);
+    })
+    .then((playlistResults) => {
+      data.currUserPlaylists = playlistResults.rows;
+      if (req.query) {
+        const { addPlaylist: selectedPlaylistToBeAdded } = req.query;
+        data.selectedPlaylist = selectedPlaylistToBeAdded;
+      }
       res.render('episodeDisplay', data);
     });
 });
@@ -1234,19 +1247,77 @@ app.put('/user/:id/follow', (req, res) => {
 app.get('/user/:id/myPlaylists', (req, res) => {
   let data = {};
   const currUserId = req.params.id;
+  data = assignLoggedInUserDetails(data, req);
   pool.query(`
       SELECT username AS curr_username,profile_pic
       FROM users
       WHERE users.id = ${currUserId}`)
     .then((currUserDetailsResult) => {
       data = assignCurrentProfilePageUserInfo(data, currUserDetailsResult, req);
+      // Query for the name and description of all of current user's playlists
+      return pool
+        .query(`
+      SELECT * 
+      FROM playlists
+      INNER JOIN user_playlists
+      ON playlist_id = playlists.id            
+      WHERE user_id = ${currUserId}`);
+    })
+    .then((result) => {
+      console.log(result.rows, 'test-2');
+      let arrayOfPodcastNamePromises = [];
+      if (result.rows.length > 0) {
+        data.playlists = result.rows;
+        // next query for the names of the podcasts under the user's playlist
+        arrayOfPodcastNamePromises = data.playlists.map((thisPlaylist) => pool.query(`
+      SELECT podcast_episodes.name
+      FROM podcast_episodes
+      INNER JOIN episode_playlists
+      ON episode_playlists.podcast_episode_id = podcast_episodes.id
+      WHERE episode_playlists.playlist_id = ${thisPlaylist.playlist_id} 
+      `)
+          .then((podcastNameResult) => podcastNameResult.rows)
+          .catch((error) => { console.log(error); }));
+        console.log(arrayOfPodcastNamePromises, 'allPromises');
+        return Promise.all(arrayOfPodcastNamePromises);
+      }
+    })
+    .then((result) => {
+      console.log(result, 'result-22');
       res.render('userProfile/myPlaylists', data);
     })
     .catch((error) => console.log(error));
 });
 
-app.get('/podcast/episode/:id/addToPlaylist', (req, res) => {
-  res.render('addToPlaylist');
+app.post('/createPlaylist', (req, res) => {
+  console.log(req.body, 'test-10');
+  pool.query(`INSERT INTO playlists(name,description) VALUES('${req.body.newPlaylistName}','${req.body.newPlaylistDescription}') RETURNING id`)
+    .then((playlistIdResult) => {
+      const playlistId = playlistIdResult.rows[0].id;
+      console.log(playlistIdResult.rows, 'test-6');
+      return pool.query(`INSERT INTO user_playlists(playlist_id,user_id) VALUES(${playlistId},${req.loggedInUserId}) RETURNING *`);
+    })
+    .then((results) => {
+      console.log(results.row, 'test-5');
+      res.redirect(`/user/${req.loggedInUserId}`);
+    });
+});
+
+// Handles insertion of episode into playlist as well as playlist-episode join table
+app.post('/insertEpisodeIntoPlaylist', (req, res) => {
+  console.log(req.body);
+  const { selectedPlaylist, currPodcastEpisodeId } = req.body;
+  pool
+    .query(`
+   INSERT INTO episode_playlists(podcast_episode_id,playlist_id)
+   SELECT ${Number(currPodcastEpisodeId)},playlists.id
+   FROM playlists
+   WHERE name='${selectedPlaylist}'
+   `)
+    .then(() => {
+      res.redirect(`/podcast/episode/${currPodcastEpisodeId}`);
+    })
+    .catch((error) => { console.log(error); });
 });
 
 app.listen(PORT);

@@ -27,7 +27,7 @@
           <a class="nav-link" href="/podcast/episode/upload" class="text-dark">Upload Episode</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/podcast/createPlaylist" class="text-dark">Create Playlist</a>
+          <a class="nav-link" href="#" class="btn btn-primary" data-toggle="modal" data-target="#createPlaylist">Create Playlist</a>
         </li>
       </ul>
     </div>
@@ -74,3 +74,32 @@
     </ul>
     </div>
   </nav>
+
+<!-- Modal -->
+<div class="modal fade" id="createPlaylist" tabindex="-1" role="dialog" aria-labelledby="createPlaylistModal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createPlaylistModal">Create Playlist</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <!-- Form -->
+      <form action='/createPlaylist' method='POST'>
+        <div class="modal-body">
+          <div class='mb-3'>Name
+            <textarea class='form-control' rows="1" placeholder='My playlist #7' name='newPlaylistName'></textarea>
+          </div>
+          Description
+          <textarea class='form-control' rows="3" placeholder='Give your playlist a catchy description' name='newPlaylistDescription' ></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <input type="submit" class="btn btn-primary" role="button"  value="Create"/>
+        </div>
+      </form>
+      <!-- Form -->
+    </div>
+  </div>
+</div>

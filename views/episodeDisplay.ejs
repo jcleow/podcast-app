@@ -21,7 +21,9 @@
                 <button class="btn bg-transparent text-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <span class='episodeDescription'>Description</span>
                 </button>                  
                   <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">    
-                      <a class="dropdown-item btn btn-warning" href='/podcast/episode/<%=selectedEpisode.id%>/addToPlaylist' role="button" type='submit'>Add to Playlist</a>            
+                    <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#addToPlaylist">
+                      Add Episode to A Playlist
+                    </a>            
                       <a class="dropdown-item btn btn-warning" href='/podcast/episode/<%=selectedEpisode.id%>/edit' role="button" type='submit'>Edit</a>                     
                     <form class="dropdown-item" action="/podcast/episode/<%=selectedEpisode.id%>/delete?_method=DELETE" method="POST">
                       <input
@@ -94,6 +96,58 @@
        </form>
     </div>
   </div>
+
+<!--Add to Playlist Modal -->
+
+<% if(locals.selectedPlaylist){ %>
+  <div class="modal fade show" id="addToPlaylist" tabindex="-1" aria-labelledby="addToPlaylistLabel" style="display: block; padding-right: 15px;" aria-modal="true" role="dialog">
+<% } else { %>
+  <div class="modal fade" id="addToPlaylist" tabindex="-1" role="dialog" aria-labelledby="addToPlaylistLabel" aria-hidden="true">
+<% } %>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addToPlaylistLabel">Add Episode To A Playlist</h5>
+        <form action= '/podcast/episode/<%=selectedEpisode.id%>'>
+          <button type="submit" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </form>
+      </div>
+      <div class="modal-body">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Choose from an existing playlist</button>
+            <form>
+              <div class="dropdown-menu">
+              <% if(locals.currUserPlaylists){ %>
+                <% currUserPlaylists.forEach((playlist)=>{ %>
+                  <input class="dropdown-item" type='submit' name='addPlaylist' value='<%=playlist.name%>' />                    
+                <% }) %>
+              <% } %>                        
+              </div>
+            </form>
+          </div>
+          <input type="text" class="form-control" aria-label="Text input with dropdown button" 
+          <% if(locals.selectedPlaylist) {%>
+          value = <%=selectedPlaylist%>
+          <% } %>
+          readonly>
+        </div>            
+      </div>
+      <div class="modal-footer">
+        <form action= '/podcast/episode/<%=selectedEpisode.id%>'>
+          <input class="btn btn-secondary" type="submit" data-dismiss="modal" value="Close"/>
+        </form>
+        <form action='/insertEpisodeIntoPlaylist' method='POST'>
+          <button type="submit" class="btn btn-primary">Add</button>
+          <input name='selectedPlaylist' value="<%=selectedPlaylist%>" hidden/>
+          <input name='currPodcastEpisodeId' value="<%=selectedEpisode.id%>" hidden/>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Comments display -->
   <div class="container">
