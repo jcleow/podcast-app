@@ -74,7 +74,7 @@ const hashPassword = (reqBodyPassword) => {
 };
 
 // Function that includes loggedInUser from req.body to data obj to be passed into ejs
-const assignUserDetails = (hostObject, req) => {
+const assignLoggedInUserDetails = (hostObject, req) => {
   hostObject.loggedInUser = req.loggedInUser;
   hostObject.loggedInUserId = req.loggedInUserId;
   hostObject.loggedInUserProfilePic = req.loggedInUserProfilePic;
@@ -132,7 +132,7 @@ app.get('/', (req, res) => {
   let data = {};
 
   // Check if user is logged in and if so assign user specific details to display
-  data = assignUserDetails(data, req);
+  data = assignLoggedInUserDetails(data, req);
 
   // Check if the form is submitted by the genre/subgenre selection or the user has already
   // decided to submit the full form
@@ -246,7 +246,7 @@ app.get('/podcast/create', (req, res) => {
         data.subgenreNames = result.rows.map((row) => row.name);
       }
       // Assign loggedinUser(name) and id to data obj
-      data = assignUserDetails(data, req);
+      data = assignLoggedInUserDetails(data, req);
       res.render('navlinks/createPodcastSeries', data);
     })
     .catch((error) => console.log(error));
@@ -315,7 +315,7 @@ app.get('/podcast/episode/upload', (req, res) => {
   // Store all results into a temp object to pass into ejs
   let data = {};
   // Assign loggedinUser(name) and id to data obj
-  data = assignUserDetails(data, req);
+  data = assignLoggedInUserDetails(data, req);
 
   if (req.cookies.previousValues) {
     data.previousValues = req.cookies.previousValues;
@@ -404,14 +404,15 @@ app.post('/podcast/episode/upload', upload.single('artwork'), (req, res) => {
     .catch((error) => { console.log(error); });
 });
 
-// **************************** Render Podcast series/episode Routes **************************** /
+// **************************** Podcast series CRUD **************************** /
 
 // Route that displays the podcast series with its description and episodes
 app.get('/series/:id', (req, res) => {
   const { id: seriesId } = req.params;
 
   // Store all data to be rendered in ejs in data var
-  const data = {};
+  let data = {};
+  data = assignLoggedInUserDetails(data, req);
   // Check if user wants to view the podcast series description
   pool.query(`
   SELECT 
@@ -445,6 +446,7 @@ app.get('/series/:id', (req, res) => {
     .catch((error) => console.log(error));
 });
 
+// **************************** Podcast episode CRUD **************************** /
 // Route that displays an individual podcast episode with its comments
 app.get('/podcast/episode/:id', (req, res) => {
   const currEpisodeId = req.params.id;
@@ -452,7 +454,7 @@ app.get('/podcast/episode/:id', (req, res) => {
   let data = {};
 
   // Assign current username and id to data var if logged in
-  data = assignUserDetails(data, req);
+  data = assignLoggedInUserDetails(data, req);
 
   // Query for specific podcast episode details
   pool
@@ -516,6 +518,7 @@ app.get('/podcast/episode/:id', (req, res) => {
     });
 });
 
+// Route that displays the podcast episode edit form
 app.get('/podcast/episode/:id/edit', (req, res) => {
   const data = {};
 
@@ -554,6 +557,7 @@ app.get('/podcast/episode/:id/edit', (req, res) => {
     });
 });
 
+// Route handles the podcast episode edit request
 app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
   if (req.body.seriesName) {
     res.cookie('previousValues', req.body);
@@ -615,6 +619,7 @@ app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
     });
 });
 
+// Route that handles the podcast episode deletion request
 app.delete('/podcast/episode/:id/delete', (req, res) => {
   pool
     .query(`
@@ -630,7 +635,9 @@ app.delete('/podcast/episode/:id/delete', (req, res) => {
     })
     .catch((error) => { console.log(error, 'error in deleting podcast'); });
 });
+
 // **************************** User Login & Registration **************************** /
+
 // Route that renders the login page
 app.get('/login', (req, res) => {
   res.render('navlinks/login');
@@ -754,7 +761,8 @@ app.delete('/logout', (req, res) => {
 });
 
 // **************************** Adding comments to an episode **************************** /
-// Need to split the post into post and put requests
+
+// Need to split the post into post and put requests TBD
 
 // Creates a new comment as well as a favourite entry (false by default)
 app.post('/podcast/episode/:id/comment', (req, res) => {
@@ -855,7 +863,7 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
   const { id: currUserId } = req.params;
   let data = {};
 
-  data = assignUserDetails(data, req);
+  data = assignLoggedInUserDetails(data, req);
   pool
   // Querying for  all the favourited episodes
     .query(
@@ -895,7 +903,7 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
 app.get('/user/:id/favouriteComments', (req, res) => {
   const { id: currUserId } = req.params;
   let data = {};
-  data = assignUserDetails(data, req);
+  data = assignLoggedInUserDetails(data, req);
   // First query from table all the comments that were favourited before by the user
   // whose profile page we are accessing
   pool
@@ -979,7 +987,7 @@ app.get('/user/:id/favouriteComments', (req, res) => {
 // Route that renders all of user's followings and followers
 app.get('/user/:id/following', (req, res) => {
   let data = {};
-  data = assignUserDetails(data, req);
+  data = assignLoggedInUserDetails(data, req);
   const currUserId = req.params.id;
   pool
   // First query for all the people who are following currUserId
@@ -1039,6 +1047,7 @@ app.get('/user/:id/following', (req, res) => {
     });
 });
 
+// Need to split the post into post and put requests TBD
 // Route that handles the adding of friends
 app.put('/user/:id/follow', (req, res) => {
   const currUserId = Number(req.params.id);
