@@ -651,9 +651,23 @@ app.get('/podcast/episode/:id', (req, res) => {
 
   // Query for specific podcast episode details
   pool
-    .query(`SELECT * FROM podcast_episodes WHERE id=${Number(currEpisodeId)}`)
+    .query(`
+    SELECT 
+    podcast_episodes.id AS episode_id,
+    podcast_episodes.name AS episode_name,
+    podcast_episodes.artwork_filename AS episode_artwork_filename,
+    podcast_episodes.description AS episode_description,
+    podcast_episodes.podcast_ext_url AS episode_podcast_ext_url,
+    podcast_episodes.podcast_series_id AS episode_series_id,
+    podcast_series.name AS series_name
+    FROM podcast_episodes
+    INNER JOIN podcast_series
+    ON podcast_episodes.podcast_series_id=podcast_series.id 
+    WHERE podcast_episodes.id=${Number(currEpisodeId)}`)
     .then((result) => {
+      console.log(result.rows, 'results-xx');
       data.selectedEpisode = result.rows[0];
+      console.log(data, 'test-data');
 
       // If user chooses to play the episode on the page, then a req.query will exist
       if (req.query) {
@@ -720,6 +734,7 @@ app.get('/podcast/episode/:id', (req, res) => {
         const { addPlaylist: selectedPlaylistToBeAdded } = req.query;
         data.selectedPlaylist = selectedPlaylistToBeAdded;
       }
+      console.log(data, 'data');
       res.render('episodeDisplay', data);
     });
 });
