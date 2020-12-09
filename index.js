@@ -1071,6 +1071,7 @@ app.get('/user/:id/favouriteComments', (req, res) => {
     // However the join tables does not contain the original poster's username and picture
     // so for each favourited comment, we have to perform a query to get the relevant deets
     .then((result) => {
+      console.log(result.rows, 'result');
       let arrayOfPosterQuery = [];
       if (result.rows.length > 0) {
         // Store all the queries as promises in an array
@@ -1081,13 +1082,13 @@ app.get('/user/:id/favouriteComments', (req, res) => {
             profile_pic,
             podcast_episodes.name AS episode_name,
             podcast_series.name AS series_name 
-            FROM users
-            INNER JOIN listener_podcast_episodes
-            ON users.id = listener_podcast_episodes.listener_id
-            INNER JOIN podcast_episodes 
-            ON listener_podcast_episodes.podcast_episode_id = podcast_episodes.id
-            INNER JOIN podcast_series
-            ON podcast_episodes.podcast_series_id = podcast_series.id                        
+            FROM users            
+            INNER JOIN user_episode_comments
+            ON poster_id = users.id
+            INNER JOIN podcast_episodes
+            ON user_episode_comments.podcast_episode_id = podcast_episodes.id        
+            INNER JOIN podcast_series 
+            ON podcast_series_id = podcast_series.id              
             WHERE users.id=${row.poster_id} `,
           )
           .then((posterResult) => {
@@ -1264,13 +1265,12 @@ app.get('/user/:id/myPlaylists', (req, res) => {
       WHERE user_id = ${currUserId}`);
     })
     .then((result) => {
-      console.log(result.rows, 'test-2');
       let arrayOfPodcastNamePromises = [];
       if (result.rows.length > 0) {
         data.playlists = result.rows;
         // next query for the names of the podcasts under the user's playlist
         arrayOfPodcastNamePromises = data.playlists.map((thisPlaylist) => pool.query(`
-      SELECT podcast_episodes.name
+      SELECT podcast_episodes.name,podcast_episodes.id
       FROM podcast_episodes
       INNER JOIN episode_playlists
       ON episode_playlists.podcast_episode_id = podcast_episodes.id
@@ -1278,27 +1278,28 @@ app.get('/user/:id/myPlaylists', (req, res) => {
       `)
           .then((podcastNameResult) => podcastNameResult.rows)
           .catch((error) => { console.log(error); }));
-        console.log(arrayOfPodcastNamePromises, 'allPromises');
         return Promise.all(arrayOfPodcastNamePromises);
       }
     })
     .then((result) => {
-      console.log(result, 'result-22');
+      data.playlists.forEach((playlist, index) => {
+        playlist.podcastEpisodes = result[index];
+      });
+      console.log(data.playlists, 'test-4');
+      console.log(data.playlists[0].podcastEpisodes, 'test-4');
       res.render('userProfile/myPlaylists', data);
     })
     .catch((error) => console.log(error));
 });
 
 app.post('/createPlaylist', (req, res) => {
-  console.log(req.body, 'test-10');
   pool.query(`INSERT INTO playlists(name,description) VALUES('${req.body.newPlaylistName}','${req.body.newPlaylistDescription}') RETURNING id`)
     .then((playlistIdResult) => {
       const playlistId = playlistIdResult.rows[0].id;
-      console.log(playlistIdResult.rows, 'test-6');
+
       return pool.query(`INSERT INTO user_playlists(playlist_id,user_id) VALUES(${playlistId},${req.loggedInUserId}) RETURNING *`);
     })
     .then((results) => {
-      console.log(results.row, 'test-5');
       res.redirect(`/user/${req.loggedInUserId}`);
     });
 });
@@ -1316,6 +1317,23 @@ app.post('/insertEpisodeIntoPlaylist', (req, res) => {
    `)
     .then(() => {
       res.redirect(`/podcast/episode/${currPodcastEpisodeId}`);
+    })
+    .catch((error) => { console.log(error); });
+});
+
+app.delete('/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
+  const { playlistId, episodeId } = req.params;
+  pool
+    .query(
+      `DELETE FROM episode_playlists 
+    WHERE playlist_id = ${playlistId} AND podcast_episode_id= ${episodeId}
+    RETURNING *`,
+    )
+    .then((deletionResults) => {
+      console.log(deletionResults.rows, 'results of deletion');
+      console.log(playlistId, 'playlistId');
+      console.log(episodeId, 'episodeId');
+      res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
     })
     .catch((error) => { console.log(error); });
 });
