@@ -264,7 +264,7 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
     return;
   }
 
-  // Insert new podcast details into podcast_series body
+  // Insert new podcast details into podcast_series table
   const { podcastSeriesName, description } = req.body;
   const insertNewPodcastDetailsQuery = {
     text: 'INSERT INTO podcast_series(name,description) VALUES ($1,$2) RETURNING id AS podcast_series_id',
@@ -282,8 +282,12 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
       const insertPodcastSubgenreQuery = {
         text: `INSERT INTO podcast_series_subgenres(podcast_series_id,subgenre_id) SELECT ${currPodcastSeriesId},subgenres.id FROM subgenres WHERE subgenres.name = '${req.body.subgenreText}'`,
       };
-
       return pool.query(insertPodcastSubgenreQuery);
+    })
+    .then(() => {
+      const query = `INSERT INTO creator_podcast_episodes(creator_id,podcast_episode_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`;
+      console.log(query, 'test-233');
+      return pool.query(`INSERT INTO creator_podcast_episodes(creator_id,podcast_episode_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`);
     })
     // If user uploaded an artwork, then run the query to insert it
     .then(() => {
@@ -293,7 +297,6 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
           text: `UPDATE podcast_series SET artwork_filename= $1 WHERE id=${currPodcastSeriesId} RETURNING *`,
           values: [filename],
         };
-
         return pool.query(insertPodcastSeriesArtworkQuery);
       }
     })
@@ -414,33 +417,43 @@ app.get('/series/:id', (req, res) => {
   // Store all data to be rendered in ejs in data var
   let data = {};
   data = assignLoggedInUserDetails(data, req);
-  // Check if user wants to view the podcast series description
+  // First query for the podcast series details
   pool.query(`
   SELECT 
-  podcast_episodes.id AS episode_id,
-  podcast_episodes.name AS episode_name,
-  podcast_episodes.description AS episode_description,
-  podcast_episodes.artwork_filename AS episode_artwork,
-  podcast_episodes.podcast_ext_url,
-  podcast_series.id AS series_id,
-  podcast_series.name AS series_name,
-  podcast_series.description AS series_description,
-  podcast_series.artwork_filename AS series_artwork
+  id AS series_id,
+  name AS series_name,
+  description AS series_description,
+  artwork_filename AS series_artwork
   FROM podcast_series 
-  INNER JOIN podcast_episodes 
-  ON podcast_series.id=podcast_episodes.podcast_series_id 
   WHERE podcast_series.id = ${seriesId}`)
     .then((result) => {
-      if (result) {
+      if (result && result.rows) {
         data.selectedSeries = result.rows;
-        if (req.query) {
-          const { episodeLinkToPlay } = req.query;
-          data.episodeLinkToPlay = episodeLinkToPlay;
-        }
+      }
+      // Next query for the podcasts under this series
+      return pool.query(`
+      SELECT
+      podcast_episodes.id AS episode_id,
+      podcast_episodes.name AS episode_name,
+      podcast_episodes.description AS episode_description,
+      podcast_episodes.artwork_filename AS episode_artwork,
+      podcast_episodes.podcast_ext_url 
+      FROM podcast_episodes
+      INNER JOIN podcast_series
+      ON podcast_series.id = podcast_series_id
+      WHERE podcast_series_id = ${seriesId}`);
+    })
+    .then((result) => {
+      if (result && result.rows) {
+        data.episodes = result.rows;
       }
     })
     .then(() => {
-    // Pass all the data into result.rows;
+      if (req.query) {
+        const { episodeLinkToPlay } = req.query;
+        data.episodeLinkToPlay = episodeLinkToPlay;
+      }
+      // Pass all the data into result.rows;
       res.render('selectedSeries', data);
     })
     .catch((error) => console.log(error));
@@ -1282,11 +1295,11 @@ app.get('/user/:id/myPlaylists', (req, res) => {
       }
     })
     .then((result) => {
-      data.playlists.forEach((playlist, index) => {
-        playlist.podcastEpisodes = result[index];
-      });
-      console.log(data.playlists, 'test-4');
-      console.log(data.playlists[0].podcastEpisodes, 'test-4');
+      if (result && result.rows) {
+        data.playlists.forEach((playlist, index) => {
+          playlist.podcastEpisodes = result[index];
+        });
+      }
       res.render('userProfile/myPlaylists', data);
     })
     .catch((error) => console.log(error));
