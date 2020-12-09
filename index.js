@@ -726,7 +726,8 @@ app.get('/podcast/episode/:id', (req, res) => {
 
 // Route that displays the podcast episode edit form
 app.get('/podcast/episode/:id/edit', (req, res) => {
-  const data = {};
+  let data = {};
+  data = assignLoggedInUserDetails(data, req);
 
   const selectCurrentPodcastEpisodeQuery = {
     text: `SELECT 
@@ -1351,7 +1352,8 @@ app.get('/user/:id/myPlaylists', (req, res) => {
       }
     })
     .then((result) => {
-      if (result && result.rows) {
+      // Promise.all only returns a result in an array
+      if (result) {
         data.playlists.forEach((playlist, index) => {
           playlist.podcastEpisodes = result[index];
         });

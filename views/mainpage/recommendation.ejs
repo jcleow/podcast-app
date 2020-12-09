@@ -33,7 +33,7 @@
       </form>
       <div class="card-body h-50">
         <h6 class="card-title"><a href="/podcast/episode/<%=episode.episode_id%>"><%=episode.name%></a></h6>
-        <div class="card-text text-overflow"><%=episode.episode_description%></div>
+        <div class="card-text text-overflow"><%= truncateDescription(episode.episode_description)%></div>
       </div>
     </div>
   </div>
