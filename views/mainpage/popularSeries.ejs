@@ -25,15 +25,13 @@
         style="background-image:url(<%=title.artwork_filename%>)"
         <% } %>
         action ='/'> 
-          
             <img class="card-img-top w-auto">
-        
           <a href="/series/<%=title.id%>" role="button" class="btn btn-primary mx-auto" type="submit">View</a>
           
       </form>
       <div class="card-body">
         <h5 class="card-title"><%=title.name%></h5>
-        <p class="card-text"><%=title.description%></p>
+        <p class="card-text"><%= truncateDescription(title.description)%></p>
       </div>
     </div>
   </div>

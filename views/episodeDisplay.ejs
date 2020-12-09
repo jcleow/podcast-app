@@ -9,7 +9,7 @@
               <p class="card-text"></p>
               <form class="artworkDisplay d-flex justify-content-center">
                 <img class='seriesArtwork w-auto'src="/<%=selectedEpisode.artwork_filename%>"/>
-                <button class= "mx-auto" type='submit' formaction="/podcast/episode/<%=selectedEpisode.id%>">Play</button>
+                <button class= "rounded-circle" type='submit' formaction="/podcast/episode/<%=selectedEpisode.id%>"><i class='fa fa-play ml-2'></i></button>
                 <input type='hidden'  name="podcast_ext_url" value="<%=selectedEpisode.podcast_ext_url%>"/>
               </form>
           </div>

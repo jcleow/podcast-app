@@ -42,7 +42,13 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: false }));
 
 // To truncate excessive lines (to be included)
-
+app.locals.truncateDescription = function (description) {
+  let truncatedDescription = `${description.substring(0, 200)}`;
+  if (truncatedDescription.length > 196) {
+    truncatedDescription += '...';
+  }
+  return truncatedDescription;
+};
 // Middleware to allow static images/css files to be served
 app.use(express.static('public'));
 // Middleware to allow static images/css files to be served
@@ -94,6 +100,20 @@ const assignCurrentProfilePageUserInfo = (hostObj, currUserDetailResult, req) =>
   return hostObj;
 };
 
+// Authentication function that checks if currUser is the creator
+const checkIsUserCreatorAuth = (req, res, next) => {
+  pool
+  // Query whether the loggedInUser is the same as the site that he is trying to access
+    .query(`SELECT creator_id FROM creator_podcast_episodes WHERE creator_id= ${req.loggedInUserId} AND podcast_episode_id = ${req.params.id}`)
+    .then((result) => {
+      if (result.rows.length === 0) {
+        res.status(403).send('Sorry, you do not have permissions to edit this page');
+      }
+    });
+
+  next();
+};
+
 // Middleware that checks if a user has been logged in and authenticates
 // before granting access to a page for every request
 app.use((req, res, next) => {
@@ -122,6 +142,19 @@ app.use((req, res, next) => {
       });
       // make sure we don't get down to the next () below
       return;
+    }
+  }
+  next();
+});
+
+// Middleware that clears all form cookies if url does not contain edit or create
+app.use((req, res, next) => {
+  if (req.url.search('edit') !== -1 || req.url.search('create') !== -1 || req.url.search('upload')) {
+    if (req.cookies.previousFileSelected) {
+      res.clearCookie('previousFileSelected');
+    }
+    if (req.cookies.previousValues) {
+      res.clearCookie('previousValues');
     }
   }
   next();
@@ -459,7 +492,7 @@ app.get('/series/:id', (req, res) => {
     .catch((error) => console.log(error));
 });
 
-app.get('/series/:id/edit', (req, res) => {
+app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
   if (req.middlewareLoggedIn === false) {
     res.render('errors/displayNotAuthorized');
     return;
@@ -585,6 +618,13 @@ app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
     .then((result) => {
       const newSubgenreId = result.rows[0].id;
       return pool.query(`UPDATE podcast_series_subgenres SET subgenre_id =${newSubgenreId} WHERE podcast_series_id= ${req.params.id}`);
+    })
+    // If podcast image is submitted, then change podcast image
+    .then(() => {
+      if (req.file) {
+        const newArtworkFile = req.file.filename;
+        return pool.query(`UPDATE podcast_series SET artwork_filename ='${newArtworkFile}' WHERE id = ${req.params.id}`);
+      }
     })
     .then(() => {
       // If not, terminate the req-res cycle and clear cookies relating to create podcast form
@@ -979,8 +1019,17 @@ app.post('/podcast/episode/:id/favourite', (req, res) => {
         return pool.query(`UPDATE listener_podcast_episodes SET favourited=${newFavouritedStatus} WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currPodcastEpisodeId}`);
       }
     }).then(() => {
+      // If user clicked on unfavouriting from his own profile page, then redirect back to user page
       res.redirect(`/podcast/episode/${currPodcastEpisodeId}`);
     });
+});
+
+// Unfavourite a podcast episode from logged in user profile page
+app.put('/user/:id/editFavouriteEpisode/:episodeId', (req, res) => {
+  const { episodeId: currPodcastEpisodeId } = req.params;
+  pool
+    .query(`UPDATE listener_podcast_episodes SET favourited=false WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currPodcastEpisodeId}`)
+    .then(() => res.redirect(`/user/${req.loggedInUserId}`));
 });
 
 // Handles the editing of a previously inserted favourite entry (upon creation of a comment)
@@ -1059,6 +1108,13 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
         data.isfollowing = false;
       } else {
         data.isfollowing = result.rows[0].isfollowing;
+      }
+
+      // To perform user validation to decide whether hearts can be shown or not
+      if (convertUserIdToHash(req.loggedInUserId) === req.cookies.loggedInHash && req.loggedInUserId === Number(currUserId)) {
+        data.isUserAuth = true;
+      } else {
+        data.isUserAuth = false;
       }
       res.render('userProfile/favouriteEpisodes', data);
     })
