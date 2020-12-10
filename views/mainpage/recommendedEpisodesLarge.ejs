@@ -32,8 +32,8 @@
                   <input type='hidden' name="episode_id" value="<%=episodes[k].podcast_ext_url%>"/>                                  
                 </form>
                 <div class="card-body">
-                <h5 class="card-title"><a href="/podcast/episode/<%=episodes[k].episode_id%>"><%=episodes[k].name%></a></h5>
-                <div class="card-text text-overflow"><%= truncateDescription(episodes[k].episode_description)%></div>                  
+                <h5 class="card-title"><a href="/series/<%=episodes[k].series_id%>/episode/<%=episodes[k].episode_id%>"><%=episodes[k].name%></a></h5>
+                <div class="card-text"><%= truncateDescription(episodes[k].episode_description)%></div>                  
                 </div>
               </div>
             </div>
@@ -68,7 +68,7 @@
                 <input type='hidden' name="episode_id" value="<%=episodes[k].podcast_ext_url%>"/>               
                 </form>
                 <div class="card-body">
-                <h5 class="card-title"><a href="/podcast/episode/<%=episodes[k].episode_id%>"><%=episodes[k].name%></a></h5>
+                <h5 class="card-title"><a href="/series/<%=episodes[k].series_id%>/episode/<%=episodes[k].episode_id%>"><%=episodes[k].name%></a></h5>
                 <div class="card-text text-overflow"><%= truncateDescription(episodes[k].episode_description)%></div>
                 </div>
               </div>

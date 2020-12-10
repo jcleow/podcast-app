@@ -9,7 +9,7 @@
               <p class="card-text"></p>
               <form class="artworkDisplay d-flex justify-content-center">
                 <img class='seriesArtwork w-auto'src="/<%=selectedEpisode.episode_artwork_filename%>"/>
-                <button class= "rounded-circle" type='submit' formaction="/podcast/episode/<%=selectedEpisode.episode_id%>"><i class='fa fa-play ml-2'></i></button>
+                <button class= "rounded-circle" type='submit' formaction="/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>"><i class='fa fa-play ml-2'></i></button>
                 <input type='hidden'  name="podcast_ext_url" value="<%=selectedEpisode.episode_podcast_ext_url%>"/>
               </form>
           </div>
@@ -24,8 +24,8 @@
                     <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#addToPlaylist">
                       Add Episode to A Playlist
                     </a>            
-                      <a class="dropdown-item btn btn-warning" href='/podcast/episode/<%=selectedEpisode.episode_id%>/edit' role="button" type='submit'>Edit</a>                     
-                    <form class="dropdown-item" action="/podcast/episode/<%=selectedEpisode.episode_id%>/delete?_method=DELETE" method="POST">
+                      <a class="dropdown-item btn btn-warning" href='/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>/edit' role="button" type='submit'>Edit</a>                     
+                    <form class="dropdown-item" action="/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>/delete?_method=DELETE" method="POST">
                       <input
                         type="submit"
                         name="_method"
@@ -38,7 +38,7 @@
               </div>
             
             <div class="align-self-center">
-              <form action='/podcast/episode/<%=selectedEpisode.episode_id%>/favourite' method="POST">
+              <form action='/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>/favourite' method="POST">
                 <button class="favouriteBtn bg-transparent border-0 shadow-none"                             
                 type="submit"
                 <% if(!locals.loggedInUser) {%>
@@ -67,7 +67,7 @@
     </div>
     <div class="container">
       <div class='mt-4 mb-2'>Comments</div>
-      <form action="/podcast/episode/<%=selectedEpisode.episode_id%>/comment" method="POST">
+      <form action="/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>/comment" method="POST">
       <div class="row">
         <div class="col">
           <div class="form-group">
@@ -90,7 +90,7 @@
                 </button>
             </div>
           <div class="col-xs-1">
-            <a href="/podcast/episode<%=selectedEpisode.episode_id%>" class="btn btn-outline-secondary btn-sm ml-3" role="button">
+            <a href="/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>" class="btn btn-outline-secondary btn-sm ml-3" role="button">
                   Cancel</a
                 >
             </div>
@@ -111,7 +111,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="addToPlaylistLabel">Add Episode To A Playlist</h5>
-        <form action= '/podcast/episode/<%=selectedEpisode.episode_id%>'>
+        <form action= '/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>'>
           <button type="submit" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -139,13 +139,14 @@
         </div>            
       </div>
       <div class="modal-footer">
-        <form action= '/podcast/episode/<%=selectedEpisode.episode_id%>'>
+        <form action= '/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>'>
           <input class="btn btn-secondary" type="submit" data-dismiss="modal" value="Close"/>
         </form>
         <form action='/insertEpisodeIntoPlaylist' method='POST'>
           <button type="submit" class="btn btn-primary">Add</button>
           <input name='selectedPlaylist' value="<%=selectedPlaylist%>" hidden/>
-          <input name='currPodcastEpisodeId' value="<%=selectedEpisode.episode_id%>" hidden/>
+          <input name='currEpisodeId' value="<%=selectedEpisode.episode_id%>" hidden/>
+          <input name='currSeriesId' value="<%=selectedEpisode.episode_series_id%>" hidden/>
         </form>
       </div>
     </div>
@@ -178,7 +179,7 @@
           <div class="row">
             <div class="col-4 pl-0">
               <small class='commentsDisplay'>
-                <form action='/podcast/episode/<%=selectedEpisode.episode_id%>/comment/<%=comment.user_episode_comment_id%>/favourite?_method=PUT' method="POST" >
+                <form action='/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>/comment/<%=comment.user_episode_comment_id%>/favourite?_method=PUT' method="POST" >
                 <button class="bg-transparent border-0 shadow-none commentFavouriteBtn" type="submit">
                   <% if(comment.isFavourited !== undefined){ %>
                     <% if(comment.isFavourited === true) { %>
