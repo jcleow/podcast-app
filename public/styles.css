@@ -1,6 +1,7 @@
 /** @format */
 html {
   overflow-x: hidden;
+  background-attachment: white;
 }
 
 .navTopMargin {
@@ -109,10 +110,6 @@ h1 .display {
   height: 100px;
 }
 
-.bg {
-  background: rgba(240, 243, 245, 0.687);
-}
-
 .commentBox {
   border-top: 1px black;
   border-left: 1px black;
@@ -192,8 +189,10 @@ h1 .display {
   background-repeat: no-repeat;
   background-position: center;
   position: relative;
-  min-height: 150px;
+  height: 250px;
   width: 300px;
+  padding-left: 20px;
+  padding-right: 20px;
   align-items: center;
   text-align: center;
 }
@@ -386,4 +385,35 @@ h1 .display {
 
 a:hover {
   text-decoration: none;
+}
+
+.alignPrevRight {
+  right: 0;
+}
+
+.carousel-newControl-next,
+.carousel-newControl-prev {
+  position: absolute;
+  top: -30px;
+  bottom: 0;
+  z-index: 1;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  width: 30px;
+  color: black;
+  text-align: center;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.carousel-newControl-next {
+  right: 30px;
+}
+
+.carousel-newControl-prev {
+  right: 80px;
 }

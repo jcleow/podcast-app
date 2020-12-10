@@ -49,6 +49,27 @@ app.locals.truncateDescription = function (description) {
   }
   return truncatedDescription;
 };
+
+// To decide calculate the number to print
+const calcTimes = (length) => {
+  let i = 0;
+  while (i < length) {
+    // if i + 5 exceeds length
+    if (i + 5 > length) {
+      for (let k = i; k < length; k += 1) {
+        console.log(k);
+      }
+      break;
+    } else if (i + 5 < length) {
+      // Accumulator
+      i += 5;
+      for (let k = i - 5; k < i; k += 1) {
+        console.log(k);
+      }
+    }
+    console.log('--');
+  }
+};
 // Middleware to allow static images/css files to be served
 app.use(express.static('public'));
 // Middleware to allow static images/css files to be served
