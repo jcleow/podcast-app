@@ -1017,8 +1017,6 @@ app.delete('/logout', (req, res) => {
 
 // **************************** Adding comments to an episode **************************** /
 
-// Need to split the post into post and put requests TBD
-
 // Creates a new comment as well as a favourite entry (false by default)
 app.post('/series/:seriesId/episode/:id/comment', (req, res) => {
   const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
@@ -1081,8 +1079,8 @@ app.put('/user/:id/editFavouriteEpisode/:episodeId', (req, res) => {
 });
 
 // Handles the editing of a previously inserted favourite entry (upon creation of a comment) // to be split out into post and put separately
-app.put('/series/:seriesId/episode/:id/comment/:commentId/favourite', (req, res) => {
-  const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
+app.put('/series/:seriesId/episode/:episodeId/comment/:commentId/favourite', (req, res) => {
+  const { seriesId: currSeriesId, episodeId: currEpisodeId } = req.params;
 
   // Store new favourite status in a variable
   let newFavouriteStatus;
