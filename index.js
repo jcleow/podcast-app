@@ -1382,21 +1382,20 @@ app.post('/createPlaylist', (req, res) => {
       return pool.query(`INSERT INTO user_playlists(playlist_id,user_id) VALUES(${playlistId},${req.loggedInUserId}) RETURNING *`);
     })
     .then((results) => {
-      res.redirect(`/user/${req.loggedInUserId}`);
+      res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
     });
 });
 
 // Handles insertion of episode into playlist as well as playlist-episode join table
 app.post('/insertEpisodeIntoPlaylist', (req, res) => {
-  console.log(req.body, 'test');
   const { selectedPlaylist, currEpisodeId, currSeriesId } = req.body;
   pool
     .query(`
    INSERT INTO episode_playlists(podcast_episode_id,playlist_id)
    SELECT ${Number(currEpisodeId)},playlists.id
    FROM playlists
-   WHERE name='${selectedPlaylist}
-   '
+   WHERE name='${selectedPlaylist}'
+   RETURNING *
    `)
     .then(() => {
       res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
