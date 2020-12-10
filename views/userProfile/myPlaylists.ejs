@@ -32,20 +32,28 @@
      <% if(locals.playlists){%>
         <% playlists.forEach((playlist,index)=>{ %>      
       <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse<%=index%>">
-          <td><%=playlist.name %></td>
+          <td><%=playlist.name%></td>
           <td><%=playlist.description %></td>         
           <td class="expand-button"></td>
       </tr>          
     <% if(playlist.podcastEpisodes) {%>  
     <%playlist.podcastEpisodes.forEach((episode)=>{ %>
-    <tr id="collapse<%=index%>" class="collapse" data-parent='#accordion'>      
+    <tr id="collapse<%=index%>" class="collapse" data-parent='#accordion'>     
+      <td colspan="1">
+        <form class="artworkDisplay d-flex justify-content-center" action="/user/<%=currUserId%>/myPlaylists">
+          <img class='seriesArtwork w-auto'src="/<%=episode.episode_artwork_filename%>"/>
+          <button class= "rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>
+          <input type='hidden'  name="podcast_ext_url" value="<%=episode.episode_podcast_ext_url%>"/>
+        </form>
+      </td>
+      
       <td colspan="1">
         <div class="card-body">
-          <a href='/podcast/episode/<%=episode.id%>'><%=episode.name%></a>
+          <a href='/podcast/episode/<%=episode.episode_id%>'><%=episode.episode_name%></a>
         </div>
       </td> 
       <td class="" colspan="1" >
-      <form action='/removeFromPlaylist/<%=playlist.playlist_id%>/<%=episode.id%>?_method=DELETE' method="POST">
+      <form action='/removeFromPlaylist/<%=playlist.playlist_id%>/<%=episode.episode_id%>?_method=DELETE' method="POST">
         <div class="dropdown">
           <button class="btn btn-secondary bg-transparent border-0 text-secondary"  id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class='fa fa-ellipsis-h'></i>

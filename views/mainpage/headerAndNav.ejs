@@ -45,14 +45,17 @@
 
       <li class="nav-item ml-auto">
 
-        <div class="btn-group">
-          <a class="btn bg-transparent profilePicBtn" href='/user/<%=loggedInUserId%>'>
+        <div class="btn-group">          
+          <a class="btn bg-transparent profilePicBtn" 
+          <%if(locals.loggedInUserId){%>
+            href='/user/<%=loggedInUserId%>'
+          <% } %>
+          >          
             <% if(locals.loggedInUserProfilePic) { %>
               <img class="profilePic rounded-circle"  src='/<%=loggedInUserProfilePic%>'/>
             <% } else { %>
               Account
             <% } %>
-
             </a>
           <button type="button" class="btn bg-transparent dropdown-toggle dropdown-toggle-split profilePicBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>

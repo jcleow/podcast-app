@@ -1119,11 +1119,11 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
       return pool.query(`
       SELECT * FROM fellowships WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`);
     })
-    .then((result) => {
-      if (result.rows.length === 0) {
+    .then((fellowshipResult) => {
+      if (fellowshipResult.rows.length === 0) {
         data.isfollowing = false;
       } else {
-        data.isfollowing = result.rows[0].isfollowing;
+        data.isfollowing = fellowshipResult.rows[0].isfollowing;
       }
 
       // To perform user validation to decide whether hearts can be shown or not
@@ -1132,6 +1132,7 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
       } else {
         data.isUserAuth = false;
       }
+      console.log(data, 'data-2356');
       res.render('userProfile/favouriteEpisodes', data);
     })
     .catch((error) => { console.log(error); });
@@ -1276,6 +1277,15 @@ app.get('/user/:id/following', (req, res) => {
       WHERE users.id = ${currUserId}`))
     .then((result) => {
       data = assignCurrentProfilePageUserInfo(data, result, req);
+      return pool.query(`
+      SELECT * FROM fellowships WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`);
+    })
+    .then((fellowshipResult) => {
+      if (fellowshipResult.rows.length === 0) {
+        data.isfollowing = false;
+      } else {
+        data.isfollowing = fellowshipResult.rows[0].isfollowing;
+      }
       res.render('userProfile/followingDisplay', data);
     });
 });
@@ -1352,10 +1362,16 @@ app.get('/user/:id/myPlaylists', (req, res) => {
     .then((result) => {
       let arrayOfPodcastNamePromises = [];
       if (result.rows.length > 0) {
+        console.log(result.rows, 'result-rows');
         data.playlists = result.rows;
         // next query for the names of the podcasts under the user's playlist
         arrayOfPodcastNamePromises = data.playlists.map((thisPlaylist) => pool.query(`
-      SELECT podcast_episodes.name,podcast_episodes.id
+      SELECT 
+      podcast_episodes.id AS episode_id,
+      podcast_episodes.name AS episode_name,
+      podcast_episodes.id AS episode_id,
+      podcast_episodes.artwork_filename AS episode_artwork_filename,
+      podcast_episodes.podcast_ext_url AS episode_podcast_ext_url
       FROM podcast_episodes
       INNER JOIN episode_playlists
       ON episode_playlists.podcast_episode_id = podcast_episodes.id
@@ -1373,6 +1389,15 @@ app.get('/user/:id/myPlaylists', (req, res) => {
           playlist.podcastEpisodes = result[index];
         });
       }
+    })
+    .then(() => pool.query(`
+      SELECT * FROM fellowships WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`))
+    .then((fellowshipResult) => {
+      if (fellowshipResult.rows.length === 0) {
+        data.isfollowing = false;
+      } else {
+        data.isfollowing = fellowshipResult.rows[0].isfollowing;
+      }      
       res.render('userProfile/myPlaylists', data);
     })
     .catch((error) => console.log(error));

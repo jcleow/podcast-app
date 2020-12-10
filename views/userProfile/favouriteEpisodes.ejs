@@ -32,7 +32,7 @@
     <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
       <% episodes.forEach((episode)=>{ %>
       <td>
-        <form class="epArtworkDisplay"action ='/user/<%=loggedInUserId%>/favouriteEpisodes'>
+        <form class="epArtworkDisplay"action ='/user/<%=currUserId%>/favouriteEpisodes'>
         <img class='w-100 h-auto' src="/<%=episode.artwork_filename%>"/>                
           <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>          
         <input type='hidden' name="podcast_ext_url" value="<%=episode.podcast_ext_url%>"/>
