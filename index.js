@@ -43,7 +43,6 @@ app.use(express.static('uploads'));
 app.use(methodOverride('_method'));
 // Middleware that allows request.cookies to be parsed
 app.use(cookieParser());
-
 // Getting the uploaded artwork files back into the expressjs app
 app.use(express.static('uploads'));
 
@@ -95,7 +94,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Route that gets the root page
+// Route that retrieves the root page
 app.get('/', (req, res) => {
   // Store all data to be rendered in ejs in data var
   let data = {};
@@ -168,7 +167,7 @@ app.get('/', (req, res) => {
     .catch((error) => console.log(error));
 });
 
-// **************************** Left Nav Link Bar Routes **************************** /
+// **************************** Nav Menu (Left) Bar Links Routes **************************** /
 
 // Route that renders a new form to enter podcast_series details
 app.get('/series/create', (req, res) => {
@@ -407,7 +406,20 @@ app.post('/series/episode/upload', upload.single('artwork'), (req, res) => {
     .catch((error) => { console.log(error); });
 });
 
-// **************************** Podcast series CRUD **************************** /
+// Route that handles the creation of a new playlist
+app.post('/createPlaylist', (req, res) => {
+  pool.query(`INSERT INTO playlists(name,description) VALUES('${req.body.newPlaylistName}','${req.body.newPlaylistDescription}') RETURNING id`)
+    .then((playlistIdResult) => {
+      const playlistId = playlistIdResult.rows[0].id;
+
+      return pool.query(`INSERT INTO user_playlists(playlist_id,user_id) VALUES(${playlistId},${req.loggedInUserId}) RETURNING *`);
+    })
+    .then((results) => {
+      res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
+    });
+});
+
+// **************************** Podcast series display,update **************************** /
 
 // Route that displays the podcast series with its description and episodes
 app.get('/series/:id', (req, res) => {
@@ -601,12 +613,9 @@ app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
     .catch((error) => response.status(503).send(error));
 });
 
-app.delete('/series/:id/delete', (req, res) => {
+// ****************** Podcast episode display,update,and deletion ****************** /
 
-});
-// **************************** Podcast episode CRUD **************************** /
 // Route that displays an individual podcast episode with its comments
-
 app.get('/series/:seriesId/episode/:id', (req, res) => {
   const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   // Store data to be rendered into ejs into a var
@@ -951,7 +960,7 @@ app.delete('/logout', (req, res) => {
   res.redirect('/');
 });
 
-// **************************** Adding comments to an episode **************************** /
+// ********************* Adding comments and favourites to an episode *********************  /
 
 // Creates a new comment as well as a favourite entry (false by default)
 app.post('/series/:seriesId/episode/:id/comment', (req, res) => {
@@ -1006,7 +1015,7 @@ app.post('/series/:seriesId/episode/:id/favourite', (req, res) => {
     });
 });
 
-// Unfavourite a podcast episode from logged in user profile page
+// Unfavourite a podcast episode only from a LoggedIn user profile page
 app.put('/user/:id/editFavouriteEpisode/:episodeId', (req, res) => {
   const { episodeId: currEpisodeId } = req.params;
   pool
@@ -1014,7 +1023,8 @@ app.put('/user/:id/editFavouriteEpisode/:episodeId', (req, res) => {
     .then(() => res.redirect(`/user/${req.loggedInUserId}`));
 });
 
-// Handles the editing of a previously inserted favourite entry (upon creation of a comment) // to be split out into post and put separately
+// Handles the editing of a previously inserted favourite entry (upon creation of a comment)
+// to be split out into post and put separately
 app.put('/series/:seriesId/episode/:episodeId/comment/:commentId/favourite', (req, res) => {
   const { seriesId: currSeriesId, episodeId: currEpisodeId } = req.params;
 
@@ -1048,16 +1058,12 @@ app.put('/series/:seriesId/episode/:episodeId/comment/:commentId/favourite', (re
     });
 });
 
-// **************************** Adding friends **************************** /
+// ********************* Displaying user profile page ********************* /
 
-// **** Displaying user profile page ***/
 // Route that gets a user's profile page (redirects to favourite Episodes for now)
 app.get('/user/:id', (req, res) => {
   res.redirect(`/user/${req.params.id}/favouriteEpisodes`);
 });
-
-// Route that renders user's playlists
-app.get('/user/:id/playlists');
 
 // Route that renders user's favourite episodes
 app.get('/user/:id/favouriteEpisodes', (req, res) => {
@@ -1260,56 +1266,6 @@ app.get('/user/:id/following', (req, res) => {
     });
 });
 
-// Need to split the post into post and put requests TBD
-// Route that handles the adding of friends
-app.put('/user/:id/follow', (req, res) => {
-  const currUserId = Number(req.params.id);
-  // First check if loggedInUser is already friends with the person in the profile page
-  pool.query(`SELECT * FROM fellowships 
-  WHERE 
-  (following_user_id=${currUserId}
-  AND follower_user_id=${req.loggedInUserId})
-  `)
-    .then((result) => {
-      // If no fellowship was created in the first place
-      if (result.rows.length === 0) {
-        return pool.query(`
-        INSERT INTO
-        fellowships(following_user_id,follower_user_id,isfollowing)
-        VALUES(${req.params.id},${req.loggedInUserId},true)
-        RETURNING *
-        `);
-      }
-      // If a fellowship exists before
-      if (result.rows.length === 1) {
-        if (result.rows[0].isfollowing === true) {
-          return pool.query(`
-          UPDATE fellowships 
-          SET isfollowing=false 
-          WHERE 
-          (following_user_id=${currUserId}
-          AND follower_user_id=${req.loggedInUserId})
-          RETURNING *`);
-        } if (result.rows[0].isfollowing === false) {
-          return pool.query(
-            `UPDATE fellowships
-          SET isfollowing=true
-          WHERE 
-          (following_user_id=${currUserId}
-          AND follower_user_id=${req.loggedInUserId})
-          RETURNING *`,
-          );
-        }
-      }
-    })
-    .then((result) => {
-      if (result) {
-        console.log(result.rows, 'outcome of adding friend');
-      }
-      res.redirect(`/user/${req.params.id}`);
-    });
-});
-
 // Renders user's playlists in profile page
 app.get('/user/:id/myPlaylists', (req, res) => {
   let data = {};
@@ -1373,18 +1329,7 @@ app.get('/user/:id/myPlaylists', (req, res) => {
     .catch((error) => console.log(error));
 });
 
-// Handles the post request of creating a new playlist
-app.post('/createPlaylist', (req, res) => {
-  pool.query(`INSERT INTO playlists(name,description) VALUES('${req.body.newPlaylistName}','${req.body.newPlaylistDescription}') RETURNING id`)
-    .then((playlistIdResult) => {
-      const playlistId = playlistIdResult.rows[0].id;
-
-      return pool.query(`INSERT INTO user_playlists(playlist_id,user_id) VALUES(${playlistId},${req.loggedInUserId}) RETURNING *`);
-    })
-    .then((results) => {
-      res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
-    });
-});
+// **************************** Playlist Management **************************** /
 
 // Handles insertion of episode into playlist as well as playlist-episode join table
 app.post('/insertEpisodeIntoPlaylist', (req, res) => {
@@ -1415,6 +1360,55 @@ app.delete('/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
     .then((deletionResults) => {
       console.log(deletionResults.rows, 'results of deletion');
       res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
+    })
+    .catch((error) => { console.log(error); });
+});
+
+// ********************* Followership/Fellowship Management ********************* /
+// Need to split the post into post and put requests TBD
+// Route that updates the following of loggedInUser against other users
+app.put('/user/:id/follow', (req, res) => {
+  const currUserId = Number(req.params.id);
+  // First check if loggedInUser is already friends with the person in the profile page
+  pool.query(`SELECT * FROM fellowships 
+  WHERE 
+  (following_user_id=${currUserId}
+  AND follower_user_id=${req.loggedInUserId})
+  `)
+    .then((result) => {
+      // If no fellowship was created in the first place
+      if (result.rows.length === 0) {
+        return pool.query(`
+        INSERT INTO
+        fellowships(following_user_id,follower_user_id,isfollowing)
+        VALUES(${req.params.id},${req.loggedInUserId},true)
+        RETURNING *
+        `);
+      }
+      // If a fellowship exists before
+      if (result.rows.length === 1) {
+        if (result.rows[0].isfollowing === true) {
+          return pool.query(`
+          UPDATE fellowships 
+          SET isfollowing=false 
+          WHERE 
+          (following_user_id=${currUserId}
+          AND follower_user_id=${req.loggedInUserId})
+          RETURNING *`);
+        } if (result.rows[0].isfollowing === false) {
+          return pool.query(
+            `UPDATE fellowships
+          SET isfollowing=true
+          WHERE 
+          (following_user_id=${currUserId}
+          AND follower_user_id=${req.loggedInUserId})
+          RETURNING *`,
+          );
+        }
+      }
+    })
+    .then(() => {
+      res.redirect(`/user/${req.params.id}`);
     })
     .catch((error) => { console.log(error); });
 });
