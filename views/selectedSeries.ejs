@@ -34,14 +34,13 @@
             <th scope="col" class='text-dark'><div hidden>Name</div></th>
             <th scope="col" class='text-dark'><div hidden>Description</div></th>
             <th scope="col" class='text-dark pr-2'><div hidden>Play</div></th>
-            <!-- <th scope="col" class='text-dark'><i class='fa fa-heart'></i><th> -->
           </tr>
         </thead>
         <tbody>
           <% episodes.forEach((ep) =>{ %>
           <tr class=''>            
               <td>
-                <form class='epArtworkDisplay' action ='/series/<%=ep.series_id%>'>
+                <form class='epArtworkDisplay' action ='/series/<%=selectedSeries[0].series_id%>'>
                 <img class='w-100 h-auto' src="/<%=ep.episode_artwork%>"/>                
                   <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>
                   <input type='hidden' name="episodeLinkToPlay" value="<%=ep.podcast_ext_url%>"/>

@@ -50,26 +50,6 @@ app.locals.truncateDescription = function (description) {
   return truncatedDescription;
 };
 
-// To decide calculate the number to print
-const calcTimes = (length) => {
-  let i = 0;
-  while (i < length) {
-    // if i + 5 exceeds length
-    if (i + 5 > length) {
-      for (let k = i; k < length; k += 1) {
-        console.log(k);
-      }
-      break;
-    } else if (i + 5 < length) {
-      // Accumulator
-      i += 5;
-      for (let k = i - 5; k < i; k += 1) {
-        console.log(k);
-      }
-    }
-    console.log('--');
-  }
-};
 // Middleware to allow static images/css files to be served
 app.use(express.static('public'));
 // Middleware to allow static images/css files to be served
@@ -81,6 +61,8 @@ app.use(cookieParser());
 
 // Getting the uploaded artwork files back into the expressjs app
 app.use(express.static('uploads'));
+
+// **************************** Helper Functions **************************** /
 
 // Function that converts supplied userId into a hash (using a salt)
 const convertUserIdToHash = (userId) => {
@@ -101,6 +83,7 @@ const hashPassword = (reqBodyPassword) => {
 };
 
 // Function that includes loggedInUser from req.body to data obj to be passed into ejs
+// hostobject is usually referred to as 'data' variable
 const assignLoggedInUserDetails = (hostObject, req) => {
   hostObject.loggedInUser = req.loggedInUser;
   hostObject.loggedInUserId = req.loggedInUserId;
@@ -109,7 +92,7 @@ const assignLoggedInUserDetails = (hostObject, req) => {
 };
 
 // Function that assigns current username,profile pic and id
-// to data to render in ejs in a supplied 'hostObj' using the query 'result'
+// to data var to render in ejs in a supplied 'hostObj' using the query 'result'
 // to be used in tandem with select query for curr user details
 const assignCurrentProfilePageUserInfo = (hostObj, currUserDetailResult, req) => {
   hostObj.currUsername = currUserDetailResult.rows[0].curr_username;
@@ -125,9 +108,13 @@ const assignCurrentProfilePageUserInfo = (hostObj, currUserDetailResult, req) =>
 const checkIsUserCreatorAuth = (req, res, next) => {
   pool
   // Query whether the loggedInUser is the same as the site that he is trying to access
-    .query(`SELECT creator_id FROM creator_podcast_episodes WHERE creator_id= ${req.loggedInUserId} AND podcast_episode_id = ${req.params.id}`)
-    .then((result) => {
-      if (result.rows.length === 0) {
+    .query(`
+    SELECT creator_id 
+    FROM creator_podcast_episodes 
+    WHERE creator_id= ${req.loggedInUserId} 
+    AND podcast_episode_id = ${req.params.id}`)
+    .then((isCreatorResult) => {
+      if (isCreatorResult.rows.length === 0) {
         res.status(403).send('Sorry, you do not have permissions to edit this page');
       }
     });
@@ -171,9 +158,11 @@ app.use((req, res, next) => {
 // Middleware that clears all form cookies if url does not contain edit or create
 app.use((req, res, next) => {
   if (req.url.search('edit') !== -1 || req.url.search('create') !== -1 || req.url.search('upload')) {
+    // Previous file refers to artwork
     if (req.cookies.previousFileSelected) {
       res.clearCookie('previousFileSelected');
     }
+    // Previousvalues refers to form values
     if (req.cookies.previousValues) {
       res.clearCookie('previousValues');
     }
@@ -193,22 +182,28 @@ app.get('/', (req, res) => {
   // decided to submit the full form
   const episodeToPlay = req.query.episode_id;
 
+  // Execute all queries
   pool
     .query('SELECT * FROM podcast_series')
     .then((result) => {
       data.series = result.rows;
 
       // Prepare next query for podcast
-      const selectAllPodcastEpisodesQuery = {
-        text:
-        'SELECT *, podcast_episodes.id AS episode_id,podcast_episodes.name AS name, podcast_series.artwork_filename AS album_artwork, podcast_episodes.artwork_filename AS episode_artwork, podcast_episodes.description AS episode_description FROM podcast_episodes INNER JOIN podcast_series ON podcast_episodes.podcast_series_id = podcast_series.id',
-      };
+      const selectAllPodcastEpisodesQuery = `
+      SELECT *, podcast_episodes.id AS episode_id,
+      podcast_episodes.name AS name,
+      podcast_series.artwork_filename AS album_artwork,
+      podcast_episodes.artwork_filename AS episode_artwork,
+      podcast_episodes.description AS episode_description 
+      FROM podcast_episodes 
+      INNER JOIN podcast_series 
+      ON podcast_episodes.podcast_series_id = podcast_series.id`;
       return pool.query(selectAllPodcastEpisodesQuery);
     })
 
-    .then((result) => {
+    .then((podcastEpisodeResult) => {
       // Pass all the data from sql query into result.rows;
-      data.episodes = result.rows;
+      data.episodes = podcastEpisodeResult.rows;
       data.episodeLinkToPlay = episodeToPlay;
     })
     // Specific case to check if user wants to view podcast series
@@ -234,19 +229,19 @@ app.get('/', (req, res) => {
         }
       }
     })
-    .then((result) => {
-      if (result) {
-        data.selectedSeries = result.rows;
+    .then((viewPodcastSeriesResult) => {
+      if (viewPodcastSeriesResult) {
+        data.selectedSeries = viewPodcastSeriesResult.rows;
       }
     })
     .then(() => {
-      // Pass all the data into result.rows;
+      // Pass all the info from result.rows into data;
       res.render('mainpage/main', data);
     })
     .catch((error) => console.log(error));
 });
 
-// **************************** Left Nav Link Routes **************************** /
+// **************************** Left Nav Link Bar Routes **************************** /
 
 // Route that renders a new form to enter podcast_series details
 app.get('/podcast/create', (req, res) => {
@@ -254,7 +249,7 @@ app.get('/podcast/create', (req, res) => {
     res.render('errors/displayNotAuthorized');
     return;
   }
-  // first, store all the variables inside a data var
+  // Store all the variables inside a data var
   let data = {};
 
   // Next check if there are data stored in cookies
@@ -265,17 +260,19 @@ app.get('/podcast/create', (req, res) => {
       data.previousFileSelected = req.cookies.previousFileSelected;
     }
   }
-
+  // fourth query to check if the podcastSeriesName already exists
   pool
     .query('SELECT id,name FROM genres')
-    // second, check from cookies if there are any genres/subGenres names selected
-    .then((result) => { data.genreNames = result.rows.map((row) => row.name);
-    // third query for all the genres and subgenres and store into a temp data var
+    // next, check from cookies if there are any genres/subGenres names selected
+    .then((genreResult) => { data.genreNames = genreResult.rows.map((row) => row.name);
     })
-    // fourth query to check if the podcastSeriesName already exists
+    // third query for all the genres and subgenres and store into a temp data var
     .then(() => {
       if (data.previousValues) {
-        return pool.query(`SELECT name FROM podcast_series WHERE name='${data.previousValues.podcastSeriesName}'`);
+        return pool.query(`
+        SELECT name 
+        FROM podcast_series 
+        WHERE name='${data.previousValues.podcastSeriesName}'`);
       }
     })
     .then((result) => {
@@ -289,11 +286,21 @@ app.get('/podcast/create', (req, res) => {
     })
     .then(() => {
       if (req.cookies.previousValues) {
+        // Query for all the subgenre names based on the genres selected in the previous action
         if (req.cookies.previousValues.genreName) {
-          return pool.query(`SELECT subgenres.name FROM subgenres INNER JOIN genres ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreName}'`);
-        } if (req.cookies.previousValues.genreText) {
-          return pool.query(`SELECT subgenres.name FROM subgenres INNER JOIN genres ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreText}'`);
+          return pool.query(`
+          SELECT subgenres.name 
+          FROM subgenres 
+          INNER JOIN genres 
+          ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreName}'`);
         }
+        // if (req.cookies.previousValues.genreText) {
+        //   return pool.query(`
+        //   SELECT subgenres.name
+        //   FROM subgenres
+        //   INNER JOIN genres
+        //   ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreText}'`);
+        // }
       }
     })
     .then((result) => {
@@ -480,9 +487,9 @@ app.get('/series/:id', (req, res) => {
   artwork_filename AS series_artwork
   FROM podcast_series 
   WHERE podcast_series.id = ${seriesId}`)
-    .then((result) => {
-      if (result && result.rows) {
-        data.selectedSeries = result.rows;
+    .then((podcastSeriesResult) => {
+      if (podcastSeriesResult && podcastSeriesResult.rows) {
+        data.selectedSeries = podcastSeriesResult.rows;
       }
       // Next query for the podcasts under this series
       return pool.query(`
@@ -497,9 +504,9 @@ app.get('/series/:id', (req, res) => {
       ON podcast_series.id = podcast_series_id
       WHERE podcast_series_id = ${seriesId}`);
     })
-    .then((result) => {
-      if (result && result.rows) {
-        data.episodes = result.rows;
+    .then((eachEpisodeResult) => {
+      if (eachEpisodeResult && eachEpisodeResult.rows) {
+        data.episodes = eachEpisodeResult.rows;
       }
     })
     .then(() => {
@@ -507,7 +514,8 @@ app.get('/series/:id', (req, res) => {
         const { episodeLinkToPlay } = req.query;
         data.episodeLinkToPlay = episodeLinkToPlay;
       }
-      // Pass all the data into result.rows;
+      // Pass all info into data variable
+      console.log(data, 'data');
       res.render('selectedSeries', data);
     })
     .catch((error) => console.log(error));
@@ -518,7 +526,7 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
     res.render('errors/displayNotAuthorized');
     return;
   }
-  // first, store all the variables inside a data var
+  // First, store all the variables inside a data var
   let data = {};
   // Assign loggedinUser(name) and id to data obj
   data = assignLoggedInUserDetails(data, req);
@@ -554,7 +562,7 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
         }
       }
     })
-    // perform secondary query to check in the event name is taken, it is not the same as the existing one in the database
+    // Perform secondary query to check in the event name is taken, it is not the same as the existing one in the database
     // Otherwise, set isNameValid to true
     .then((sameNameResult) => {
       if (sameNameResult) {
@@ -1153,7 +1161,6 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
       } else {
         data.isUserAuth = false;
       }
-      console.log(data, 'data-2356');
       res.render('userProfile/favouriteEpisodes', data);
     })
     .catch((error) => { console.log(error); });
@@ -1383,7 +1390,6 @@ app.get('/user/:id/myPlaylists', (req, res) => {
     .then((result) => {
       let arrayOfPodcastNamePromises = [];
       if (result.rows.length > 0) {
-        console.log(result.rows, 'result-rows');
         data.playlists = result.rows;
         // next query for the names of the podcasts under the user's playlist
         arrayOfPodcastNamePromises = data.playlists.map((thisPlaylist) => pool.query(`
@@ -1438,7 +1444,6 @@ app.post('/createPlaylist', (req, res) => {
 
 // Handles insertion of episode into playlist as well as playlist-episode join table
 app.post('/insertEpisodeIntoPlaylist', (req, res) => {
-  console.log(req.body);
   const { selectedPlaylist, currPodcastEpisodeId } = req.body;
   pool
     .query(`
@@ -1463,8 +1468,6 @@ app.delete('/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
     )
     .then((deletionResults) => {
       console.log(deletionResults.rows, 'results of deletion');
-      console.log(playlistId, 'playlistId');
-      console.log(episodeId, 'episodeId');
       res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
     })
     .catch((error) => { console.log(error); });

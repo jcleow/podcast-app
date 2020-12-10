@@ -417,3 +417,55 @@ a:hover {
 .carousel-newControl-prev {
   right: 80px;
 }
+
+.displayAtSmallBreakPoints {
+  display: none;
+}
+
+.displayAtMediumBreakpoints {
+  display: none;
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 576px) {
+  .displayAtSmallBreakPoints {
+    display: block;
+  }
+
+  .displayAtMediumBreakpoints {
+    display: none;
+  }
+
+  .displayAtLargeBreakpoints {
+    display: none;
+  }
+}
+
+/* Small devices (landscape phones, between 576px than 768px) */
+@media (min-width: 576px) and (max-width: 768px) {
+  .displayAtSmallBreakPoints {
+    display: block;
+  }
+
+  .displayAtMediumBreakpoints {
+    display: none;
+  }
+
+  .displayAtLargeBreakpoints {
+    display: none;
+  }
+}
+
+/* Medium devices (tablets, less than 992px) */
+@media (min-width: 768px) and (max-width: 992px) {
+  .displayAtSmallBreakPoints {
+    display: none;
+  }
+  .displayAtMediumBreakpoints {
+    display: block;
+  }
+
+  .displayAtLargeBreakpoints {
+    display: none;
+  }
+}
