@@ -190,11 +190,13 @@ app.get('/', (req, res) => {
 
       // Prepare next query for podcast
       const selectAllPodcastEpisodesQuery = `
-      SELECT *, podcast_episodes.id AS episode_id,
+      SELECT *, 
+      podcast_episodes.id AS episode_id,
       podcast_episodes.name AS name,
-      podcast_series.artwork_filename AS album_artwork,
       podcast_episodes.artwork_filename AS episode_artwork,
-      podcast_episodes.description AS episode_description 
+      podcast_episodes.description AS episode_description,
+      podcast_series.id AS series_id,
+      podcast_series.artwork_filename AS album_artwork
       FROM podcast_episodes 
       INNER JOIN podcast_series 
       ON podcast_episodes.podcast_series_id = podcast_series.id`;
@@ -244,7 +246,7 @@ app.get('/', (req, res) => {
 // **************************** Left Nav Link Bar Routes **************************** /
 
 // Route that renders a new form to enter podcast_series details
-app.get('/podcast/create', (req, res) => {
+app.get('/series/create', (req, res) => {
   if (req.middlewareLoggedIn === false) {
     res.render('errors/displayNotAuthorized');
     return;
@@ -309,19 +311,19 @@ app.get('/podcast/create', (req, res) => {
       }
       // Assign loggedinUser(name) and id to data obj
       data = assignLoggedInUserDetails(data, req);
-      res.render('navlinks/createPodcastSeries', data);
+      res.render('navlinks/createSeries', data);
     })
     .catch((error) => console.log(error));
 });
 
 // Route that creates a new podcast_series entry
-app.post('/podcast/create', upload.single('artwork'), (req, res) => {
+app.post('/series/create', upload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
     res.cookie('previousValues', req.body);
     res.cookie('previousFileSelected', req.file);
-    res.redirect('/podcast/create');
+    res.redirect('/series/create');
     return;
   }
 
@@ -371,7 +373,7 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
 });
 
 // Route that renders a form that creates a new podcast_episode
-app.get('/podcast/episode/upload', (req, res) => {
+app.get('/series/episode/upload', (req, res) => {
   if (req.middlewareLoggedIn === false) {
     res.render('errors/displayNotAuthorized');
     return;
@@ -404,12 +406,12 @@ app.get('/podcast/episode/upload', (req, res) => {
 });
 
 // Route that submits a request that creates a new podcast_episode entry
-app.post('/podcast/episode/upload', upload.single('artwork'), (req, res) => {
+app.post('/series/episode/upload', upload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
     res.cookie('previousValues', req.body);
-    res.redirect('/podcast/episode/upload');
+    res.redirect('/series/episode/upload');
     return;
   }
   // Track the podcastEpisodeId being inserted
@@ -515,7 +517,6 @@ app.get('/series/:id', (req, res) => {
         data.episodeLinkToPlay = episodeLinkToPlay;
       }
       // Pass all info into data variable
-      console.log(data, 'data');
       res.render('selectedSeries', data);
     })
     .catch((error) => console.log(error));
@@ -670,8 +671,8 @@ app.delete('/series/:id/delete', (req, res) => {
 // **************************** Podcast episode CRUD **************************** /
 // Route that displays an individual podcast episode with its comments
 
-app.get('/podcast/episode/:id', (req, res) => {
-  const currEpisodeId = req.params.id;
+app.get('/series/:seriesId/episode/:id', (req, res) => {
+  const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   // Store data to be rendered into ejs into a var
   let data = {};
 
@@ -688,15 +689,14 @@ app.get('/podcast/episode/:id', (req, res) => {
     podcast_episodes.description AS episode_description,
     podcast_episodes.podcast_ext_url AS episode_podcast_ext_url,
     podcast_episodes.podcast_series_id AS episode_series_id,
+    podcast_series.id AS series_id,
     podcast_series.name AS series_name
     FROM podcast_episodes
     INNER JOIN podcast_series
     ON podcast_episodes.podcast_series_id=podcast_series.id 
     WHERE podcast_episodes.id=${Number(currEpisodeId)}`)
-    .then((result) => {
-      console.log(result.rows, 'results-xx');
-      data.selectedEpisode = result.rows[0];
-      console.log(data, 'test-data');
+    .then((selectedEpisodeResult) => {
+      data.selectedEpisode = selectedEpisodeResult.rows[0];
 
       // If user chooses to play the episode on the page, then a req.query will exist
       if (req.query) {
@@ -740,9 +740,9 @@ app.get('/podcast/episode/:id', (req, res) => {
       WHERE favourite_comments.user_id = ${req.loggedInUserId}
       `);
     })
-    .then((result) => {
-      if (result && result.rows.length > 0) {
-        result.rows.forEach((row) => {
+    .then((userFavCommentsResult) => {
+      if (userFavCommentsResult && userFavCommentsResult.rows.length > 0) {
+        userFavCommentsResult.rows.forEach((row) => {
           data.comments.forEach((comment) => {
             if (comment.user_episode_comment_id === row.id && row.favourited === true) {
               comment.isFavourited = true;
@@ -769,7 +769,8 @@ app.get('/podcast/episode/:id', (req, res) => {
 });
 
 // Route that displays the podcast episode edit form
-app.get('/podcast/episode/:id/edit', (req, res) => {
+app.get('/series/:seriesId/episode/:id/edit', (req, res) => {
+  const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   let data = {};
   data = assignLoggedInUserDetails(data, req);
 
@@ -786,7 +787,7 @@ app.get('/podcast/episode/:id/edit', (req, res) => {
     FROM podcast_episodes 
     INNER JOIN podcast_series
     ON podcast_series.id = podcast_series_id
-    WHERE podcast_episodes.id = ${req.params.id}`,
+    WHERE podcast_episodes.id = ${currEpisodeId}`,
   };
 
   const selectAllExistingPodcastsQuery = {
@@ -811,7 +812,8 @@ app.get('/podcast/episode/:id/edit', (req, res) => {
 });
 
 // Route handles the podcast episode edit request
-app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
+app.put('/series/:seriesId/episode/:id/edit', upload.single('artwork'), (req, res) => {
+  const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   if (req.body.seriesName) {
     res.cookie('previousValues', req.body);
     res.redirect(`/podcast/episode/${req.params.id}/edit`);
@@ -868,12 +870,12 @@ app.put('/podcast/episode/:id/edit', upload.single('artwork'), (req, res) => {
       // Clear all cookies relating to the edit form
       res.clearCookie('previousValues');
       res.clearCookie('previousFileSelected');
-      res.redirect(`/podcast/episode/${req.params.id}`);
+      res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
     });
 });
 
 // Route that handles the podcast episode deletion request
-app.delete('/podcast/episode/:id/delete', (req, res) => {
+app.delete('/series/:seriesId/episode/:id/delete', (req, res) => {
   pool
     .query(`
     DELETE FROM podcast_episodes 
@@ -1015,13 +1017,12 @@ app.delete('/logout', (req, res) => {
 
 // **************************** Adding comments to an episode **************************** /
 
-// Need to split the post into post and put requests TBD
-
 // Creates a new comment as well as a favourite entry (false by default)
-app.post('/podcast/episode/:id/comment', (req, res) => {
+app.post('/series/:seriesId/episode/:id/comment', (req, res) => {
+  const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   const insertCommentQuery = {
     text: 'INSERT INTO user_episode_comments(comment,podcast_episode_id,poster_id) VALUES ($1,$2,$3) RETURNING id AS curr_episode_comment_id',
-    values: [req.body.comment, req.params.id, req.loggedInUserId],
+    values: [req.body.comment, currEpisodeId, req.loggedInUserId],
   };
 
   pool
@@ -1035,7 +1036,7 @@ app.post('/podcast/episode/:id/comment', (req, res) => {
       );
     })
     .then(() => {
-      res.redirect(`/podcast/episode/${req.params.id}`);
+      res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
     })
     .catch((error) => {
       console.log(error);
@@ -1043,15 +1044,15 @@ app.post('/podcast/episode/:id/comment', (req, res) => {
 });
 
 // Handles both creation and edit request to favourite or unfavourite a podcast episode
-app.post('/podcast/episode/:id/favourite', (req, res) => {
-  const currPodcastEpisodeId = req.params.id;
+app.post('/series/:seriesId/episode/:id/favourite', (req, res) => {
+  const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   // First, check the status of whether the episode has been favourited
   pool
-    .query(`SELECT favourited FROM listener_podcast_episodes WHERE listener_id = ${req.loggedInUserId} AND podcast_episode_id =${currPodcastEpisodeId}`)
+    .query(`SELECT favourited FROM listener_podcast_episodes WHERE listener_id = ${req.loggedInUserId} AND podcast_episode_id =${currEpisodeId}`)
     .then((result) => {
       // if no records of likes from this listener before, insert a new entry
       if (result.rows.length === 0) {
-        return pool.query(`INSERT INTO listener_podcast_episodes(favourited,listener_id,podcast_episode_id) VALUES(true,${req.loggedInUserId},${currPodcastEpisodeId})`);
+        return pool.query(`INSERT INTO listener_podcast_episodes(favourited,listener_id,podcast_episode_id) VALUES(true,${req.loggedInUserId},${currEpisodeId})`);
       }
       // Otherwise if a record exists, update it to the opposite
       if (result.rows.length > 0) {
@@ -1061,24 +1062,27 @@ app.post('/podcast/episode/:id/favourite', (req, res) => {
         } else if (result.rows[0].favourited === false) {
           newFavouritedStatus = true;
         }
-        return pool.query(`UPDATE listener_podcast_episodes SET favourited=${newFavouritedStatus} WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currPodcastEpisodeId}`);
+        return pool.query(`UPDATE listener_podcast_episodes SET favourited=${newFavouritedStatus} WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currEpisodeId}`);
       }
     }).then(() => {
       // If user clicked on unfavouriting from his own profile page, then redirect back to user page
-      res.redirect(`/podcast/episode/${currPodcastEpisodeId}`);
+      res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
     });
 });
 
 // Unfavourite a podcast episode from logged in user profile page
 app.put('/user/:id/editFavouriteEpisode/:episodeId', (req, res) => {
-  const { episodeId: currPodcastEpisodeId } = req.params;
+  const { episodeId: currEpisodeId } = req.params;
   pool
-    .query(`UPDATE listener_podcast_episodes SET favourited=false WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currPodcastEpisodeId}`)
+    .query(`UPDATE listener_podcast_episodes SET favourited=false WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currEpisodeId}`)
     .then(() => res.redirect(`/user/${req.loggedInUserId}`));
 });
 
-// Handles the editing of a previously inserted favourite entry (upon creation of a comment)
-app.put('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
+// Handles the editing of a previously inserted favourite entry (upon creation of a comment) // to be split out into post and put separately
+app.put('/series/:seriesId/episode/:episodeId/comment/:commentId/favourite', (req, res) => {
+  const { seriesId: currSeriesId, episodeId: currEpisodeId } = req.params;
+
+  // Store new favourite status in a variable
   let newFavouriteStatus;
   pool
     .query(`SELECT favourited FROM favourite_comments 
@@ -1103,7 +1107,7 @@ app.put('/podcast/episode/:id/comment/:commentId/favourite', (req, res) => {
         VALUES(true,${req.params.commentId},${req.loggedInUserId}) RETURNING *`);
     })
     .then((result) => {
-      res.redirect(`/podcast/episode/${req.params.id}`);
+      res.redirect(`/series/:${currSeriesId}/episode/${currEpisodeId}`);
     });
 });
 
@@ -1185,7 +1189,6 @@ app.get('/user/:id/favouriteComments', (req, res) => {
     // However the join tables does not contain the original poster's username and picture
     // so for each favourited comment, we have to perform a query to get the relevant deets
     .then((result) => {
-      console.log(result.rows, 'result');
       let arrayOfPosterQuery = [];
       if (result.rows.length > 0) {
         // Store all the queries as promises in an array
@@ -1444,16 +1447,18 @@ app.post('/createPlaylist', (req, res) => {
 
 // Handles insertion of episode into playlist as well as playlist-episode join table
 app.post('/insertEpisodeIntoPlaylist', (req, res) => {
-  const { selectedPlaylist, currPodcastEpisodeId } = req.body;
+  console.log(req.body, 'test');
+  const { selectedPlaylist, currEpisodeId, currSeriesId } = req.body;
   pool
     .query(`
    INSERT INTO episode_playlists(podcast_episode_id,playlist_id)
-   SELECT ${Number(currPodcastEpisodeId)},playlists.id
+   SELECT ${Number(currEpisodeId)},playlists.id
    FROM playlists
-   WHERE name='${selectedPlaylist}'
+   WHERE name='${selectedPlaylist}
+   '
    `)
     .then(() => {
-      res.redirect(`/podcast/episode/${currPodcastEpisodeId}`);
+      res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
     })
     .catch((error) => { console.log(error); });
 });
