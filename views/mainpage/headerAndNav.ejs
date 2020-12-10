@@ -12,39 +12,29 @@
   <link rel="stylesheet" href="/styles.css" />
 
   <!--NavBar-->
-  <nav class="navbar navbar-expand-sm navbar-light on-top">
+  <nav class="navbar navbar-expand navbar-light bg-white on-top">
 
-  <!-- Toggler/collapsibe Button -->
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-    <span class="navbar-toggler-icon"></span>
-  </button>
- <!-- Navbar links on the left -->
-    <div class = "collapse navbar-collapse w-100 order-1 order-md-0" id="collapsibleNavbar">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="/podcast/create" class="text-dark"> Create Podcast</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/podcast/episode/upload" class="text-dark">Upload Episode</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#" class="btn btn-primary" data-toggle="modal" data-target="#createPlaylist">Create Playlist</a>
-        </li>
-      </ul>
+  <div class="dropdown order-1 w-100 mr-auto">
+    <button class="btn btn-secondary bg-white" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <a class="nav-link" href="/podcast/create" class="text-dark"> Create Podcast</a>
+      <a class="nav-link" href="/podcast/episode/upload" class="text-dark">Upload Episode</a>
+      <a class="nav-link" href="#" class="btn btn-primary" data-toggle="modal" data-target="#createPlaylist">Create Playlist</a>
     </div>
+  </div>
 
 <!--NavBar Brand-->
-  <div class="mx-auto order-0">
+  <div class="mx-auto order-2">
     <a class="navbar-brand mx-auto" href="/">
       <img src="/icons/soundwave.png" class="d-inline-block align-top logo"/>  
     </a>
   </div>
-<!-- Navbar links on the right -->
-    <div class = "collapse navbar-collapse w-100 order-3" id="collapsibleNavbar">
+<!-- Navbar links on the right/Account management -->
+    <div class = "w-100 order-3">
       <ul class="navbar-nav ml-auto">
-
       <li class="nav-item ml-auto">
-
         <div class="btn-group">          
           <a class="btn bg-transparent profilePicBtn" 
           <%if(locals.loggedInUserId){%>

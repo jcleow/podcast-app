@@ -1397,7 +1397,7 @@ app.get('/user/:id/myPlaylists', (req, res) => {
         data.isfollowing = false;
       } else {
         data.isfollowing = fellowshipResult.rows[0].isfollowing;
-      }      
+      }
       res.render('userProfile/myPlaylists', data);
     })
     .catch((error) => console.log(error));
