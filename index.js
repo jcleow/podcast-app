@@ -2,6 +2,7 @@ import methodOverride from 'method-override';
 import cookieParser from 'cookie-parser';
 import express, { response } from 'express';
 import multer from 'multer';
+import jsSHA from 'jsSHA';
 
 // Import helper functions and configurations
 import
@@ -273,7 +274,6 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
     })
     .then(() => {
       const query = `INSERT INTO creator_podcast_episodes(creator_id,podcast_episode_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`;
-      console.log(query, 'test-233');
       return pool.query(`INSERT INTO creator_podcast_episodes(creator_id,podcast_episode_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`);
     })
     // If user uploaded an artwork, then run the query to insert it
@@ -708,7 +708,6 @@ app.get('/series/:seriesId/episode/:id', (req, res) => {
         const { addPlaylist: selectedPlaylistToBeAdded } = req.query;
         data.selectedPlaylist = selectedPlaylistToBeAdded;
       }
-      console.log(data, 'data');
       res.render('episodeDisplay', data);
     });
 });
@@ -1026,14 +1025,14 @@ app.put('/user/:id/editFavouriteEpisode/:episodeId', (req, res) => {
 // Handles the editing of a previously inserted favourite entry (upon creation of a comment)
 // to be split out into post and put separately
 app.put('/series/:seriesId/episode/:episodeId/comment/:commentId/favourite', (req, res) => {
-  const { seriesId: currSeriesId, episodeId: currEpisodeId } = req.params;
+  const { seriesId: currSeriesId, episodeId: currEpisodeId, commentId: currCommentId } = req.params;
 
   // Store new favourite status in a variable
   let newFavouriteStatus;
   pool
     .query(`SELECT favourited FROM favourite_comments 
             WHERE user_id=${req.loggedInUserId}
-            AND user_episode_comment_id = ${req.params.commentId}
+            AND user_episode_comment_id = ${currCommentId}
   `)
     .then((thisUserFavResult) => {
       if (thisUserFavResult && thisUserFavResult.rows && thisUserFavResult.rows.length !== 0) {
@@ -1046,15 +1045,15 @@ app.put('/series/:seriesId/episode/:episodeId/comment/:commentId/favourite', (re
         UPDATE
         favourite_comments 
         SET favourited = ${newFavouriteStatus}
-        WHERE user_episode_comment_id = ${req.params.commentId} 
+        WHERE user_episode_comment_id = ${currCommentId} 
         AND user_id = ${req.loggedInUserId} RETURNING * `);
       }
       return pool.query(`
         INSERT INTO favourite_comments(favourited,user_episode_comment_id,user_id)
-        VALUES(true,${req.params.commentId},${req.loggedInUserId}) RETURNING *`);
+        VALUES(true,${currCommentId},${req.loggedInUserId}) RETURNING *`);
     })
     .then(() => {
-      res.redirect(`/series/:${currSeriesId}/episode/${currEpisodeId}`);
+      res.redirect(`/user/${req.loggedInUserId}/favouriteComments`);
     });
 });
 
@@ -1123,56 +1122,35 @@ app.get('/user/:id/favouriteComments', (req, res) => {
   // whose profile page we are accessing
   pool
     .query(
-      `SELECT poster_id,favourited, comment, user_episode_comment_id
+      `SELECT poster_id,
+      favourited, 
+      comment, 
+      user_episode_comment_id AS comment_id,
+      podcast_series.id AS series_id,
+      podcast_series.name AS series_name,
+      podcast_episodes.id AS episode_id,
+      podcast_episodes.name AS episode_name,
+      users.username,
+      users.profile_pic
       FROM favourite_comments
       INNER JOIN user_episode_comments
       ON user_episode_comments.id=favourite_comments.user_episode_comment_id
+      INNER JOIN podcast_episodes
+      ON user_episode_comments.podcast_episode_id = podcast_episodes.id
+      INNER JOIN podcast_series
+      ON podcast_series_id = podcast_series.id
+      INNER JOIN users
+      ON users.id = poster_id
       WHERE favourite_comments.user_id = ${currUserId} AND favourited =true
     `,
     )
-    // However the join tables does not contain the original poster's username and picture
-    // so for each favourited comment, we have to perform a query to get the relevant deets
-    .then((result) => {
-      let arrayOfPosterQuery = [];
-      if (result.rows.length > 0) {
-        // Store all the queries as promises in an array
-        arrayOfPosterQuery = result.rows.map((row) => pool
-          .query(
-            `SELECT 
-            username,
-            profile_pic,
-            podcast_episodes.name AS episode_name,
-            podcast_series.name AS series_name 
-            FROM users            
-            INNER JOIN user_episode_comments
-            ON poster_id = users.id
-            INNER JOIN podcast_episodes
-            ON user_episode_comments.podcast_episode_id = podcast_episodes.id        
-            INNER JOIN podcast_series 
-            ON podcast_series_id = podcast_series.id              
-            WHERE users.id=${row.poster_id} `,
-          )
-          .then((posterResult) => {
-            row.username = posterResult.rows[0].username;
-            row.profile_pic = posterResult.rows[0].profile_pic;
-            row.episodeName = posterResult.rows[0].episode_name;
-            row.seriesName = posterResult.rows[0].series_name;
-            // return the result later
-            return row;
-          })
-          .catch((error) => console.log(error, 'error in one of the queries')));
-      }
-      return Promise.all(arrayOfPosterQuery);
-    })
-    // only when all the queries are successfully completed
-    // we can obtain all the favourited comments by the user, c/w with the original
-    // commenter's username and profile picture
-    .then((arrayResult) => {
-      if (arrayResult) {
-        data.comments = arrayResult;
+    .then((commentDetailsResult) => {
+      if (commentDetailsResult) {
+        data.comments = commentDetailsResult.rows;
       }
       return pool.query(`
-      SELECT username AS curr_username,profile_pic
+      SELECT username AS curr_username,
+      profile_pic
       FROM users
       WHERE users.id = ${currUserId}`);
     })

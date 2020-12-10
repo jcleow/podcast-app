@@ -52,13 +52,13 @@
           </div>
           <div class="row">
             <div class="col-md-12 pl-0">
-              <small class='commentsDisplay font-italic'>In Podcast Series: <%=comment.seriesName%>, Episode: <%=comment.episodeName%></small>
+              <small class='commentsDisplay font-italic'><a href='/series/<%=comment.series_id%>/episode/<%=comment.episode_id%> ' >In Podcast Series: <%=comment.series_name%>, Episode: <%=comment.episode_name%></a></small>
             </div>
           </div>          
           <div class="row">
             <div class="col-md-4 pl-0">
-              <small class='commentsDisplay'>
-                <form action='/user/<%=currUserId%>/favouriteComments?_method=PUT' method="POST" >
+              <small class='commentsDisplay'>                
+                  <form action ='/series/<%=comment.series_id%>/episode/<%=comment.episode_id%>/comment/<%=comment.comment_id%>/favourite?_method=PUT' method="POST">
                 <button class="bg-transparent border-0 shadow-none commentFavouriteBtn" type="submit">
                   <% if(comment.favourited !== undefined){ %>
                     <% if(comment.favourited === true) { %>

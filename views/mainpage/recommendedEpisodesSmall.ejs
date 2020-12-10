@@ -33,7 +33,7 @@
                   <input type='hidden' name="episode_id" value="<%=episodes[i].podcast_ext_url%>"/>                                  
                 </form>
                 <div class="card-body">
-                <h5 class="card-title"><a href="/podcast/episode/<%=episodes[i].episode_id%>"><%=episodes[i].name%></a></h5>
+                <h5 class="card-title"> <a href="/series/<%=episodes[i].series_id%>/episode/<%=episodes[i].episode_id%>"><%=episodes[i].name%></a> </h5>
                 <div class="card-text text-overflow"><%= truncateDescription(episodes[i].episode_description)%></div>                  
                 </div>
               </div>
