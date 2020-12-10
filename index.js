@@ -244,7 +244,7 @@ app.get('/', (req, res) => {
 // **************************** Left Nav Link Bar Routes **************************** /
 
 // Route that renders a new form to enter podcast_series details
-app.get('/podcast/create', (req, res) => {
+app.get('/series/create', (req, res) => {
   if (req.middlewareLoggedIn === false) {
     res.render('errors/displayNotAuthorized');
     return;
@@ -309,19 +309,19 @@ app.get('/podcast/create', (req, res) => {
       }
       // Assign loggedinUser(name) and id to data obj
       data = assignLoggedInUserDetails(data, req);
-      res.render('navlinks/createPodcastSeries', data);
+      res.render('navlinks/createSeries', data);
     })
     .catch((error) => console.log(error));
 });
 
 // Route that creates a new podcast_series entry
-app.post('/podcast/create', upload.single('artwork'), (req, res) => {
+app.post('/series/create', upload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
     res.cookie('previousValues', req.body);
     res.cookie('previousFileSelected', req.file);
-    res.redirect('/podcast/create');
+    res.redirect('/series/create');
     return;
   }
 
@@ -371,7 +371,7 @@ app.post('/podcast/create', upload.single('artwork'), (req, res) => {
 });
 
 // Route that renders a form that creates a new podcast_episode
-app.get('/podcast/episode/upload', (req, res) => {
+app.get('/series/episode/upload', (req, res) => {
   if (req.middlewareLoggedIn === false) {
     res.render('errors/displayNotAuthorized');
     return;
@@ -404,12 +404,12 @@ app.get('/podcast/episode/upload', (req, res) => {
 });
 
 // Route that submits a request that creates a new podcast_episode entry
-app.post('/podcast/episode/upload', upload.single('artwork'), (req, res) => {
+app.post('/series/episode/upload', upload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
     res.cookie('previousValues', req.body);
-    res.redirect('/podcast/episode/upload');
+    res.redirect('/series/episode/upload');
     return;
   }
   // Track the podcastEpisodeId being inserted
