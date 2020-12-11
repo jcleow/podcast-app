@@ -482,7 +482,6 @@ app.get('/series/:id', (req, res) => {
       return Promise.all(arrayOfEpisodeIfFavouritedQuery);
     })
     .then((favouritePromiseResult) => {
-      console.log(favouritePromiseResult, 'test-43');
       if (favouritePromiseResult) {
         data.episodes = favouritePromiseResult;
       }
@@ -1044,6 +1043,10 @@ app.post('/series/:seriesId/episode/:id/favourite', (req, res) => {
         return pool.query(`UPDATE listener_podcast_episodes SET favourited=${newFavouritedStatus} WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currEpisodeId}`);
       }
     }).then(() => {
+      if (req.body.favouritedEpisode = 'selectedSeriesPage') {
+        res.redirect(`/series/${currSeriesId}`);
+        return;
+      }
       // If user clicked on unfavouriting from his own profile page, then redirect back to user page
       res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
     });
