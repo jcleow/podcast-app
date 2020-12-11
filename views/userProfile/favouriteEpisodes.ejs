@@ -3,16 +3,16 @@
  <div class="container navTopMargin ">
 <%- include('userInfoDisplay')%>
      <div class="row d-flex justify-content-center pb-3">
-         <div class="col d-flex justify-content-center pb-2">
+         <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/myPlaylists"  class='text-center my-auto'>My Playlists</a>
         </div>
-        <div class="col d-flex justify-content-center tabDiv pb-2">
+        <div class="col-3 d-flex justify-content-center tabDiv pb-2">
              <a href="/user/<%=currUserId%>/favouriteEpisodes" class='text-dark text-center my-auto'>All Favourite Episodes</a>
         </div>
-        <div class="col d-flex justify-content-center pb-2">
+        <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/favouriteComments" class='text-center my-auto'>All Favourite Comments</a>
         </div>
-        <div class="col d-flex justify-content-center pb-2">
+        <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/following" class='text-center my-auto'>Following</a>
         </div>
     </div>  
@@ -23,17 +23,16 @@
      <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>      
-      <th scope="col" class='text-dark text-center smallHeader'>Artwork</th>
-      <th scope="col" class='text-dark text-center smallHeader'>Episode Name</th>
-      <th scope="col" class='text-dark text-center smallHeader'>Ep. No.</th>
-      <th scope="col" class='text-dark text-center smallHeader'> Favourited</th>
+      <th scope="col" class='text-dark text-center smallHeader border-0'>Artwork</th>
+      <th scope="col" class='text-dark text-center smallHeader border-0'>Episode</th>
+      <th scope="col" class='text-dark text-center smallHeader border-0'>Ep. No.</th>
     </tr>
   </thead>
   <tbody id="accordion">
     <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
       <% episodes.forEach((episode)=>{ %>
       <td class='text-center d-flex flex-row justify-content-center'>
-        <form class="epArtworkDisplay"action ='/user/<%=currUserId%>/favouriteEpisodes'>
+        <form class="epArtworkDisplay playlistArtworkContainer"action ='/user/<%=currUserId%>/favouriteEpisodes'>
         <img class='w-100 h-auto' src="/<%=episode.artwork_filename%>"/>                
           <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>          
         <input type='hidden' name="podcast_ext_url" value="<%=episode.podcast_ext_url%>"/>
@@ -41,7 +40,7 @@
     </td>
       <td class='text-center'><a class="text-dark" href='/series/<%=episode.podcast_series_id%>/episode/<%=episode.podcast_episode_id%>'><%=episode.name%></a></form></td>
       <td class='text-dark text-center'><%= episode.episode_number %></td>        
-    <td class='actionBtns'>
+    <td class='actionBtns border-0'>
             
                 <% if(isUserAuth === true){ %>
               <form action='/user/<%=loggedInUserId%>/editFavouriteEpisode/<%=episode.podcast_episode_id%>?_method=PUT' method="POST">

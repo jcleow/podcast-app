@@ -437,7 +437,7 @@ a:hover {
     width: 100px;
   }
 
-  #playlistArtworkContainer {
+  .playlistArtworkContainer {
     height: 100px;
     width: 100px;
   }
@@ -486,6 +486,8 @@ a:hover {
 
 .userProfileInfo {
   background-color: lightgray;
+  padding-top: 10px;
+  padding-bottom: 10px;
   border-radius: 15px;
 }
 
@@ -496,4 +498,18 @@ a:hover {
 
 .smallTable {
   width: 70%;
+}
+
+.oneThirdWidth {
+  width: 33%;
+}
+
+.following {
+  border-style: solid;
+  border-color: lightblue;
+  border-radius: 15px;
+}
+
+#favHeader {
+  padding-left: 63px;
 }
