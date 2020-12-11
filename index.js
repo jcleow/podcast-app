@@ -647,7 +647,7 @@ app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
     .catch((error) => response.status(503).send(error));
 });
 
-app.delete('/series/:id/delete', (req, res) => {
+app.delete('/series/:id/delete', checkIsUserCreatorAuth, (req, res) => {
   pool
     .query(`
   DELETE FROM podcast_series
@@ -1394,7 +1394,6 @@ app.delete('/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
     RETURNING *`,
     )
     .then((deletionResults) => {
-      console.log(deletionResults.rows, 'results of deletion');
       res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
     })
     .catch((error) => { console.log(error); });

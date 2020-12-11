@@ -80,7 +80,7 @@ const checkIsUserCreatorAuth = (req, res, next) => {
     AND podcast_episode_id = ${req.params.id}`)
     .then((isCreatorResult) => {
       if (isCreatorResult.rows.length === 0) {
-        res.status(403).send('Sorry, you do not have permissions to edit this page');
+        res.render('errors/displayNotAuthorized');
       }
     });
 
