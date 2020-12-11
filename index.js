@@ -2,7 +2,7 @@ import methodOverride from 'method-override';
 import cookieParser from 'cookie-parser';
 import express, { response } from 'express';
 import multer from 'multer';
-import jsSHA from 'jsSHA';
+import jsSHA from 'jssha';
 
 // Import helper functions and configurations
 import
