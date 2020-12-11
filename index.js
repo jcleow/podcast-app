@@ -273,8 +273,8 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
       return pool.query(insertPodcastSubgenreQuery);
     })
     .then(() => {
-      const query = `INSERT INTO creator_podcast_episodes(creator_id,podcast_episode_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`;
-      return pool.query(`INSERT INTO creator_podcast_episodes(creator_id,podcast_episode_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`);
+      const query = `INSERT INTO creator_podcast_series(creator_id,podcast_series_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`;
+      return pool.query(`INSERT INTO creator_podcast_series(creator_id,podcast_series_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`);
     })
     // If user uploaded an artwork, then run the query to insert it
     .then(() => {

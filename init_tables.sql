@@ -36,10 +36,10 @@ created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 
 --#4
 --Many to many Join table for creators and podcasts episodes
-CREATE TABLE creator_podcast_episodes(
+CREATE TABLE creator_podcast_series(
 id                 SERIAL PRIMARY KEY,
 creator_id         INTEGER,
-podcast_episode_id INTEGER, 
+podcast_series_id  INTEGER, 
 created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
