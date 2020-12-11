@@ -19,8 +19,8 @@
  </div>
 
 <!-- Display All follower details -->
-<div class="container profilePageDisplay border border-dark">
-     <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
+<div class="container profilePageDisplay">
+     <table class="table table-hover table-borderless" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>
       <th scope="col" class='text-dark'>People that are following <%=currUsername%></th>
@@ -32,14 +32,14 @@
       <% followers.forEach((follower)=>{ %>
       <td>
       <div class="row">
-      <div class="col-sm-2 mb-3 d-flex justify-content-end align-self-start mt-1 pr-2">
+      <div class="col-2 mb-3 d-flex justify-content-end align-self-start mt-1 pr-2">
          <a href='/user/<%=follower.follower_user_id%>'>
           <img class="profilePic rounded-circle" src='/<%=follower.profile_pic%>'>
         </a>
       </div>
-      <div class="col-sm-10 mb-3">
-        <div class="row">
-          <div class="col-md-4 pl-0">
+      <div class="col-10 mb-3">
+        <div class="row mt-3">
+          <div class="col-2 pl-0">
              <a href='/user/<%=follower.follower_user_id%>'>
               <small class="commentsDisplay"><b><%=follower.username%></b></small>
             </a>
@@ -55,7 +55,7 @@
 </table>
 <!-- Display All followings details -->
 <div>
-     <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
+     <table class="table table-hover table-borderless" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>
       <th scope="col" class='text-dark'>People that <%=currUsername%> is following</th>
@@ -67,14 +67,14 @@
       <% followings.forEach((follow)=>{ %>
       <td>
       <div class="row">
-      <div class="col-sm-2 mb-3 d-flex justify-content-end align-self-start mt-1 pr-2">
+      <div class="col-2 mb-3 d-flex justify-content-end align-self-start mt-1 pr-2">
          <a href='/user/<%=follow.following_user_id%>'>
           <img class="profilePic rounded-circle" src='/<%=follow.profile_pic%>'>
         </a>
       </div>
-      <div class="col-sm-10 mb-3">
-        <div class="row">
-          <div class="col-md-4 pl-0">
+      <div class="col-10 mb-3">
+        <div class="row mt-3">
+          <div class="col-4  pl-0">
              <a href='/user/<%=follow.following_user_id%>'>
               <small class="commentsDisplay"><b><%=follow.username%></b></small>
             </a>

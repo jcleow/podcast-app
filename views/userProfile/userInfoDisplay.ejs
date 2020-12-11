@@ -1,16 +1,17 @@
 <!-- User profile info display -->
-  <div class="row w-100 h-100 mb-5 ">
-    <div class="col-sm-3">
+  <div class="row w-100 h-100 mb-5 userProfileInfo d-flex flex-row justify-content-center">
+    <div class="col-2 mr-5">
       <img class="displayPic rounded-circle" src='/<%=currUserProfilePic%>'>       
     </div>
-    <div class="col-sm-9 bg-warning d-flex flex-column justify-content-around">
-      <div class="row">
-        <div class="col">
-          User: <%=currUsername%>
+    <div class="col-2 d-flex flex-column justify-content-around">
+      <div class="row mt-3">
+        <div class="col text-center">
+          <div>User:</div>
+          <h1><%=currUsername%></h1>
         </div>
       </div>
       <div class="row">
-        <div class="col">
+        <div class="col text-center">
           <form action='/user/<%=currUserId%>/follow?_method=PUT' method='POST'>
             <!-- Check that isFollowing has been defined and the loggedInUser cannot follow himself -->
             <% if (locals.isfollowing !== undefined && loggedInUserId!== currUserId)  { %>

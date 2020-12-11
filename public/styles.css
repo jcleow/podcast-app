@@ -87,7 +87,7 @@ html {
 }
 
 .actionBtns {
-  width: 300px;
+  width: 90px;
 }
 
 h1 .display {
@@ -195,6 +195,10 @@ h1 .display {
   padding-right: 20px;
   align-items: center;
   text-align: center;
+}
+
+#playlistArtworkDisplay {
+  width: auto;
 }
 
 .artworkDisplay > button {
@@ -428,6 +432,16 @@ a:hover {
 
 /* Extra small devices (portrait phones, less than 576px) */
 @media (max-width: 576px) {
+  #playlistArtworkDisplay {
+    height: 100px;
+    width: 100px;
+  }
+
+  #playlistArtworkContainer {
+    height: 100px;
+    width: 100px;
+  }
+
   .displayAtSmallBreakPoints {
     display: block;
   }
@@ -468,4 +482,18 @@ a:hover {
   .displayAtLargeBreakpoints {
     display: none;
   }
+}
+
+.userProfileInfo {
+  background-color: lightgray;
+  border-radius: 15px;
+}
+
+.smallHeader {
+  font-size: small;
+  font-weight: bold;
+}
+
+.smallTable {
+  width: 70%;
 }

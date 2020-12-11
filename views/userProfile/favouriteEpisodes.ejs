@@ -2,7 +2,7 @@
 <body class='bg'>  
  <div class="container navTopMargin ">
 <%- include('userInfoDisplay')%>
-     <div class="row d-flex justify-content-center pb-3 ">
+     <div class="row d-flex justify-content-center pb-3">
          <div class="col d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/myPlaylists"  class='text-center my-auto'>My Playlists</a>
         </div>
@@ -19,30 +19,30 @@
  </div>
 
 <!-- Display All Favourite Episodes -->
-<div class="container profilePageDisplay border border-dark">
+<div class="container profilePageDisplay smallTable">
      <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>      
-      <th scope="col" class='text-dark'>Artwork</th>
-      <th scope="col" class='text-dark'>Episode Name</th>
-      <th scope="col" class='text-dark'>Ep. No.</th>
+      <th scope="col" class='text-dark text-center smallHeader'>Artwork</th>
+      <th scope="col" class='text-dark text-center smallHeader'>Episode Name</th>
+      <th scope="col" class='text-dark text-center smallHeader'>Ep. No.</th>
+      <th scope="col" class='text-dark text-center smallHeader'> Favourited</th>
     </tr>
   </thead>
   <tbody id="accordion">
     <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
       <% episodes.forEach((episode)=>{ %>
-      <td>
+      <td class='text-center d-flex flex-row justify-content-center'>
         <form class="epArtworkDisplay"action ='/user/<%=currUserId%>/favouriteEpisodes'>
         <img class='w-100 h-auto' src="/<%=episode.artwork_filename%>"/>                
           <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>          
         <input type='hidden' name="podcast_ext_url" value="<%=episode.podcast_ext_url%>"/>
       </form>
     </td>
-      <td><a class="text-dark"><%=episode.name%></a></form> </td>
-      <td class='text-dark'><%= episode.episode_number %></td>
-      <td class='text-dark'><%= episode.description %> </td>      
+      <td class='text-center'><a class="text-dark" href='/series/<%=episode.podcast_series_id%>/episode/<%=episode.podcast_episode_id%>'><%=episode.name%></a></form></td>
+      <td class='text-dark text-center'><%= episode.episode_number %></td>        
     <td class='actionBtns'>
-              <div class="align-self-center">
+            
                 <% if(isUserAuth === true){ %>
               <form action='/user/<%=loggedInUserId%>/editFavouriteEpisode/<%=episode.podcast_episode_id%>?_method=PUT' method="POST">
                 <button class="favouriteBtn bg-transparent border-0 shadow-none"                             
@@ -57,7 +57,7 @@
                 <input type="hidden" name="favouriteSeries"/>                              
               </form>
             <% } %>
-            </div>
+            
         </form>
       </div>
     </td>

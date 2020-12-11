@@ -1053,7 +1053,11 @@ app.put('/series/:seriesId/episode/:episodeId/comment/:commentId/favourite', (re
         VALUES(true,${currCommentId},${req.loggedInUserId}) RETURNING *`);
     })
     .then(() => {
-      res.redirect(`/user/${req.loggedInUserId}/favouriteComments`);
+      if (req.body.favouriteComment === 'profilePage') {
+        res.redirect(`/user/${req.loggedInUserId}/favouriteComments`);
+      } else {
+        res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
+      }
     });
 });
 
@@ -1076,7 +1080,7 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
       `SELECT *             
       FROM podcast_episodes
       INNER JOIN listener_podcast_episodes 
-      ON listener_podcast_episodes.podcast_episode_id=podcast_episodes.id            
+      ON listener_podcast_episodes.podcast_episode_id=podcast_episodes.id                  
       WHERE favourited=true AND listener_id = ${currUserId}`,
     )
     .then((result) => {

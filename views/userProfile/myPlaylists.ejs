@@ -19,46 +19,45 @@
  </div>
 
 <!-- Display All Playlists -->
-<div class="container profilePageDisplay border border-dark">
+<div class="container profilePageDisplay smallTable">
   <div id="overallAccordion">
   <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
     <thead>
       <tr>
-        <th scope="col" class='text-dark'>Playlist</th>
-        <th scope="col" class='text-dark'>Description</th>                
+        <th scope="col" class='text-dark text-center smallHeader'>Playlist</th>
+        <th scope="col" class='text-dark text-center smallHeader'>Description</th>
+        <th scope="col" class='text-dark text-center smallHeader'>Actions</th>                
       </tr>
     </thead>
     <tbody id="accordion">
      <% if(locals.playlists){%>
         <% playlists.forEach((playlist,index)=>{ %>      
       <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse<%=index%>">
-          <td><%=playlist.name%></td>
-          <td><%=playlist.description %></td>         
-          <td class="expand-button"></td>
+          <td class='text-center'><%=playlist.name%></td>
+          <td class='text-center'><%=playlist.description %></td>         
+          <td class="expand-button text-center"></td>
       </tr>          
     <% if(playlist.podcastEpisodes) {%>  
     <%playlist.podcastEpisodes.forEach((episode)=>{ %>
     <tr id="collapse<%=index%>" class="collapse" data-parent='#accordion'>     
-      <td colspan="1">
-        <form class="artworkDisplay d-flex justify-content-center" action="/user/<%=currUserId%>/myPlaylists">
-          <img class='seriesArtwork w-auto'src="/<%=episode.episode_artwork_filename%>"/>
+      <td colspan="1" class='d-flex flex-row justify-content-center'>
+        <form class="epArtworkDisplay d-flex justify-content-center pl-0 ml-0" action="/user/<%=currUserId%>/myPlaylists" id='playlistArtworkContainer' >
+          <img class='w-100 h-auto' id='playlistArtworkDisplay'src="/<%=episode.episode_artwork_filename%>"/>
           <button class= "rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>
           <input type='hidden'  name="podcast_ext_url" value="<%=episode.episode_podcast_ext_url%>"/>
         </form>
       </td>
       
-      <td colspan="1">
-        <div class="card-body">
-          <a href='/podcast/episode/<%=episode.episode_id%>'><%=episode.episode_name%></a>
-        </div>
+      <td colspan="1" class='text-center'>        
+          <a href='/podcast/episode/<%=episode.episode_id%>'><%=episode.episode_name%></a>        
       </td> 
-      <td class="" colspan="1" >
+      <td colspan="1" >
       <form action='/removeFromPlaylist/<%=playlist.playlist_id%>/<%=episode.episode_id%>?_method=DELETE' method="POST">
-        <div class="dropdown">
+        <div class="dropdown d-flex justify-content-center">
           <button class="btn btn-secondary bg-transparent border-0 text-secondary"  id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class='fa fa-ellipsis-h'></i>
           </button>        
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
             <input type='submit' class="dropdown-item" value='Remove From Playlist'>
           </div>
         </div>   

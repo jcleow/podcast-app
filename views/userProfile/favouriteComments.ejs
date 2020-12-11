@@ -19,11 +19,11 @@
  </div>
 
 <!-- Display All Favourite Comments -->
-<div class="container profilePageDisplay border border-dark">
-     <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
+<div class="container profilePageDisplay smallTable">
+     <table class="table table-hover table-borderless" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>
-      <th scope="col" class='text-dark'>Favourited Comments</th>
+      <th scope="col" class='text-dark smallHeader'>Favourited Comments</th>
     </tr>
   </thead>
   <tbody id="accordion">
@@ -37,7 +37,7 @@
           <img class="profilePic rounded-circle" src='/<%=comment.profile_pic%>'>
         </a>
       </div>
-      <div class="col-sm-10 mb-3">
+      <div class="col-sm-10">
         <div class="row">
           <div class="col-md-4 pl-0">
             <a href='/user/<%=comment.poster_id%>'>
@@ -70,7 +70,7 @@
                   <i class="fa fa-heart-o"></i>
                   <% } %>
                 </button>
-                <input type="hidden" name="favouriteComment"/>
+                <input type="hidden" name="favouriteComment" value="profilePage"/>
                 </form>
               </small>
             </div>
