@@ -461,8 +461,9 @@ app.get('/series/:id', (req, res) => {
         data.episodes = eachEpisodeResult.rows;
         arrayOfEpisodeIfFavouritedQuery = data.episodes.map((episode, index) => pool.query(`
           SELECT favourited 
-          from listener_podcast_episodes 
-          WHERE podcast_episode_id = ${episode.episode_id}`)
+          from listener_podcast_episodes           
+          WHERE podcast_episode_id = ${episode.episode_id}
+          AND listener_id = ${req.loggedInUserId}`)
           .then((isEpisodeFavouritedQueryResult) => {
             // In the event episode has been favourited before, result will be defined
             if (isEpisodeFavouritedQueryResult !== undefined) {
