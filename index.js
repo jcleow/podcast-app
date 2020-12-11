@@ -647,6 +647,22 @@ app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
     .catch((error) => response.status(503).send(error));
 });
 
+app.delete('/series/:id/delete', (req, res) => {
+  pool
+    .query(`
+  DELETE FROM podcast_series
+  WHERE id = ${req.params.id}
+   `)
+    .then(() => pool.query(`
+      DELETE FROM podcast_episodes
+      WHERE podcast_series_id = ${req.params.id}
+      `))
+    .then(() => {
+      res.redirect('/');
+    })
+    .catch((error) => console.log(error, 'error in deleting podcast series/episodes'));
+});
+
 // ****************** Podcast episode display,update,and deletion ****************** /
 
 // Route that displays an individual podcast episode with its comments

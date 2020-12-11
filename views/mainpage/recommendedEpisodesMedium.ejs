@@ -13,7 +13,11 @@
   <% let i = 0 %>
   <% while(i < episodes.length) { %>
   <% if( i + 3 > episodes.length) { %>    
-  <div class="carousel-item carouselDiv">
+  <div class="carousel-item carouselDiv
+  <% if(i<3) { %>
+  active
+  <% } %>    
+  ">
     <div class="d-flex justify-content-center">
       <div class="card-deck pt-3">
         <div class = "row d-flex flex-row flex-nowrap overflow-auto">      

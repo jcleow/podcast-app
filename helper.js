@@ -21,7 +21,7 @@ if (process.env.ENV === 'PRODUCTION') {
   poolConfig = {
     user: process.env.USER,
     host: 'localhost',
-    database: 'podcast',
+    database: 'podcastTest',
     port: 5432, // Postgres server always runs on this port
   };
 }
