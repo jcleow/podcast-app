@@ -88,6 +88,6 @@ VALUES (
   'The Tennessee Walking Horse has a natural gait that''s famously smooth. And, if trained in a certain way, it can perform a walk that''s even more spectacular. But, there''s a secret behind how, exactly, these horses are trained to do the crowd-pleasing step they''re celebrated for. Mary Helen Montgomery brings us the story.'
 ,
   76,
-  'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/345526603&color=%23310b09&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true'
+  'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/345526603&color=%23310b09&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true',
   2 
 );
