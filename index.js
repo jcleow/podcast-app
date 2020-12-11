@@ -1059,7 +1059,7 @@ app.post('/series/:seriesId/episode/:id/favourite', (req, res) => {
         return pool.query(`UPDATE listener_podcast_episodes SET favourited=${newFavouritedStatus} WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currEpisodeId}`);
       }
     }).then(() => {
-      if (req.body.favouritedEpisode = 'selectedSeriesPage') {
+      if (req.body.favouritedEpisode === 'selectedSeriesPage') {
         res.redirect(`/series/${currSeriesId}`);
         return;
       }
