@@ -470,6 +470,8 @@ app.get('/series/:id', (req, res) => {
               episode.favourited = isEpisodeFavouritedQueryResult.rows[0].favourited;
               return episode;
             }
+            episode.favourited = false;
+            return episode;
           })
           .catch((error) => {
             // In the event the episode has never been favourited before, result will be undefined
@@ -685,7 +687,8 @@ app.get('/series/:seriesId/episode/:id', (req, res) => {
     podcast_episodes.podcast_ext_url AS episode_podcast_ext_url,
     podcast_episodes.podcast_series_id AS episode_series_id,
     podcast_series.id AS series_id,
-    podcast_series.name AS series_name
+    podcast_series.name AS series_name,
+    podcast_series.artwork_filename AS series_artwork_filename
     FROM podcast_episodes
     INNER JOIN podcast_series
     ON podcast_episodes.podcast_series_id=podcast_series.id 

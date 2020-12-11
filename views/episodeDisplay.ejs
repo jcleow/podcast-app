@@ -6,7 +6,11 @@
         <div class="col-md-4 h-auto d-flex align-items-stretch bg-info ">
             <div class="card-body d-flex flex-row justify-content-center">                        
               <form class="artworkDisplay d-flex justify-content-center">
+               <%if(selectedEpisode.episode_artwork_filename) { %>
                 <img class='seriesArtwork w-auto'src="/<%=selectedEpisode.episode_artwork_filename%>"/>
+               <% } else { %>
+                <img class='seriesArtwork w-auto'src="/<%=selectedEpisode.series_artwork_filename%>"/>
+               <% } %> 
                 <button class= "rounded-circle" type='submit' formaction="/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>"><i class='fa fa-play ml-2'></i></button>
                 <input type='hidden'  name="podcast_ext_url" value="<%=selectedEpisode.episode_podcast_ext_url%>"/>
               </form>
