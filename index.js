@@ -429,14 +429,15 @@ app.get('/series/:id', (req, res) => {
   let data = {};
   data = assignLoggedInUserDetails(data, req);
   // First query for the podcast series details
-  pool.query(`
-  SELECT 
-  id AS series_id,
-  name AS series_name,
-  description AS series_description,
-  artwork_filename AS series_artwork
-  FROM podcast_series 
-  WHERE podcast_series.id = ${seriesId}`)
+  pool
+    .query(`
+    SELECT 
+    id AS series_id,
+    name AS series_name,
+    description AS series_description,
+    artwork_filename AS series_artwork
+    FROM podcast_series 
+    WHERE podcast_series.id = ${seriesId}`)
     .then((podcastSeriesResult) => {
       if (podcastSeriesResult && podcastSeriesResult.rows) {
         data.selectedSeries = podcastSeriesResult.rows;
@@ -448,22 +449,55 @@ app.get('/series/:id', (req, res) => {
       podcast_episodes.name AS episode_name,
       podcast_episodes.description AS episode_description,
       podcast_episodes.artwork_filename AS episode_artwork,
-      podcast_episodes.podcast_ext_url 
+      podcast_episodes.podcast_ext_url      
       FROM podcast_episodes
       INNER JOIN podcast_series
-      ON podcast_series.id = podcast_series_id
+      ON podcast_series.id = podcast_series_id      
       WHERE podcast_series_id = ${seriesId}`);
     })
     .then((eachEpisodeResult) => {
+      let arrayOfEpisodeIfFavouritedQuery;
       if (eachEpisodeResult && eachEpisodeResult.rows) {
         data.episodes = eachEpisodeResult.rows;
+        arrayOfEpisodeIfFavouritedQuery = data.episodes.map((episode, index) => pool.query(`
+          SELECT favourited 
+          from listener_podcast_episodes 
+          WHERE podcast_episode_id = ${episode.episode_id}`)
+          .then((isEpisodeFavouritedQueryResult) => {
+            // In the event episode has been favourited before, result will be defined
+            if (isEpisodeFavouritedQueryResult !== undefined) {
+              episode.favourited = isEpisodeFavouritedQueryResult.rows[0].favourited;
+              return episode;
+            }
+          })
+          .catch((error) => {
+            // In the event the episode has never been favourited before, result will be undefined
+            console.log(error, `error in one of the queries ${index}`);
+            // Regardless, that episode's favourite status should be labeled false
+            episode.favourited = false;
+            return episode;
+          }));
       }
+      return Promise.all(arrayOfEpisodeIfFavouritedQuery);
     })
-    .then(() => {
+    .then((favouritePromiseResult) => {
+      console.log(favouritePromiseResult, 'test-43');
+      if (favouritePromiseResult) {
+        data.episodes = favouritePromiseResult;
+      }
+
       if (req.query) {
         const { episodeLinkToPlay } = req.query;
         data.episodeLinkToPlay = episodeLinkToPlay;
       }
+
+      // To perform user validation to decide whether hearts can be shown or not
+      if (convertUserIdToHash(req.loggedInUserId) === req.cookies.loggedInHash) {
+        data.isUserAuth = true;
+      } else {
+        data.isUserAuth = false;
+      }
+
       // Pass all info into data variable
       res.render('selectedSeries', data);
     })

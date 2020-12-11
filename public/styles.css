@@ -430,6 +430,36 @@ a:hover {
   display: none;
 }
 
+.userProfileInfo {
+  background-color: lightgray;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 15px;
+}
+
+.smallHeader {
+  font-size: small;
+  font-weight: bold;
+}
+
+.smallTable {
+  width: 70%;
+}
+
+.oneThirdWidth {
+  width: 33%;
+}
+
+.following {
+  border-style: solid;
+  border-color: lightblue;
+  border-radius: 15px;
+}
+
+#favHeader {
+  padding-left: 63px;
+}
+
 /* Extra small devices (portrait phones, less than 576px) */
 @media (max-width: 576px) {
   #playlistArtworkDisplay {
@@ -482,34 +512,4 @@ a:hover {
   .displayAtLargeBreakpoints {
     display: none;
   }
-}
-
-.userProfileInfo {
-  background-color: lightgray;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  border-radius: 15px;
-}
-
-.smallHeader {
-  font-size: small;
-  font-weight: bold;
-}
-
-.smallTable {
-  width: 70%;
-}
-
-.oneThirdWidth {
-  width: 33%;
-}
-
-.following {
-  border-style: solid;
-  border-color: lightblue;
-  border-radius: 15px;
-}
-
-#favHeader {
-  padding-left: 63px;
 }
