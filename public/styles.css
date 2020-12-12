@@ -463,6 +463,10 @@ a:hover {
   margin-top: -16px;
 }
 
+.hideScrollOnCardDeck {
+  overflow-y: hidden;
+}
+
 /* Extra small devices (portrait phones, less than 576px) */
 @media (max-width: 576px) {
   #playlistArtworkDisplay {
