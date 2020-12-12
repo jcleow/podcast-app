@@ -78,7 +78,6 @@ const checkIsUserCreatorAuth = (req, res, next) => {
     return;
   }
   // Assign seriesId based on parameters used in url
-  let seriesId;
   let checkIfCreatorQuery;
   if (req.params.seriesId) {
     // means user is at an episodes page

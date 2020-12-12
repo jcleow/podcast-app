@@ -604,7 +604,9 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
       // Assign the existing genre and subgenre text into the existing form
       if (!req.cookies.previousValues) {
         // Store and display the subgenre text
-        data.previousValues.subgenreText = genreAndSubGenreResult.rows[0].subgenretext;
+        if (data.previousValues.subgenreText) {
+          data.previousValues.subgenreText = genreAndSubGenreResult.rows[0].subgenretext;
+        }
         // Store and display the subgenre id
         data.previousValues.subgenreId = genreAndSubGenreResult.rows[0].subgenre_id;
         // Store and display the genre text
