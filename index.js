@@ -536,8 +536,7 @@ app.get('/series/:id', (req, res) => {
     .catch((error) => console.log(error));
 });
 
-app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
-  console.log(req.body, 'req for edit form');
+app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {  
   if (req.middlewareLoggedIn === false) {
     res.render('errors/displayNotAuthorized');
     return;
@@ -629,9 +628,20 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
         data.previousValues.subgenreId = genreAndSubGenreResult.rows[0].subgenre_id;
         // Store and display the genre text
         data.previousValues.genreText = genreAndSubGenreResult.rows[0].genretext;
+
+        // query for subgenre names that are tagged to this genreText
+        return pool.query(`
+        SELECT subgenres.name
+        FROM subgenres
+        INNER JOIN genres ON
+        genres.id = genre_id
+        WHERE genres.name ='${data.previousValues.genreText}'`);
       }
     })
-    .then(() => {
+    .then((subgenreNameResult) => {
+      if (subgenreNameResult) {
+        data.subgenreNames = subgenreNameResult.rows.map((row) => row.name);
+      }
       // For the form to submit back to the same series Id
       data.currSeriesId = req.params.id;
       res.render('editExistingSeries', data);
