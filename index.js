@@ -1034,6 +1034,7 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
       }
     })
     .then((insertionQueryResult) => {
+      console.log(insertionQueryResult.rows[0]);
       // If form is valid an an create new user query was performed
       if (insertionQueryResult) {
         if (insertionQueryResult.rows.length > 0) {
@@ -1041,11 +1042,12 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
           res.cookie('loggedInHash', hashedUserIdString);
           res.cookie('loggedInUserId', insertionQueryResult.rows[0].id);
           res.clearCookie('previousValues');
-        }
-        // Reassign profile_pic to the hashed filename by multer in req.body
-        // if a profile picture was uploaded
-        if (req.file) {
-          return pool.query(`UPDATE users(profile_pic) VALUES(${req.body.profilePic})`);
+          // Reassign profile_pic to the hashed filename by multer in req.body
+          // if a profile picture was uploaded
+          if (req.file) {
+            console.log('test-1');
+            return pool.query(`UPDATE users SET profile_pic='${req.file.filename}' WHERE id=${insertionQueryResult.rows[0].id} RETURNING *`);
+          }
         }
       }
     })
