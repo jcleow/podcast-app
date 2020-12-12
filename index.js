@@ -328,19 +328,40 @@ app.get('/series/episode/upload', (req, res) => {
     data.previousValues = req.cookies.previousValues;
   }
 
+  const selectCountOfAllExistingPodcastsQuery = {
+    text: `SELECT COUNT(*) 
+    FROM podcast_series
+    INNER JOIN creator_podcast_series
+    ON creator_podcast_series.podcast_series_id = podcast_series.id
+    WHERE creator_id = ${req.loggedInUserId}
+    `,
+  };
+
   const selectAllExistingPodcastsQuery = {
-    text: 'SELECT name FROM podcast_series',
+    text: `SELECT podcast_series.name
+    FROM podcast_series
+    INNER JOIN creator_podcast_series
+    ON creator_podcast_series.podcast_series_id = podcast_series.id
+    WHERE creator_id = ${req.loggedInUserId}`,
   };
 
   pool
     // first obtain all the names of existing podcasts in the database
-    .query(selectAllExistingPodcastsQuery)
+    .query(selectCountOfAllExistingPodcastsQuery)
+    .then((countResult) => {
+      if (Number(countResult.rows[0].count) > 0) {
+        return pool.query(selectAllExistingPodcastsQuery);
+      }
+    })
     // consolidate the names into an array and assign to var data
-    .then((result) => {
-      const allExistingSeries = result.rows.map((row) => row.name);
-      data.allExistingSeries = allExistingSeries;
-
-      res.render('navlinks/uploadEpisode', data);
+    .then((selectedPodcastResult) => {
+      if (selectedPodcastResult) {
+        const allExistingSeries = selectedPodcastResult.rows.map((row) => row.name);
+        data.allExistingSeries = allExistingSeries;
+        res.render('navlinks/uploadEpisode', data);
+      }
+      // Redirect to creation of series page
+      res.redirect('/series/create');
     })
     .catch((error) => console.log(error));
 });
