@@ -459,6 +459,9 @@ a:hover {
 #favHeader {
   padding-left: 63px;
 }
+#helperText {
+  margin-top: -16px;
+}
 
 /* Extra small devices (portrait phones, less than 576px) */
 @media (max-width: 576px) {

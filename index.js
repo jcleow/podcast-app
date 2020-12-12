@@ -267,12 +267,11 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
     .then((result) => {
       currPodcastSeriesId = result.rows[0].podcast_series_id;
       // If user did not choose a genre - default to Arts
-      if (!req.body.genreText) {
+      if (req.body.genreText === '') {
         req.body.genreText = 'Arts';
       }
-
       // If user did not choose a subgenre
-      if (!req.body.subgenreText) {
+      if (req.body.subgenreText === '') {
         req.body.subgenreText = 'Other';
       }
       // Insert relationship between podcast and subgenre into podcast_series_subgenres join table
@@ -280,8 +279,11 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
         text: `
         INSERT INTO podcast_series_subgenres(podcast_series_id,subgenre_id)
         SELECT ${currPodcastSeriesId},subgenres.id
-        FROM subgenres 
-        WHERE subgenres.name = '${req.body.subgenreText}'`,
+        FROM subgenres
+        INNER JOIN genres
+        ON genres.id = subgenres.genre_id 
+        WHERE subgenres.name = '${req.body.subgenreText}'
+        AND genres.name = '${req.body.genreText}'`,
       };
       return pool.query(insertPodcastSubgenreQuery);
     })
@@ -535,6 +537,7 @@ app.get('/series/:id', (req, res) => {
 });
 
 app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
+  console.log(req.body, 'req for edit form');
   if (req.middlewareLoggedIn === false) {
     res.render('errors/displayNotAuthorized');
     return;
@@ -600,14 +603,15 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
     })
     .then(() => pool.query(`SELECT * FROM podcast_series WHERE id=${req.params.id}`))
     .then((result) => {
-      console.log(result.rows, 'test');
       if (!req.cookies.previousValues) {
         data.previousValues = result.rows[0];
         data.previousValues.podcastSeriesName = result.rows[0].name;
       }
       // query for existing genre and subgenres
       return pool.query(`
-      SELECT subgenre_id,subgenres.name AS subgenreText,
+      SELECT 
+      subgenre_id,
+      subgenres.name AS subgenreText,
       genres.name as genreText
       FROM podcast_series_subgenres
       INNER JOIN subgenres
@@ -619,12 +623,10 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
     .then((genreAndSubGenreResult) => {
       // Assign the existing genre and subgenre text into the existing form
       if (!req.cookies.previousValues) {
-        if (data.previousValues.subgenreText) {
-          // Store and display the subgenre text
-          data.previousValues.subgenreText = genreAndSubGenreResult.rows[0].subgenretext;
-          // Store and display the subgenre id
-          data.previousValues.subgenreId = genreAndSubGenreResult.rows[0].subgenre_id;
-        }
+        // Store and display the subgenre text
+        data.previousValues.subgenreText = genreAndSubGenreResult.rows[0].subgenretext;
+        // Store and display the subgenre id
+        data.previousValues.subgenreId = genreAndSubGenreResult.rows[0].subgenre_id;
         // Store and display the genre text
         data.previousValues.genreText = genreAndSubGenreResult.rows[0].genretext;
       }
