@@ -272,12 +272,13 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
       };
       return pool.query(insertPodcastSubgenreQuery);
     })
-    .then(() => {
-      const query = `INSERT INTO creator_podcast_series(creator_id,podcast_series_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`;
-      return pool.query(`INSERT INTO creator_podcast_series(creator_id,podcast_series_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`);
-    })
+    .then(() => pool.query(`
+    INSERT INTO
+    creator_podcast_series(creator_id,podcast_series_id)
+    VALUES(${req.loggedInUserId},${currPodcastSeriesId}) 
+    RETURNING *`))
     // If user uploaded an artwork, then run the query to insert it
-    .then(() => {
+    .then((insertionResult) => {
       if (req.file) {
         const { filename } = req.file;
         const insertPodcastSeriesArtworkQuery = {
@@ -766,7 +767,7 @@ app.get('/series/:seriesId/episode/:id', (req, res) => {
 });
 
 // Route that displays the podcast episode edit form
-app.get('/series/:seriesId/episode/:id/edit', (req, res) => {
+app.get('/series/:seriesId/episode/:id/edit', checkIsUserCreatorAuth, (req, res) => {
   const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   let data = {};
   data = assignLoggedInUserDetails(data, req);
@@ -872,7 +873,7 @@ app.put('/series/:seriesId/episode/:id/edit', upload.single('artwork'), (req, re
 });
 
 // Route that handles the podcast episode deletion request
-app.delete('/series/:seriesId/episode/:id/delete', (req, res) => {
+app.delete('/series/:seriesId/episode/:id/delete', checkIsUserCreatorAuth, (req, res) => {
   pool
     .query(`
     DELETE FROM podcast_episodes 
