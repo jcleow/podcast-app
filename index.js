@@ -466,7 +466,7 @@ app.get('/series/:id', (req, res) => {
           WHERE podcast_episode_id = ${episode.episode_id}
           AND listener_id = ${req.loggedInUserId}`)
           .then((isCountOneResult) => {
-            console.log(isCountOneResult.rows);
+            // In the scenario if an episode has been favourited before
             if (isCountOneResult.rows[0].count === '1') {
               return pool
                 .query(
@@ -476,6 +476,7 @@ app.get('/series/:id', (req, res) => {
                   AND listener_id = ${req.loggedInUserId}`,
                 );
             }
+            // Else no query will passed on to the next then statement
           })
           .then((isEpisodeFavouritedQueryResult) => {
             // In the event episode has been favourited before, result will be defined
