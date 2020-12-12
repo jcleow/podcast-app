@@ -294,7 +294,6 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
     RETURNING *`))
     // If user uploaded an artwork, then run the query to insert it
     .then((insertionResult) => {
-      console.log('test-2');
       if (req.file) {
         const { filename } = req.file;
         const insertPodcastSeriesArtworkQuery = {
@@ -536,7 +535,7 @@ app.get('/series/:id', (req, res) => {
     .catch((error) => console.log(error));
 });
 
-app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {  
+app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
   if (req.middlewareLoggedIn === false) {
     res.render('errors/displayNotAuthorized');
     return;
