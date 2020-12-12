@@ -29,8 +29,8 @@ app.use(express.urlencoded({ extended: false }));
 
 // To truncate excessive lines
 app.locals.truncateDescription = function (description) {
-  let truncatedDescription = `${description.substring(0, 200)}`;
-  if (truncatedDescription.length > 196) {
+  let truncatedDescription = `${description.substring(0, 180)}`;
+  if (truncatedDescription.length > 174) {
     truncatedDescription += '...';
   }
   return truncatedDescription;
@@ -1044,8 +1044,7 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
           res.clearCookie('previousValues');
           // Reassign profile_pic to the hashed filename by multer in req.body
           // if a profile picture was uploaded
-          if (req.file) {
-            console.log('test-1');
+          if (req.file) {            
             return pool.query(`UPDATE users SET profile_pic='${req.file.filename}' WHERE id=${insertionQueryResult.rows[0].id} RETURNING *`);
           }
         }

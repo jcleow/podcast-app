@@ -1,7 +1,11 @@
 /** @format */
 html {
   overflow-x: hidden;
-  background-attachment: white;
+}
+body {
+  background-image: linear-gradient(180deg, #383a3c, #030c13);
+  color: white;
+  font-family: "Roboto", sans-serif;
 }
 
 .navTopMargin {
@@ -9,7 +13,7 @@ html {
 }
 
 .navBarBg {
-  background-color: rgb(39, 188, 233);
+  background-image: linear-gradient(80deg, #5f6366, #0a1f2e);
 }
 
 .logo {
@@ -84,6 +88,22 @@ html {
   content: "\f0d7";
   transform: translate(0px, -15px);
   font-size: 20px;
+}
+
+.backgroundDisplay {
+  position: relative;
+}
+
+.displaySubHeader {
+  color: #2d5f5d;
+}
+
+.displayDescription {
+  color: lightgrey;
+}
+
+h5 > p {
+  color: lightgrey;
 }
 
 .actionBtns {
@@ -467,6 +487,15 @@ a:hover {
   overflow-y: hidden;
 }
 
+.carousel-control-next-icon,
+.carousel-control-prev-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: no-repeat 50%/100% 100%;
+  background-image: none;
+}
+
 /* Extra small devices (portrait phones, less than 576px) */
 @media (max-width: 576px) {
   #playlistArtworkDisplay {
@@ -505,6 +534,9 @@ a:hover {
   .displayAtLargeBreakpoints {
     display: none;
   }
+  /* .displaySubHeader {
+    padding-left: 50px;
+  } */
 }
 
 /* Medium devices (tablets, less than 992px) */
@@ -518,5 +550,9 @@ a:hover {
 
   .displayAtLargeBreakpoints {
     display: none;
+  }
+
+  .displaySubHeader {
+    /* padding-left: 25px; */
   }
 }
