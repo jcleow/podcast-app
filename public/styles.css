@@ -102,8 +102,8 @@ body {
   color: lightgrey;
 }
 
-h5 > p {
-  color: lightgrey;
+p.card-text {
+  color: grey;
 }
 
 .actionBtns {
@@ -485,6 +485,7 @@ a:hover {
 
 .hideScrollOnCardDeck {
   overflow-y: hidden;
+  overflow-x: hidden;
 }
 
 .carousel-control-next-icon,
