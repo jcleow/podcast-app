@@ -359,6 +359,7 @@ app.get('/series/episode/upload', (req, res) => {
         const allExistingSeries = selectedPodcastResult.rows.map((row) => row.name);
         data.allExistingSeries = allExistingSeries;
         res.render('navlinks/uploadEpisode', data);
+        return;
       }
       // Redirect to creation of series page
       res.redirect('/series/create');
@@ -991,18 +992,14 @@ app.get('/register', (req, res) => {
 app.post('/register', upload.single('profilePic'), (req, res) => {
   const hash = hashPassword(req.body.password);
   req.body.password = hash;
-  // Reassign profile_pic to the hashed filename by multer in req.body
-  // if a profile picture was uploaded
-  if (req.file) {
-    req.body.profilePic = req.file.filename;
-  }
+
   const userValues = Object.entries(req.body).map(([key, value]) => value);
   const checkIfUsernameAndEmailExistsQuery = {
     text: `SELECT username,email_address FROM users WHERE (username ='${req.body.username}') OR (email_address='${req.body.emailAddress}')`,
   };
 
   const createNewUserQuery = {
-    text: 'INSERT INTO users(first_name,last_name,email_address,username,password,profile_pic) VALUES($1,$2,$3,$4,$5,$6) RETURNING * ',
+    text: 'INSERT INTO users(first_name,last_name,email_address,username,password) VALUES($1,$2,$3,$4,$5) RETURNING * ',
     values: userValues,
   };
 
@@ -1036,17 +1033,24 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
         return pool.query(createNewUserQuery);
       }
     })
-    .then((result) => {
+    .then((insertionQueryResult) => {
       // If form is valid an an create new user query was performed
-      if (result) {
-        if (result.rows.length > 0) {
-          const hashedUserIdString = convertUserIdToHash(result.rows[0].id);
+      if (insertionQueryResult) {
+        if (insertionQueryResult.rows.length > 0) {
+          const hashedUserIdString = convertUserIdToHash(insertionQueryResult.rows[0].id);
           res.cookie('loggedInHash', hashedUserIdString);
-          res.cookie('loggedInUserId', result.rows[0].id);
+          res.cookie('loggedInUserId', insertionQueryResult.rows[0].id);
           res.clearCookie('previousValues');
-          res.redirect('/');
+        }
+        // Reassign profile_pic to the hashed filename by multer in req.body
+        // if a profile picture was uploaded
+        if (req.file) {
+          return pool.query(`UPDATE users(profile_pic) VALUES(${req.body.profilePic})`);
         }
       }
+    })
+    .then(() => {
+      res.redirect('/');
     })
     .catch((error) => {
       // Else form was invalid and a new user creation query was not performed
