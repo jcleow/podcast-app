@@ -221,13 +221,13 @@ app.get('/series/create', (req, res) => {
           INNER JOIN genres 
           ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreName}'`);
         }
-        // if (req.cookies.previousValues.genreText) {
-        //   return pool.query(`
-        //   SELECT subgenres.name
-        //   FROM subgenres
-        //   INNER JOIN genres
-        //   ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreText}'`);
-        // }
+        if (req.cookies.previousValues.genreText) {
+          return pool.query(`
+          SELECT subgenres.name
+          FROM subgenres
+          INNER JOIN genres
+          ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreText}'`);
+        }
       }
     })
     .then((result) => {
@@ -266,9 +266,22 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
     .query(insertNewPodcastDetailsQuery)
     .then((result) => {
       currPodcastSeriesId = result.rows[0].podcast_series_id;
+      // If user did not choose a genre - default to Arts
+      if (!req.body.genreText) {
+        req.body.genreText = 'Arts';
+      }
+
+      // If user did not choose a subgenre
+      if (!req.body.subgenreText) {
+        req.body.subgenreText = 'Other';
+      }
       // Insert relationship between podcast and subgenre into podcast_series_subgenres join table
       const insertPodcastSubgenreQuery = {
-        text: `INSERT INTO podcast_series_subgenres(podcast_series_id,subgenre_id) SELECT ${currPodcastSeriesId},subgenres.id FROM subgenres WHERE subgenres.name = '${req.body.subgenreText}'`,
+        text: `
+        INSERT INTO podcast_series_subgenres(podcast_series_id,subgenre_id)
+        SELECT ${currPodcastSeriesId},subgenres.id
+        FROM subgenres 
+        WHERE subgenres.name = '${req.body.subgenreText}'`,
       };
       return pool.query(insertPodcastSubgenreQuery);
     })
@@ -279,6 +292,7 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
     RETURNING *`))
     // If user uploaded an artwork, then run the query to insert it
     .then((insertionResult) => {
+      console.log('test-2');
       if (req.file) {
         const { filename } = req.file;
         const insertPodcastSeriesArtworkQuery = {
@@ -586,13 +600,15 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
     })
     .then(() => pool.query(`SELECT * FROM podcast_series WHERE id=${req.params.id}`))
     .then((result) => {
+      console.log(result.rows, 'test');
       if (!req.cookies.previousValues) {
         data.previousValues = result.rows[0];
         data.previousValues.podcastSeriesName = result.rows[0].name;
       }
       // query for existing genre and subgenres
       return pool.query(`
-      SELECT subgenre_id,subgenres.name AS subgenreText,genres.name as genreText
+      SELECT subgenre_id,subgenres.name AS subgenreText,
+      genres.name as genreText
       FROM podcast_series_subgenres
       INNER JOIN subgenres
       ON subgenres.id = podcast_series_subgenres.subgenre_id
@@ -603,12 +619,12 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
     .then((genreAndSubGenreResult) => {
       // Assign the existing genre and subgenre text into the existing form
       if (!req.cookies.previousValues) {
-        // Store and display the subgenre text
         if (data.previousValues.subgenreText) {
+          // Store and display the subgenre text
           data.previousValues.subgenreText = genreAndSubGenreResult.rows[0].subgenretext;
+          // Store and display the subgenre id
+          data.previousValues.subgenreId = genreAndSubGenreResult.rows[0].subgenre_id;
         }
-        // Store and display the subgenre id
-        data.previousValues.subgenreId = genreAndSubGenreResult.rows[0].subgenre_id;
         // Store and display the genre text
         data.previousValues.genreText = genreAndSubGenreResult.rows[0].genretext;
       }
