@@ -31,7 +31,7 @@
                     <a href="/series/<%=series[k].id%>" role="button" class="btn btn-primary mx-auto" type="submit">View</a>                  
                 </form>
                 <div class="card-body">
-                  <h5 class="card-title"><%=series[k].name%></h5>
+                  <h5 class="card-title"><a href="/series/<%=series[k].id%>"><%=series[k].name%></a></h5>
                   <p class="card-text"><%= truncateDescription(series[k].description)%></p>
                 </div>
               </div>
@@ -65,7 +65,7 @@
                     <a href="/series/<%=series[k].id%>" role="button" class="btn btn-primary mx-auto" type="submit">View</a>                  
                 </form>
                 <div class="card-body">
-                  <h5 class="card-title"><%=series[k].name%></h5>
+                  <h5 class="card-title"><a href="/series/<%=series[k].id%>"><%=series[k].name%></a></h5>
                   <p class="card-text"><%= truncateDescription(series[k].description)%></p>
                 </div>
               </div>

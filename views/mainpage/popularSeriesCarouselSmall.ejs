@@ -28,7 +28,7 @@
                     <a href="/series/<%=series[i].id%>" role="button" class="btn btn-primary mx-auto" type="submit">View</a>                  
                 </form>
                 <div class="card-body">
-                  <h5 class="card-title"><%=series[i].name%></h5>
+                  <h5 class="card-title"><a href="/series/<%=series[i].id%>"><%=series[i].name%></a></h5>
                   <p class="card-text"><%= truncateDescription(series[i].description)%></p>
                 </div>
               </div>
