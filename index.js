@@ -1495,8 +1495,12 @@ app.post('/insertEpisodeIntoPlaylist', (req, res) => {
 });
 
 // Handles the removal of an episode from the playlist
-app.delete('/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
-  const { playlistId, episodeId } = req.params;
+app.delete('user/:userId/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
+  const { playlistId, episodeId, userId } = req.params;
+  if (convertUserIdToHash(req.loggedInUserId) !== req.loggedInHash && userId !== req.loggedInUserId) {
+    res.redirect('displayNotAuthorized');
+    return;
+  }
   pool
     .query(
       `DELETE FROM episode_playlists 

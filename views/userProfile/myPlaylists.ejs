@@ -58,7 +58,7 @@
           <a href='/series/<%=episode.series_id%>/episode/<%=episode.episode_id%>'><%=episode.episode_name%></a>        
       </td> 
       <td colspan="1" >
-      <form action='/removeFromPlaylist/<%=playlist.playlist_id%>/<%=episode.episode_id%>?_method=DELETE' method="POST">
+      <form action='/user/<%=currUserId%>/removeFromPlaylist/<%=playlist.playlist_id%>/<%=episode.episode_id%>?_method=DELETE' method="POST">
         <div class="dropdown d-flex justify-content-center">
           <button class="btn btn-secondary bg-transparent border-0 text-secondary"  id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class='fa fa-ellipsis-h'></i>
