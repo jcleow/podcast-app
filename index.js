@@ -1495,7 +1495,7 @@ app.post('/insertEpisodeIntoPlaylist', (req, res) => {
 });
 
 // Handles the removal of an episode from the playlist
-app.delete('user/:userId/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
+app.delete('/user/:userId/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
   const { playlistId, episodeId, userId } = req.params;
   if (convertUserIdToHash(req.loggedInUserId) !== req.loggedInHash || userId !== req.loggedInUserId) {
     res.redirect('displayNotAuthorized');
