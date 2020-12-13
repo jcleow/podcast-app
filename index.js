@@ -847,7 +847,7 @@ app.get('/series/:seriesId/episode/:id/edit', checkIsUserCreatorAuth, (req, res)
     podcast_episodes.id,
     podcast_episodes.name,
     podcast_episodes.episode_number,
-    podcast_episodes.description,
+    podcast_episodes.description AS episode_description,
     podcast_episodes.artwork_filename,
     podcast_episodes.podcast_ext_url,
     podcast_episodes.podcast_series_id,
