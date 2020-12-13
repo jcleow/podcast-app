@@ -109,7 +109,7 @@ app.get('/', (req, res) => {
 
   // Execute all queries
   pool
-    .query('SELECT * FROM podcast_series')
+    .query('SELECT * FROM podcast_series ORDER BY random()')
     .then((result) => {
       data.series = result.rows;
 
@@ -124,7 +124,8 @@ app.get('/', (req, res) => {
       podcast_series.artwork_filename AS album_artwork
       FROM podcast_episodes 
       INNER JOIN podcast_series 
-      ON podcast_episodes.podcast_series_id = podcast_series.id`;
+      ON podcast_episodes.podcast_series_id = podcast_series.id
+      ORDER BY random()`;
       return pool.query(selectAllPodcastEpisodesQuery);
     })
 

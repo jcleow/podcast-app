@@ -4,7 +4,7 @@
     <div class="container navTopMargin">
       <div class="row">
         <div class="col d-flex justify-content-center submitSighting">
-          Edit Existing Podcast Episode
+          <h3>Edit Existing Podcast Episode</h3>
         </div>
       </div>
 <form action="/series/<%=currEpisode.podcast_series_id%>/episode/<%=currEpisode.id%>/edit?_method=PUT" method="POST" enctype="multipart/form-data">
@@ -60,8 +60,10 @@
     <label for="photo">Upload a New Episode Artwork</label><br/>
     <input type="file" name="artwork"/>
   </div>
-
-  <input type="submit" class="btn btn-primary" value="Submit"/>
+  <div class='d-flex flex-row justify-content-center'>
+    <input type="submit" class="btn btn-outline-light mr-2" value="Submit"/>
+    <a href="/" class="btn btn-outline-secondary">Cancel</a>
+  </div>
 </form>
     </div>
   </body>
