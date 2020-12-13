@@ -111,6 +111,10 @@ p.card-text {
   color: rgb(167, 166, 166);
 }
 
+.descriptionText {
+  color: rgb(167, 166, 166);
+}
+
 .actionBtns {
   width: 90px;
 }
@@ -381,15 +385,9 @@ h1 .display {
 
 .favouriteBtn {
   font-size: 30px;
-  color: red;
+  color: #cb2d6f;
   font-family: "Font Awesome";
   content: "\f08a";
-}
-
-.favouriteBtn:hover {
-  color: red;
-  font-size: 40px;
-  border-style: none;
 }
 
 .favouriteBtn:focus,
@@ -398,6 +396,14 @@ h1 .display {
   font-size: 40px;
   outline: none;
   box-shadow: none;
+}
+
+.maroon {
+  color: #cb2d6f;
+}
+
+textarea:focus {
+  box-shadow: none !important;
 }
 
 .profilePic {

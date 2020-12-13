@@ -24,7 +24,7 @@
                 </div>        
           <p class="card-text"><%=selectedSeries[0].series_description%></p>         
       </div>
-        <a href="/" class="btn btn-primary ml-3" role="button">
+        <a href="/" class="btn btn-outline-light ml-3" role="button">
           Return to Main</a
         >       
     </div>
@@ -34,9 +34,9 @@
       <table class="table table-hover">
         <thead>
           <tr>
-            <th scope="col" class='text-dark smallHeader border-0'><div ></div></th>
-            <th scope="col" class='text-dark smallHeader border-0'><div >Episode</div></th>            
-            <th scope="col" class='text-dark smallHeader border-0'><div >Description</div></th>            
+            <th scope="col" class='text-light smallHeader border-0'><div></div></th>
+            <th scope="col" class='text-light smallHeader border-0'><div >Episode</div></th>            
+            <th scope="col" class='text-light smallHeader border-0'><div>Description</div></th>            
           </tr>
         </thead>
         <tbody>
@@ -54,7 +54,7 @@
               </form>
               </td>
               <td><a href='/series/<%=selectedSeries[0].series_id%>/episode/<%=ep.episode_id%>'><%=ep.episode_name%></a></td>              
-              <td class='w-50'>
+              <td class='w-50 descriptionText'>
                 <%=ep.episode_description%></a></td>
             <td class='align-middle'>            
             <% if(isUserAuth === true){ %>
