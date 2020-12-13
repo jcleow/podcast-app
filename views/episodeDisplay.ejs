@@ -121,11 +121,11 @@
   <div class="modal fade" id="addToPlaylist" tabindex="-1" role="dialog" aria-labelledby="addToPlaylistLabel" aria-hidden="true">
 <% } %>
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
+    <div class="modal-content bg-dark">
       <div class="modal-header">
         <h5 class="modal-title" id="addToPlaylistLabel">Add Episode To A Playlist</h5>
         <form action= '/series/<%=selectedEpisode.episode_series_id%>/episode/<%=selectedEpisode.episode_id%>'>
-          <button type="submit" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="submit" class="close text-light" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </form>
