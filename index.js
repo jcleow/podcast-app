@@ -801,13 +801,15 @@ app.get('/series/:seriesId/episode/:id', (req, res) => {
         data.isEpisodeFavourited = result.rows[0].favourited;
       }
       // Query for current user which comments he favourited before
-      return pool.query(`
+      if (req.middlewareLoggedIn === true) {
+        return pool.query(`
       SELECT user_episode_comments.id,favourited
       FROM favourite_comments
       INNER JOIN user_episode_comments
       ON user_episode_comments.id=user_episode_comment_id
       WHERE favourite_comments.user_id = ${req.loggedInUserId}
       `);
+      }
     })
     .then((userFavCommentsResult) => {
       if (userFavCommentsResult && userFavCommentsResult.rows.length > 0) {
@@ -820,14 +822,18 @@ app.get('/series/:seriesId/episode/:id', (req, res) => {
         });
       }
       // Query for all the playlists current loggedInUser has
-      return pool.query(`
+      if (req.middlewareLoggedIn === true) {
+        return pool.query(`
       SELECT playlists.name FROM playlists
       INNER JOIN user_playlists
       ON playlist_id = playlists.id
       WHERE user_id = ${req.loggedInUserId} `);
+      }
     })
     .then((playlistResults) => {
-      data.currUserPlaylists = playlistResults.rows;
+      if (playlistResults) {
+        data.currUserPlaylists = playlistResults.rows;
+      }
       if (req.query) {
         const { addPlaylist: selectedPlaylistToBeAdded } = req.query;
         data.selectedPlaylist = selectedPlaylistToBeAdded;
