@@ -212,7 +212,7 @@ h1 .display {
 
 .cardSize {
   min-height: 400px;
-  max-height: 500px;
+  max-height: 800px;
   width: 300px;
   background-color: transparent;
   border: none;
