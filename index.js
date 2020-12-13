@@ -1410,6 +1410,7 @@ app.get('/user/:id/myPlaylists', (req, res) => {
       podcast_episodes.id AS episode_id,
       podcast_episodes.artwork_filename AS episode_artwork_filename,
       podcast_episodes.podcast_ext_url AS episode_podcast_ext_url,
+      podcast_series.id AS series_id,
       podcast_series.artwork_filename AS series_artwork_filename
       FROM podcast_episodes
       INNER JOIN episode_playlists      

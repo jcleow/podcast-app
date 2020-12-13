@@ -54,7 +54,7 @@
       </td>
       
       <td colspan="1" class='text-center'>        
-          <a href='/podcast/episode/<%=episode.episode_id%>'><%=episode.episode_name%></a>        
+          <a href='/series/<%=episode.series_id%>/episode/<%=episode.episode_id%>'><%=episode.episode_name%></a>        
       </td> 
       <td colspan="1" >
       <form action='/removeFromPlaylist/<%=playlist.playlist_id%>/<%=episode.episode_id%>?_method=DELETE' method="POST">
