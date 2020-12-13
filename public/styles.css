@@ -197,11 +197,12 @@ h1 .display {
 }
 
 .carouselDiv {
-  max-height: 500px;
+  max-height: 400px;
 }
 
 .carouselPicture {
   overflow: hidden;
+  width: 700px;
 }
 
 .recommendedPodcasts {
@@ -570,6 +571,33 @@ textarea:focus {
   height: 20px;
   background: no-repeat 50%/100% 100%;
   background-image: none;
+}
+
+.carouselHeroText {
+  font-size: 50px;
+  text-align: left;
+}
+.chatWithTraders > p {
+  text-align: start;
+}
+
+.bgOrange {
+  position: absolute;
+  padding: 13px;
+  top: -268px;
+  left: 0;
+  bottom: 86px;
+  background-color: lightsalmon;
+  opacity: 0.9;
+  width: 900px;
+}
+
+.bgTransparent {
+  width: 1200px;
+}
+
+.carouselContainer {
+  position: relative;
 }
 
 /* Extra small devices (portrait phones, less than 576px) */
