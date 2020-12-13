@@ -500,45 +500,50 @@ app.get('/series/:id', (req, res) => {
       WHERE podcast_series_id = ${seriesId}`);
     })
     .then((eachEpisodeResult) => {
-      let arrayOfEpisodeIfFavouritedQuery;
+      let arrayOfEpisodeIfFavouritedQuery = [];
+      // Next, check if any of the listed episodes have been favourited by the user before
+      // Premise is that the user must be logged in if not an error will occur
       if (eachEpisodeResult && eachEpisodeResult.rows) {
         data.episodes = eachEpisodeResult.rows;
-        arrayOfEpisodeIfFavouritedQuery = data.episodes.map((episode, index) => pool.query(`
+
+        if (req.middlewareLoggedIn === true) {
+          arrayOfEpisodeIfFavouritedQuery = data.episodes.map((episode, index) => pool.query(`
           SELECT COUNT(*) 
           from listener_podcast_episodes           
           WHERE podcast_episode_id = ${episode.episode_id}
           AND listener_id = ${req.loggedInUserId}`)
-          .then((isCountOneResult) => {
+            .then((isCountOneResult) => {
             // In the scenario if an episode has been favourited before
-            if (isCountOneResult.rows[0].count === '1') {
-              return pool
-                .query(
-                  `SELECT favourited 
+              if (isCountOneResult.rows[0].count === '1') {
+                return pool
+                  .query(
+                    `SELECT favourited 
                   from listener_podcast_episodes           
                   WHERE podcast_episode_id = ${episode.episode_id}
                   AND listener_id = ${req.loggedInUserId}`,
-                );
-            }
+                  );
+              }
             // Else no query will passed on to the next then statement
-          })
-          .then((isEpisodeFavouritedQueryResult) => {
+            })
+            .then((isEpisodeFavouritedQueryResult) => {
             // In the event episode has been favourited before, result will be defined
-            if (isEpisodeFavouritedQueryResult !== undefined) {
-              episode.favourited = isEpisodeFavouritedQueryResult.rows[0].favourited;
+              if (isEpisodeFavouritedQueryResult !== undefined) {
+                episode.favourited = isEpisodeFavouritedQueryResult.rows[0].favourited;
+                return episode;
+              }
+              episode.favourited = false;
               return episode;
-            }
-            episode.favourited = false;
-            return episode;
-          })
-          .catch((error) => {
+            })
+            .catch((error) => {
             // In the event the episode has never been favourited before, result will be undefined
-            console.log(error, `error in one of the queries ${index}`);
-            // Regardless, that episode's favourite status should be labeled false
-            episode.favourited = false;
-            return episode;
-          }));
+              console.log(error, `error in one of the queries ${index}`);
+              // Regardless, that episode's favourite status should be labeled false
+              episode.favourited = false;
+              return episode;
+            }));
+          return Promise.all(arrayOfEpisodeIfFavouritedQuery);
+        }
       }
-      return Promise.all(arrayOfEpisodeIfFavouritedQuery);
     })
     .then((favouritePromiseResult) => {
       if (favouritePromiseResult) {
