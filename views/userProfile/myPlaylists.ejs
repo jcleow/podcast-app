@@ -4,7 +4,7 @@
 <%- include('userInfoDisplay')%>
      <div class="row d-flex justify-content-center pb-3 ">
          <div class="col-3 d-flex justify-content-center tabDiv pb-2">
-             <a href="/user/<%=currUserId%>/myPlaylists" class='text-dark text-center my-auto'>My Playlists</a>
+             <a href="/user/<%=currUserId%>/myPlaylists" class='text-center my-auto'>My Playlists</a>
         </div>
         <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/favouriteEpisodes" class='text-center my-auto'>All Favourite Episodes</a>
@@ -24,23 +24,23 @@
   <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
     <thead>
       <tr>
-        <th scope="col" class='text-dark text-center smallHeader oneThirdWidth border-0'>Playlist</th>
-        <th scope="col" class='text-dark text-center smallHeader oneThirdWidth border-0'>Episode</th>
-        <th scope="col" class='text-dark text-center smallHeader oneThirdWidth border-0'>Actions</th>                
+        <th scope="col" class='text-light text-center smallHeader oneThirdWidth border-0'>Playlist</th>
+        <th scope="col" class='text-light text-center smallHeader oneThirdWidth border-0'>Episode</th>
+        <th scope="col" class='text-light text-center smallHeader oneThirdWidth border-0'>Actions</th>                
       </tr>
     </thead>
     <tbody id="accordion">
      <% if(locals.playlists){%>
         <% playlists.forEach((playlist,index)=>{ %>      
       <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse<%=index%>">
-          <td class='text-center'><%=playlist.name%></td>
+          <td class='text-light text-center'><%=playlist.name%></td>
           <!-- blank cell for display of playlist later -->
           <td></td>
-          <td class="expand-button text-center"></td>
+          <td class="expand-button text-center text-light"></td>
       </tr>          
     <% if(playlist.podcastEpisodes) {%>  
     <%playlist.podcastEpisodes.forEach((episode)=>{ %>
-    <tr id="collapse<%=index%>" class="collapse" data-parent='#accordion'>     
+    <tr id="collapse<%=index%>" class="collapse table-borderless" data-parent='#accordion'>     
       <td colspan="1" class='d-flex flex-row justify-content-center'>
         <form class="epArtworkDisplay playlistArtworkContainer d-flex justify-content-center pl-0 ml-0 mt-2 mb-2" action="/user/<%=currUserId%>/myPlaylists">
           <img class='w-100 h-auto' id='playlistArtworkDisplay'src="/<%=episode.episode_artwork_filename%>"/>

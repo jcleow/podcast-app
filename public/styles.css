@@ -3,7 +3,7 @@ html {
   overflow-x: hidden;
 }
 body {
-  background-image: linear-gradient(180deg, #383a3c, #030c13);
+  background-image: linear-gradient(180deg, #030c13, #383a3c);
   color: white;
   font-family: "Roboto", sans-serif;
 }
@@ -98,7 +98,13 @@ a {
   color: white;
 }
 a:hover {
+  text-decoration: none;
   color: #cb2d6f;
+  background-color: transparent;
+}
+a.dropdown-item:hover {
+  color: #cb2d6f;
+  background-color: transparent;
 }
 
 p.card-text {
@@ -284,32 +290,37 @@ h1 .display {
   display: block;
 }
 
-.epArtworkDisplay > button {
-  display: none;
+.epArtworkDisplay {
+  position: relative;
+  display: block;
+  position: relative;
+  height: 9rem;
+  width: 9rem;
 }
 
-.epArtworkDisplay:hover > button {
-  display: block;
+.epArtworkDisplay > button {
+  display: none;
   position: absolute;
   top: calc(50% - 25px);
   left: calc(50% - 30px);
   font-size: 30px;
-  color: green;
+  border-style: solid;
+  border-color: white;
+  color: white;
   background: transparent;
   width: 60px;
   height: 60px;
+  z-index: 5;
+}
+
+.epArtworkDisplay:hover > button {
+  display: block;
 }
 
 .epArtwork {
   position: relative;
   height: 10rem;
   width: 10rem;
-}
-
-.epArtworkDisplay {
-  position: relative;
-  height: 9rem;
-  width: 9rem;
 }
 
 .genre {
@@ -353,6 +364,7 @@ h1 .display {
 
 .iframeDisplay iframe {
   position: fixed;
+  background-color: transparent;
   bottom: 0;
   left: calc(50% - 300px);
   width: 600px;
@@ -445,11 +457,7 @@ h1 .display {
   bottom: 0;
   height: 1px;
   width: 70px;
-  border-bottom: 2px solid #4285f4;
-}
-
-a:hover {
-  text-decoration: none;
+  border-bottom: 2px solid #cb2d6f;
 }
 
 .alignPrevRight {
@@ -492,7 +500,6 @@ a:hover {
 }
 
 .userProfileInfo {
-  background-color: lightgray;
   padding-top: 10px;
   padding-bottom: 10px;
   border-radius: 15px;

@@ -23,7 +23,7 @@
         </svg>
       </span>
     </button>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <div class="dropdown-menu bg-transparent border-0" aria-labelledby="dropdownMenuButton">
       <a class="nav-link" href="/series/create" class="text-dark"> Create Podcast</a>
       <a class="nav-link" href="/series/episode/upload" class="text-dark">Upload Episode</a>
       <a class="nav-link" href="#" class="btn btn-primary" data-toggle="modal" data-target="#createPlaylist">Create Playlist</a>
@@ -57,16 +57,15 @@
           <button type="button" class="btn bg-transparent dropdown-toggle text-white dropdown-toggle-split profilePicBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
-          <div class="dropdown-menu dropdown-menu-left">
+          <div class="dropdown-menu bg-transparent dropdown-menu-left">
             <% if(!locals.loggedInUserId) { %>
-              <a class="dropdown-item" href="/login">Login</a>
-              <a class="dropdown-item" href="/register">Register</a>
+              <a class="dropdown-item text-white" href="/login">Login</a>
+              <a class="dropdown-item text-white" href="/register">Register</a>
             <% } %>
             <% if(locals.loggedInUserId) {%>
-            <a class="dropdown-item" href="/user/<%=loggedInUserId%>">My profile</a>
-              <div class="dropdown-divider"></div>
+            <a class="dropdown-item text-white" href="/user/<%=loggedInUserId%>">My profile</a>              
               <form action='/logout?_method=DELETE' method='POST'>
-                <input class="dropdown-item" type="submit" value='Log Out'>
+                <input class="dropdown-item text-white" type="submit" value='Log Out'>
               </form>
             <% } %>
           </div>

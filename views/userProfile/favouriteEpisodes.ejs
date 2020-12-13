@@ -7,7 +7,7 @@
              <a href="/user/<%=currUserId%>/myPlaylists"  class='text-center my-auto'>My Playlists</a>
         </div>
         <div class="col-3 d-flex justify-content-center tabDiv pb-2">
-             <a href="/user/<%=currUserId%>/favouriteEpisodes" class='text-dark text-center my-auto'>All Favourite Episodes</a>
+             <a href="/user/<%=currUserId%>/favouriteEpisodes" class='text-center my-auto'>All Favourite Episodes</a>
         </div>
         <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/favouriteComments" class='text-center my-auto'>All Favourite Comments</a>
@@ -23,9 +23,9 @@
      <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>      
-      <th scope="col" class='text-dark text-center smallHeader border-0'><div></div></th>
-      <th scope="col" class='text-dark text-center smallHeader border-0'>Episode</th>
-      <th scope="col" class='text-dark text-center smallHeader border-0'>Ep. No.</th>
+      <th scope="col" class='text-white text-center smallHeader border-0'><div></div></th>
+      <th scope="col" class='text-white text-center smallHeader border-0'>Episode</th>
+      <th scope="col" class='text-white text-center smallHeader border-0'>Ep. No.</th>
     </tr>
   </thead>
   <tbody id="accordion">
@@ -38,8 +38,8 @@
         <input type='hidden' name="podcast_ext_url" value="<%=episode.podcast_ext_url%>"/>
       </form>
     </td>
-      <td class='text-center'><a class="text-dark" href='/series/<%=episode.podcast_series_id%>/episode/<%=episode.podcast_episode_id%>'><%=episode.name%></a></form></td>
-      <td class='text-dark text-center'><%= episode.episode_number %></td>        
+      <td class='text-center'><a href='/series/<%=episode.podcast_series_id%>/episode/<%=episode.podcast_episode_id%>'><%=episode.name%></a></form></td>
+      <td class='text-white text-center'><%= episode.episode_number %></td>        
     <td class='actionBtns border-0'>
             
                 <% if(isUserAuth === true){ %>
