@@ -60,16 +60,19 @@ body {
   padding-top: 0;
   padding-bottom: 0;
   vertical-align: middle;
+  border-top: 1px solid rgb(167, 166, 166);
 }
 
 .table > tbody > tr > td {
   padding: 0.75rem;
   vertical-align: middle;
+  border-top: 1px solid rgb(167, 166, 166);
 }
 
 .table > tbody > tr > th {
   padding: 0.75rem;
   vertical-align: middle;
+  border-top: 1px solid rgb(167, 166, 166);
 }
 
 .expand-button {
@@ -301,6 +304,23 @@ h1 .display {
   position: relative;
   height: 9rem;
   width: 9rem;
+}
+
+.epArtworkDisplay:before {
+  content: " ";
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+.epArtworkDisplay:hover:before {
+  opacity: 1;
 }
 
 .epArtworkDisplay > button {
