@@ -294,15 +294,20 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
     VALUES(${req.loggedInUserId},${currPodcastSeriesId}) 
     RETURNING *`))
     // If user uploaded an artwork, then run the query to insert it
-    .then((insertionResult) => {
+    .then(() => {
+      let filename;
+      // if user uploads an artwork
       if (req.file) {
-        const { filename } = req.file;
-        const insertPodcastSeriesArtworkQuery = {
-          text: `UPDATE podcast_series SET artwork_filename= $1 WHERE id=${currPodcastSeriesId} RETURNING *`,
-          values: [filename],
-        };
-        return pool.query(insertPodcastSeriesArtworkQuery);
+        filename = req.file.filename;
+      } else {
+        // if not use default artwork
+        filename = 'defaultArtwork.jpg';
       }
+      const insertPodcastSeriesArtworkQuery = {
+        text: `UPDATE podcast_series SET artwork_filename= $1 WHERE id=${currPodcastSeriesId} RETURNING *`,
+        values: [filename],
+      };
+      return pool.query(insertPodcastSeriesArtworkQuery);
     })
     .then(() => {
       // If not, terminate the req-res cycle and clear cookies relating to create podcast form
@@ -1049,9 +1054,14 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
           res.clearCookie('previousValues');
           // Reassign profile_pic to the hashed filename by multer in req.body
           // if a profile picture was uploaded
+          let profilePic;
           if (req.file) {
-            return pool.query(`UPDATE users SET profile_pic='${req.file.filename}' WHERE id=${insertionQueryResult.rows[0].id} RETURNING *`);
+            profilePic = req.file.filename;
+          } else {
+            // if not, upload a default profile picture
+            profilePic = 'defaultprofilepic.jpg';
           }
+          return pool.query(`UPDATE users SET profile_pic='${profilePic}' WHERE id=${insertionQueryResult.rows[0].id} RETURNING *`);
         }
       }
     })
