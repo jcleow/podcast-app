@@ -16,17 +16,20 @@
   <nav class="navbar navbar-expand navbar-light">
 
   <div class="dropdown order-1 w-100 mr-auto">
+     <%if(locals.loggedInUserId){%>  
     <button class="btn bg-transparent border-0" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       <span>
         <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" class="bi bi-justify" viewBox="0 0 16 16">
            <path fill-rule="evenodd" d="M2 12.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
         </svg>
       </span>
-    </button>
+    </button>   
     <div class="dropdown-menu navBarBg border-0" aria-labelledby="dropdownMenuButton">
-      <a class="nav-link" href="/series/create" class="text-dark"> Create Podcast</a>
-      <a class="nav-link" href="/series/episode/upload" class="text-dark">Upload Episode</a>
+      <a class="nav-link" href="/series/create" class="text-dark"      
+      > Create Podcast</a>
+      <a class="nav-link" href="/series/episode/upload" class="text-dark">Upload Episode</a>                  
       <a class="nav-link" href="#" class="btn btn-primary" data-toggle="modal" data-target="#createPlaylist">Create Playlist</a>
+      <% } %>
     </div>
   </div>
 
