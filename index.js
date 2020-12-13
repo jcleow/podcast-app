@@ -1208,11 +1208,19 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
   pool
   // Querying for  all the favourited episodes
     .query(
-      `SELECT *             
+      `SELECT *,
+      podcast_episodes.id AS episode_id,
+      podcast_episodes.name AS episode_name,
+      podcast_episodes.artwork_filename AS episode_artwork_filename,      
+      podcast_episodes.podcast_series_id AS series_id,
+      podcast_series.artwork_filename AS series_artwork_filename               
       FROM podcast_episodes
       INNER JOIN listener_podcast_episodes 
-      ON listener_podcast_episodes.podcast_episode_id=podcast_episodes.id                  
-      WHERE favourited=true AND listener_id = ${currUserId}`,
+      ON listener_podcast_episodes.podcast_episode_id=podcast_episodes.id
+      INNER JOIN podcast_series 
+      ON podcast_episodes.podcast_series_id = podcast_series.id                  
+      WHERE favourited=true 
+      AND listener_id = ${currUserId}`,
     )
     .then((result) => {
       if (result && result.rows) {

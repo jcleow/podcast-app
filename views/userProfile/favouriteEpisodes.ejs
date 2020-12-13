@@ -33,17 +33,21 @@
       <% episodes.forEach((episode)=>{ %>
       <td class='text-center d-flex flex-row justify-content-center'>
         <form class="epArtworkDisplay playlistArtworkContainer"action ='/user/<%=currUserId%>/favouriteEpisodes'>
-        <img class='w-100 h-auto' src="/<%=episode.artwork_filename%>"/>                
+      <% if(episode.episode_artwork_filename) { %>
+        <img class='w-100 h-auto' src="/<%=episode.episode_artwork_filename%>"/>
+      <% } else { %>
+        <img class='w-100 h-auto' src="/<%=episode.series_artwork_filename%>"/>
+        <% } %>
           <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>          
         <input type='hidden' name="podcast_ext_url" value="<%=episode.podcast_ext_url%>"/>
       </form>
     </td>
-      <td class='text-center'><a href='/series/<%=episode.podcast_series_id%>/episode/<%=episode.podcast_episode_id%>'><%=episode.name%></a></form></td>
+      <td class='text-center'><a href='/series/<%=episode.series_id%>/episode/<%=episode.episode_id%>'><%=episode.episode_name%></a></form></td>
       <td class='text-white text-center'><%= episode.episode_number %></td>        
     <td class='actionBtns border-0'>
             
                 <% if(isUserAuth === true){ %>
-              <form action='/user/<%=loggedInUserId%>/editFavouriteEpisode/<%=episode.podcast_episode_id%>?_method=PUT' method="POST">
+              <form action='/user/<%=loggedInUserId%>/editFavouriteEpisode/<%=episode.episode_id%>?_method=PUT' method="POST">
                 <button class="favouriteBtn bg-transparent border-0 shadow-none"                             
                 type="submit"
                 >                  
