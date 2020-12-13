@@ -970,7 +970,7 @@ app.post('/login', (req, res) => {
     .query(`SELECT id from users WHERE username='${req.body.username}' AND password='${hash}'`)
     .then((result) => {
       if (result.rows.length === 0) {
-        res.render('error/displayErrorPage');
+        res.render('errors/displayErrorPage');
         return;
       }
       // Perform hashing of userId using username + salt
@@ -980,6 +980,10 @@ app.post('/login', (req, res) => {
       res.cookie('loggedInHash', hashedUserIdString);
       res.cookie('loggedInUserId', result.rows[0].id);
       res.redirect('/');
+    })
+    .catch((error) => {
+      console.log(error);
+      res.render('displayErrorPage');
     });
 });
 
@@ -1044,7 +1048,7 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
           res.clearCookie('previousValues');
           // Reassign profile_pic to the hashed filename by multer in req.body
           // if a profile picture was uploaded
-          if (req.file) {            
+          if (req.file) {
             return pool.query(`UPDATE users SET profile_pic='${req.file.filename}' WHERE id=${insertionQueryResult.rows[0].id} RETURNING *`);
           }
         }
@@ -1405,10 +1409,13 @@ app.get('/user/:id/myPlaylists', (req, res) => {
       podcast_episodes.name AS episode_name,
       podcast_episodes.id AS episode_id,
       podcast_episodes.artwork_filename AS episode_artwork_filename,
-      podcast_episodes.podcast_ext_url AS episode_podcast_ext_url
+      podcast_episodes.podcast_ext_url AS episode_podcast_ext_url,
+      podcast_series.artwork_filename AS series_artwork_filename
       FROM podcast_episodes
-      INNER JOIN episode_playlists
+      INNER JOIN episode_playlists      
       ON episode_playlists.podcast_episode_id = podcast_episodes.id
+      INNER JOIN podcast_series
+      ON podcast_episodes.podcast_series_id = podcast_series.id
       WHERE episode_playlists.playlist_id = ${thisPlaylist.playlist_id} 
       `)
           .then((podcastNameResult) => podcastNameResult.rows)

@@ -56,7 +56,7 @@
             <div class="col-md-4 pl-0">
               <small class='commentsDisplay'>                
                   <form action ='/series/<%=comment.series_id%>/episode/<%=comment.episode_id%>/comment/<%=comment.comment_id%>/favourite?_method=PUT' method="POST">
-                <button class="bg-transparent border-0 shadow-none commentFavouriteBtn" type="submit">
+                <button class="bg-transparent border-0 shadow-none commentFavouriteBtn maroon" type="submit">
                   <% if(comment.favourited !== undefined){ %>
                     <% if(comment.favourited === true) { %>
                       <i class="fa fa-heart"></i>

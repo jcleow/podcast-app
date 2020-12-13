@@ -51,7 +51,7 @@
             <% if(locals.loggedInUserProfilePic) { %>
               <img class="profilePic rounded-circle"  src='/<%=loggedInUserProfilePic%>'/>
             <% } else { %>
-              Account
+             <span class="text-light">Account</span>
             <% } %>
             </a>
           <button type="button" class="btn bg-transparent dropdown-toggle text-white dropdown-toggle-split profilePicBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -78,11 +78,11 @@
 <!-- Modal -->
 <div class="modal fade" id="createPlaylist" tabindex="-1" role="dialog" aria-labelledby="createPlaylistModal" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
+    <div class="modal-content bg-dark">
+      <div class="modal-header border-0">
         <h5 class="modal-title" id="createPlaylistModal">Create Playlist</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+          <span class='text-light' aria-hidden="true">&times;</span>
         </button>
       </div>
       <!-- Form -->
@@ -95,8 +95,8 @@
           <textarea class='form-control' rows="3" placeholder='Give your playlist a catchy description' name='newPlaylistDescription' ></textarea>
         </div>
         <div class="modal-footer">          
-          <input type="submit" class="btn btn-primary" role="button"  value="Create"/>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <input type="submit" class="btn btn-outline-light" role="button"  value="Create"/>
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
         </div>
       </form>
       <!-- Form -->

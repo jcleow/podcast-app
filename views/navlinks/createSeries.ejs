@@ -3,8 +3,8 @@
   <body>
 <div class="container navTopMargin">  
   <div class="row">
-    <div class="col d-flex justify-content-center submitSighting">
-      Create a new Podcast Series
+    <div class="col d-flex justify-content-center pb-4">
+      <h3>Create a new Podcast Series</h3>
     </div>
   </div>
 
@@ -142,15 +142,15 @@
         <input type="file" name="artwork" />
   </div>
   
-   <div>
-    <input type="submit" class="btn btn-primary" name="submitOverallForm"
+   <div class = 'd-flex flex-row justify-content-center'>
+    <input type="submit" class="btn btn-outline-light mr-2" name="submitOverallForm"
     <% if(locals.isNameValid){ %>
       <% if (isNameValid === 'false'){ %>
         disabled
      <% } %>
     <% } %>
     />
-    <a class='btn btn-secondary' role='button' href="/">Return To Main Page</a> 
+    <a class='btn btn-outline-secondary' role='button' href="/">Return To Main Page</a> 
    </div>
    </form>
 </body>
