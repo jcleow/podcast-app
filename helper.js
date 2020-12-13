@@ -73,7 +73,6 @@ const assignCurrentProfilePageUserInfo = (hostObj, currUserDetailResult, req) =>
 const checkIsUserCreatorAuth = (req, res, next) => {
   // Check if user is authenticated
   if (req.cookies.loggedInHash !== convertUserIdToHash(req.loggedInUserId)) {
-    console.log('test-1');
     res.render('errors/displayNotAuthorized');
     return;
   }
@@ -107,9 +106,11 @@ const checkIsUserCreatorAuth = (req, res, next) => {
     .then((isCreatorResult) => {
       if (isCreatorResult.rows.length === 0) {
         res.render('errors/displayNotAuthorized');
+      } else {
+        next();
       }
-    });
-  next();
+    })
+    .catch((error) => { console.log(error); });
 };
 
 export {
