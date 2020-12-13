@@ -94,8 +94,11 @@ body {
   position: relative;
 }
 
-.displaySubHeader {
-  color: #2d5f5d;
+a {
+  color: white;
+}
+a:hover {
+  color: #cb2d6f;
 }
 
 p.card-text {
@@ -199,8 +202,12 @@ h1 .display {
   background-color: transparent;
   border: none;
 }
+#playlistArtworkDisplay {
+  width: auto;
+}
 
 .artworkDisplay {
+  position: relative;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -213,31 +220,72 @@ h1 .display {
   text-align: center;
 }
 
-#playlistArtworkDisplay {
-  width: auto;
+.artworkDisplay:before {
+  content: " ";
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+.artworkDisplay:hover:before {
+  opacity: 1;
+}
+
+.artworkDisplay > a {
+  position: absolute;
+  display: none;
+  top: calc(50% - 25px);
+  left: calc(50% - 30px);
+  font-size: 20px;
+  color: white;
+  border-style: none;
+  background: transparent;
+  width: 70px;
+  height: auto;
+  z-index: 5;
 }
 
 .artworkDisplay > button {
+  position: absolute;
   display: none;
-}
-.epArtworkDisplay > button {
-  display: none;
+  top: calc(50% - 25px);
+  left: calc(50% - 30px);
+  font-size: 40px;
+  border-style: solid;
+  border-color: white;
+  color: white;
+  background: transparent;
+  width: 70px;
+  height: auto;
+  z-index: 5;
 }
 
 .artworkDisplay > a {
   display: none;
 }
 
+.artworkDisplay:hover > a {
+  display: block;
+  border-style: solid;
+  border-color: white;
+  background-color: transparent;
+}
+
+.artworkDisplay > button {
+  display: none;
+}
+
 .artworkDisplay:hover > button {
   display: block;
-  position: absolute;
-  top: calc(50% - 25px);
-  left: calc(50% - 30px);
-  font-size: 30px;
-  color: green;
-  background: transparent;
-  width: 60px;
-  height: 60px;
+}
+
+.epArtworkDisplay > button {
+  display: none;
 }
 
 .epArtworkDisplay:hover > button {
@@ -252,8 +300,16 @@ h1 .display {
   height: 60px;
 }
 
-.artworkDisplay:hover > a {
-  display: block;
+.epArtwork {
+  position: relative;
+  height: 10rem;
+  width: 10rem;
+}
+
+.epArtworkDisplay {
+  position: relative;
+  height: 9rem;
+  width: 9rem;
 }
 
 .genre {
@@ -269,18 +325,6 @@ h1 .display {
 
 .seriesDescription {
   height: 300px;
-}
-
-.epArtwork {
-  position: relative;
-  height: 10rem;
-  width: 10rem;
-}
-
-.epArtworkDisplay {
-  position: relative;
-  height: 9rem;
-  width: 9rem;
 }
 
 .seriesArtwork {
@@ -312,6 +356,7 @@ h1 .display {
   bottom: 0;
   left: calc(50% - 300px);
   width: 600px;
+  z-index: 100;
 }
 
 .spacing {
