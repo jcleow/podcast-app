@@ -4,6 +4,7 @@ html {
 }
 body {
   background-image: linear-gradient(180deg, #030c13, #383a3c);
+  min-height: 945px;
   color: white;
   font-family: "Roboto", sans-serif;
 }
