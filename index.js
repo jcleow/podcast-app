@@ -1498,7 +1498,7 @@ app.post('/insertEpisodeIntoPlaylist', (req, res) => {
 app.delete('/user/:userId/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
   const { playlistId, episodeId, userId } = req.params;
   if (convertUserIdToHash(req.loggedInUserId) !== req.loggedInHash || userId !== req.loggedInUserId) {
-    res.render('displayNotAuthorized');
+    res.render('errors/displayNotAuthorized');
     return;
   }
   pool
