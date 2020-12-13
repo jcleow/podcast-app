@@ -677,7 +677,7 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
 });
 
 // Route that edits an existing podcast_series
-app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
+app.put('/series/:id/edit', upload.single('artwork'), checkIsUserCreatorAuth, (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
@@ -880,7 +880,7 @@ app.get('/series/:seriesId/episode/:id/edit', checkIsUserCreatorAuth, (req, res)
 });
 
 // Route handles the podcast episode edit request
-app.put('/series/:seriesId/episode/:id/edit', upload.single('artwork'), (req, res) => {
+app.put('/series/:seriesId/episode/:id/edit', upload.single('artwork'), checkIsUserCreatorAuth, (req, res) => {
   const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   if (req.body.seriesName) {
     res.cookie('previousValues', req.body);

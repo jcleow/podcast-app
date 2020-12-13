@@ -72,8 +72,11 @@ const assignCurrentProfilePageUserInfo = (hostObj, currUserDetailResult, req) =>
 // Authentication function that checks if currUser is the creator for series
 const checkIsUserCreatorAuth = (req, res, next) => {
   // Check if user is authenticated
+  let data = {};
+
   if (req.cookies.loggedInHash !== convertUserIdToHash(req.loggedInUserId)) {
-    res.render('errors/displayNotAuthorized');
+    data = assignLoggedInUserDetails(data, req);
+    res.render('errors/displayNotAuthorized', data);
     return;
   }
   // Assign seriesId based on parameters used in url
@@ -105,7 +108,8 @@ const checkIsUserCreatorAuth = (req, res, next) => {
     .query(checkIfCreatorQuery)
     .then((isCreatorResult) => {
       if (isCreatorResult.rows.length === 0) {
-        res.render('errors/displayNotAuthorized');
+        data = assignLoggedInUserDetails(data, req);
+        res.render('errors/displayNotAuthorized', data);
       } else {
         next();
       }
