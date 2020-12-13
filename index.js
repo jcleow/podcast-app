@@ -29,8 +29,8 @@ app.use(express.urlencoded({ extended: false }));
 
 // To truncate excessive lines
 app.locals.truncateDescription = function (description) {
-  let truncatedDescription = `${description.substring(0, 180)}`;
-  if (truncatedDescription.length > 174) {
+  let truncatedDescription = `${description.substring(0, 100)}`;
+  if (truncatedDescription.length > 96) {
     truncatedDescription += '...';
   }
   return truncatedDescription;
