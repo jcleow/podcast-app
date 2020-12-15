@@ -1088,7 +1088,7 @@ app.post('/register', multerUpload.single('profilePic'), (req, res) => {
           // if a profile picture was uploaded
           let profilePic;
           if (req.file) {
-            profilePic = req.file.filename;
+            profilePic = req.file.location;
           } else {
             // if not, upload a default profile picture
             profilePic = 'defaultprofilepic.jpg';
