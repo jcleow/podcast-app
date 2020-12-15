@@ -10,7 +10,7 @@ const { Pool } = pg;
 let poolConfig;
 if (process.env.DATABASE_URL) {
   poolConfig = {
-    connectionString: process.env.DATABASE,
+    connectionString: process.env.DATABASE_URL,
   };
 } else {
   poolConfig = {
