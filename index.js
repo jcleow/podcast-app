@@ -30,7 +30,7 @@ const s3 = new aws.S3({
 const multerUpload = multer({
   storage: multerS3({
     s3,
-    bucket: 'podcastArtwork',
+    bucket: 'podcast-app-artwork',
     acl: 'public-read',
     metadata: (request, file, callback) => {
       callback(null, { fieldName: file.fieldname });
