@@ -3,6 +3,8 @@ import cookieParser from 'cookie-parser';
 import express, { response } from 'express';
 import multer from 'multer';
 import jsSHA from 'jssha';
+import aws from 'aws-sdk';
+import multerS3 from 'multer-s3';
 
 // Import helper functions and configurations
 import
@@ -16,8 +18,28 @@ import
 }
   from './helper.js';
 
-// Define upload multer
-const upload = multer({ dest: 'uploads/' });
+// // Define upload multer commented out for multer-s3
+// const upload = multer({ dest: 'uploads/' });
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.ACCESSKEYID,
+  secretAccessKey: process.env.SECRETACCESSKEY,
+});
+
+// Configuring the Multer-S3 upload
+const multerUpload = multer({
+  storage: multerS3({
+    s3,
+    bucket: 'podcastArtwork',
+    acl: 'public-read',
+    metadata: (request, file, callback) => {
+      callback(null, { fieldName: file.fieldname });
+    },
+    key: (request, file, callback) => {
+      callback(null, Date.now().toString());
+    },
+  }),
+});
 
 // Set up Express app;
 const app = express();
@@ -232,7 +254,7 @@ app.get('/series/create', (req, res) => {
     .then((result) => {
       if (result) {
         data.subgenreNames = result.rows.map((row) => row.name);
-        console.log(result.rows,'line-235');
+        console.log(result.rows, 'line-235');
       }
       // Assign loggedinUser(name) and id to data obj
       data = assignLoggedInUserDetails(data, req);
@@ -242,7 +264,7 @@ app.get('/series/create', (req, res) => {
 });
 
 // Route that creates a new podcast_series entry
-app.post('/series/create', upload.single('artwork'), (req, res) => {
+app.post('/series/create', multerUpload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
@@ -373,7 +395,7 @@ app.get('/series/episode/upload', (req, res) => {
 });
 
 // Route that submits a request that creates a new podcast_episode entry
-app.post('/series/episode/upload', upload.single('artwork'), (req, res) => {
+app.post('/series/episode/upload', multerUpload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
@@ -681,7 +703,7 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
 });
 
 // Route that edits an existing podcast_series
-app.put('/series/:id/edit', upload.single('artwork'), checkIsUserCreatorAuth, (req, res) => {
+app.put('/series/:id/edit', multerUpload.single('artwork'), checkIsUserCreatorAuth, (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
@@ -890,7 +912,7 @@ app.get('/series/:seriesId/episode/:id/edit', checkIsUserCreatorAuth, (req, res)
 });
 
 // Route handles the podcast episode edit request
-app.put('/series/:seriesId/episode/:id/edit', upload.single('artwork'), checkIsUserCreatorAuth, (req, res) => {
+app.put('/series/:seriesId/episode/:id/edit', multerUpload.single('artwork'), checkIsUserCreatorAuth, (req, res) => {
   const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   if (req.body.seriesName) {
     res.cookie('previousValues', req.body);
@@ -1009,7 +1031,7 @@ app.get('/register', (req, res) => {
 });
 
 // Route that submits a new user registration
-app.post('/register', upload.single('profilePic'), (req, res) => {
+app.post('/register', multerUpload.single('profilePic'), (req, res) => {
   const hash = hashPassword(req.body.password);
   req.body.password = hash;
 
