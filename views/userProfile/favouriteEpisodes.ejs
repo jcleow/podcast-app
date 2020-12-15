@@ -35,9 +35,9 @@
       <td class='text-center d-flex flex-row justify-content-center'>
         <form class="epArtworkDisplay playlistArtworkContainer"action ='/user/<%=currUserId%>/favouriteEpisodes'>
       <% if(episode.episode_artwork_filename) { %>
-        <img class='w-100 h-auto' src="/<%=episode.episode_artwork_filename%>"/>
+        <img class='w-100 h-auto' src="<%=episode.episode_artwork_filename%>"/>
       <% } else { %>
-        <img class='w-100 h-auto' src="/<%=episode.series_artwork_filename%>"/>
+        <img class='w-100 h-auto' src="<%=episode.series_artwork_filename%>"/>
         <% } %>
           <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>          
         <input type='hidden' name="podcast_ext_url" value="<%=episode.podcast_ext_url%>"/>
