@@ -232,6 +232,7 @@ app.get('/series/create', (req, res) => {
     .then((result) => {
       if (result) {
         data.subgenreNames = result.rows.map((row) => row.name);
+        console.log(result.rows,'line-235');
       }
       // Assign loggedinUser(name) and id to data obj
       data = assignLoggedInUserDetails(data, req);
