@@ -21,7 +21,7 @@ const upload = multer({ dest: 'uploads/' });
 
 // Set up Express app;
 const app = express();
-const PORT = process.argv[2];
+const PORT = process.env.PORT || process.argv[2];
 // Set view engine to ejs
 app.set('view engine', 'ejs');
 // To parse encoded incoming requests  with urlencoded payloads
