@@ -44,8 +44,6 @@ app.use(express.static('uploads'));
 app.use(methodOverride('_method'));
 // Middleware that allows request.cookies to be parsed
 app.use(cookieParser());
-// Getting the uploaded artwork files back into the expressjs app
-app.use(express.static('uploads'));
 
 // Middleware that checks if a user has been logged in and authenticates
 // before granting access to a page for every request
