@@ -1,50 +1,58 @@
-import pg from 'pg';
-import jsSHA from 'jssha';
 import methodOverride from 'method-override';
 import cookieParser from 'cookie-parser';
 import express, { response } from 'express';
 import multer from 'multer';
+import jsSHA from 'jssha';
+import aws from 'aws-sdk';
+import multerS3 from 'multer-s3';
 
-// Define upload multer
-const upload = multer({ dest: 'uploads/' });
-
-// Constant Variable of process.env
-const SALT = process.env.MY_ENV_VAR;
-// Set up Pooling with PostgresQL
-const { Pool } = pg;
-let poolConfig;
-if (process.env.ENV === 'PRODUCTION') {
-  poolConfig = {
-    user: 'postgres',
-    // set DB_PASSWORD as an environment variable for security.
-    password: process.env.DB_PASSWORD,
-    host: 'localhost',
-    database: 'podcast',
-    port: 5432,
-  };
-} else {
-  poolConfig = {
-    user: process.env.USER,
-    host: 'localhost',
-    database: 'podcast',
-    port: 5432, // Postgres server always runs on this port
-  };
+// Import helper functions and configurations
+import
+{
+  pool,
+  convertUserIdToHash,
+  hashPassword,
+  assignLoggedInUserDetails,
+  assignCurrentProfilePageUserInfo,
+  checkIsUserCreatorAuth,
 }
-// Create a new instance of Pool object
-const pool = new Pool(poolConfig);
+  from './helper.js';
+
+// // Define upload multer commented out for multer-s3
+// const upload = multer({ dest: 'uploads/' });
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.ACCESSKEYID,
+  secretAccessKey: process.env.SECRETACCESSKEY,
+});
+
+// Configuring the Multer-S3 upload
+const multerUpload = multer({
+  storage: multerS3({
+    s3,
+    bucket: 'podcast-app-artwork',
+    acl: 'public-read',
+    metadata: (request, file, callback) => {
+      callback(null, { fieldName: file.fieldname });
+    },
+    key: (request, file, callback) => {
+      callback(null, Date.now().toString());
+    },
+  }),
+});
 
 // Set up Express app;
 const app = express();
-const PORT = process.argv[2];
+const PORT = process.env.PORT || 3000;
 // Set view engine to ejs
 app.set('view engine', 'ejs');
 // To parse encoded incoming requests  with urlencoded payloads
 app.use(express.urlencoded({ extended: false }));
 
-// To truncate excessive lines (to be included)
+// To truncate excessive lines
 app.locals.truncateDescription = function (description) {
-  let truncatedDescription = `${description.substring(0, 200)}`;
-  if (truncatedDescription.length > 196) {
+  let truncatedDescription = `${description.substring(0, 100)}`;
+  if (truncatedDescription.length > 96) {
     truncatedDescription += '...';
   }
   return truncatedDescription;
@@ -58,69 +66,6 @@ app.use(express.static('uploads'));
 app.use(methodOverride('_method'));
 // Middleware that allows request.cookies to be parsed
 app.use(cookieParser());
-
-// Getting the uploaded artwork files back into the expressjs app
-app.use(express.static('uploads'));
-
-// **************************** Helper Functions **************************** /
-
-// Function that converts supplied userId into a hash (using a salt)
-const convertUserIdToHash = (userId) => {
-  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
-  const unhashedCookieString = `${userId}-${SALT}`;
-  shaObj.update(unhashedCookieString);
-  const hashedCookieString = shaObj.getHash('HEX');
-  return hashedCookieString;
-};
-
-// Function that hashes a variable
-const hashPassword = (reqBodyPassword) => {
-  // Perform hashing of password first
-  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
-  shaObj.update(reqBodyPassword);
-  const hash = shaObj.getHash('HEX');
-  return hash;
-};
-
-// Function that includes loggedInUser from req.body to data obj to be passed into ejs
-// hostobject is usually referred to as 'data' variable
-const assignLoggedInUserDetails = (hostObject, req) => {
-  hostObject.loggedInUser = req.loggedInUser;
-  hostObject.loggedInUserId = req.loggedInUserId;
-  hostObject.loggedInUserProfilePic = req.loggedInUserProfilePic;
-  return hostObject;
-};
-
-// Function that assigns current username,profile pic and id
-// to data var to render in ejs in a supplied 'hostObj' using the query 'result'
-// to be used in tandem with select query for curr user details
-const assignCurrentProfilePageUserInfo = (hostObj, currUserDetailResult, req) => {
-  hostObj.currUsername = currUserDetailResult.rows[0].curr_username;
-  hostObj.currUserProfilePic = currUserDetailResult.rows[0].profile_pic;
-  hostObj.currUserId = Number(req.params.id);
-  if (req.query) {
-    hostObj.episodeLinkToPlay = req.query.podcast_ext_url;
-  }
-  return hostObj;
-};
-
-// Authentication function that checks if currUser is the creator
-const checkIsUserCreatorAuth = (req, res, next) => {
-  pool
-  // Query whether the loggedInUser is the same as the site that he is trying to access
-    .query(`
-    SELECT creator_id 
-    FROM creator_podcast_episodes 
-    WHERE creator_id= ${req.loggedInUserId} 
-    AND podcast_episode_id = ${req.params.id}`)
-    .then((isCreatorResult) => {
-      if (isCreatorResult.rows.length === 0) {
-        res.status(403).send('Sorry, you do not have permissions to edit this page');
-      }
-    });
-
-  next();
-};
 
 // Middleware that checks if a user has been logged in and authenticates
 // before granting access to a page for every request
@@ -170,7 +115,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Route that gets the root page
+// Route that retrieves the root page
 app.get('/', (req, res) => {
   // Store all data to be rendered in ejs in data var
   let data = {};
@@ -184,7 +129,7 @@ app.get('/', (req, res) => {
 
   // Execute all queries
   pool
-    .query('SELECT * FROM podcast_series')
+    .query('SELECT * FROM podcast_series ORDER BY random()')
     .then((result) => {
       data.series = result.rows;
 
@@ -199,7 +144,8 @@ app.get('/', (req, res) => {
       podcast_series.artwork_filename AS album_artwork
       FROM podcast_episodes 
       INNER JOIN podcast_series 
-      ON podcast_episodes.podcast_series_id = podcast_series.id`;
+      ON podcast_episodes.podcast_series_id = podcast_series.id
+      ORDER BY random()`;
       return pool.query(selectAllPodcastEpisodesQuery);
     })
 
@@ -243,7 +189,7 @@ app.get('/', (req, res) => {
     .catch((error) => console.log(error));
 });
 
-// **************************** Left Nav Link Bar Routes **************************** /
+// **************************** Nav Menu (Left) Bar Links Routes **************************** /
 
 // Route that renders a new form to enter podcast_series details
 app.get('/series/create', (req, res) => {
@@ -296,18 +242,19 @@ app.get('/series/create', (req, res) => {
           INNER JOIN genres 
           ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreName}'`);
         }
-        // if (req.cookies.previousValues.genreText) {
-        //   return pool.query(`
-        //   SELECT subgenres.name
-        //   FROM subgenres
-        //   INNER JOIN genres
-        //   ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreText}'`);
-        // }
+        if (req.cookies.previousValues.genreText) {
+          return pool.query(`
+          SELECT subgenres.name
+          FROM subgenres
+          INNER JOIN genres
+          ON genres.id = genre_id WHERE genres.name ='${req.cookies.previousValues.genreText}'`);
+        }
       }
     })
     .then((result) => {
       if (result) {
         data.subgenreNames = result.rows.map((row) => row.name);
+        console.log(result.rows, 'line-235');
       }
       // Assign loggedinUser(name) and id to data obj
       data = assignLoggedInUserDetails(data, req);
@@ -317,7 +264,7 @@ app.get('/series/create', (req, res) => {
 });
 
 // Route that creates a new podcast_series entry
-app.post('/series/create', upload.single('artwork'), (req, res) => {
+app.post('/series/create', multerUpload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
@@ -341,27 +288,47 @@ app.post('/series/create', upload.single('artwork'), (req, res) => {
     .query(insertNewPodcastDetailsQuery)
     .then((result) => {
       currPodcastSeriesId = result.rows[0].podcast_series_id;
+      // If user did not choose a genre - default to Arts
+      if (req.body.genreText === '') {
+        req.body.genreText = 'Arts';
+      }
+      // If user did not choose a subgenre
+      if (req.body.subgenreText === '') {
+        req.body.subgenreText = 'Other';
+      }
       // Insert relationship between podcast and subgenre into podcast_series_subgenres join table
       const insertPodcastSubgenreQuery = {
-        text: `INSERT INTO podcast_series_subgenres(podcast_series_id,subgenre_id) SELECT ${currPodcastSeriesId},subgenres.id FROM subgenres WHERE subgenres.name = '${req.body.subgenreText}'`,
+        text: `
+        INSERT INTO podcast_series_subgenres(podcast_series_id,subgenre_id)
+        SELECT ${currPodcastSeriesId},subgenres.id
+        FROM subgenres
+        INNER JOIN genres
+        ON genres.id = subgenres.genre_id 
+        WHERE subgenres.name = '${req.body.subgenreText}'
+        AND genres.name = '${req.body.genreText}'`,
       };
       return pool.query(insertPodcastSubgenreQuery);
     })
-    .then(() => {
-      const query = `INSERT INTO creator_podcast_episodes(creator_id,podcast_episode_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`;
-      console.log(query, 'test-233');
-      return pool.query(`INSERT INTO creator_podcast_episodes(creator_id,podcast_episode_id) VALUES(${req.loggedInUserId},${currPodcastSeriesId}) RETURNING *`);
-    })
+    .then(() => pool.query(`
+    INSERT INTO
+    creator_podcast_series(creator_id,podcast_series_id)
+    VALUES(${req.loggedInUserId},${currPodcastSeriesId}) 
+    RETURNING *`))
     // If user uploaded an artwork, then run the query to insert it
     .then(() => {
+      let filename;
+      // if user uploads an artwork
       if (req.file) {
-        const { filename } = req.file;
-        const insertPodcastSeriesArtworkQuery = {
-          text: `UPDATE podcast_series SET artwork_filename= $1 WHERE id=${currPodcastSeriesId} RETURNING *`,
-          values: [filename],
-        };
-        return pool.query(insertPodcastSeriesArtworkQuery);
+        filename = req.file.location;
+      } else {
+        // if not use default artwork
+        filename = 'defaultArtwork.jpg';
       }
+      const insertPodcastSeriesArtworkQuery = {
+        text: `UPDATE podcast_series SET artwork_filename= $1 WHERE id=${currPodcastSeriesId} RETURNING *`,
+        values: [filename],
+      };
+      return pool.query(insertPodcastSeriesArtworkQuery);
     })
     .then(() => {
       // If not, terminate the req-res cycle and clear cookies relating to create podcast form
@@ -388,25 +355,47 @@ app.get('/series/episode/upload', (req, res) => {
     data.previousValues = req.cookies.previousValues;
   }
 
+  const selectCountOfAllExistingPodcastsQuery = {
+    text: `SELECT COUNT(*) 
+    FROM podcast_series
+    INNER JOIN creator_podcast_series
+    ON creator_podcast_series.podcast_series_id = podcast_series.id
+    WHERE creator_id = ${req.loggedInUserId}
+    `,
+  };
+
   const selectAllExistingPodcastsQuery = {
-    text: 'SELECT name FROM podcast_series',
+    text: `SELECT podcast_series.name
+    FROM podcast_series
+    INNER JOIN creator_podcast_series
+    ON creator_podcast_series.podcast_series_id = podcast_series.id
+    WHERE creator_id = ${req.loggedInUserId}`,
   };
 
   pool
     // first obtain all the names of existing podcasts in the database
-    .query(selectAllExistingPodcastsQuery)
+    .query(selectCountOfAllExistingPodcastsQuery)
+    .then((countResult) => {
+      if (Number(countResult.rows[0].count) > 0) {
+        return pool.query(selectAllExistingPodcastsQuery);
+      }
+    })
     // consolidate the names into an array and assign to var data
-    .then((result) => {
-      const allExistingSeries = result.rows.map((row) => row.name);
-      data.allExistingSeries = allExistingSeries;
-
-      res.render('navlinks/uploadEpisode', data);
+    .then((selectedPodcastResult) => {
+      if (selectedPodcastResult) {
+        const allExistingSeries = selectedPodcastResult.rows.map((row) => row.name);
+        data.allExistingSeries = allExistingSeries;
+        res.render('navlinks/uploadEpisode', data);
+        return;
+      }
+      // Redirect to creation of series page
+      res.redirect('/series/create');
     })
     .catch((error) => console.log(error));
 });
 
 // Route that submits a request that creates a new podcast_episode entry
-app.post('/series/episode/upload', upload.single('artwork'), (req, res) => {
+app.post('/series/episode/upload', multerUpload.single('artwork'), (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
@@ -433,7 +422,9 @@ app.post('/series/episode/upload', upload.single('artwork'), (req, res) => {
   const [podcastSeriesName, podcastEpisodeName, episodeNumber, description, externalLink, artwork] = valuesArray;
 
   const insertEpisodeQuery = {
-    text: 'INSERT INTO podcast_episodes(name,episode_number,description,podcast_ext_url) VALUES($1,$2,$3,$4) RETURNING id',
+    text: `
+    INSERT INTO podcast_episodes(name,episode_number,description,podcast_ext_url) 
+    VALUES($1,$2,$3,$4) RETURNING id`,
     values: [podcastEpisodeName, Number(episodeNumber), description, externalLink],
   };
 
@@ -447,22 +438,31 @@ app.post('/series/episode/upload', upload.single('artwork'), (req, res) => {
     // next insert the filename of the uploaded artwork
     .then(() => {
       if (req.file) {
-        const { filename } = req.file;
+        const { location } = req.file;
         const insertEpisodeArtworkQuery = {
-          text: `UPDATE podcast_episodes SET artwork_filename = $1 WHERE id = ${currPodcastEpisodeId}`,
-          values: [filename],
+          text: `
+          UPDATE podcast_episodes 
+          SET artwork_filename = $1 
+          WHERE id = ${currPodcastEpisodeId}`,
+          values: [location],
         };
         return pool.query(insertEpisodeArtworkQuery);
       }
     })
     // next select/get the serial id of the podcast series
     .then(() => {
-      const selectPodcastSeriesId = `SELECT id FROM podcast_series WHERE name= '${podcastSeriesName}'`;
+      const selectPodcastSeriesId = `
+      SELECT id
+      FROM podcast_series 
+      WHERE name= '${podcastSeriesName}'`;
       return pool.query(selectPodcastSeriesId);
     })
     // next insert the podcast_series_id (Foreign key)
     .then((result) => {
-      const insertPodcastSeriesIdForeignKeyQuery = (`UPDATE podcast_episodes SET podcast_series_id=${result.rows[0].id} WHERE podcast_episodes.id = ${currPodcastEpisodeId}`);
+      const insertPodcastSeriesIdForeignKeyQuery = `
+      UPDATE podcast_episodes 
+      SET podcast_series_id=${result.rows[0].id}
+      WHERE podcast_episodes.id = ${currPodcastEpisodeId}`;
       return pool.query(insertPodcastSeriesIdForeignKeyQuery);
     })
     .then(() => {
@@ -471,7 +471,20 @@ app.post('/series/episode/upload', upload.single('artwork'), (req, res) => {
     .catch((error) => { console.log(error); });
 });
 
-// **************************** Podcast series CRUD **************************** /
+// Route that handles the creation of a new playlist
+app.post('/createPlaylist', (req, res) => {
+  pool.query(`INSERT INTO playlists(name,description) VALUES('${req.body.newPlaylistName}','${req.body.newPlaylistDescription}') RETURNING id`)
+    .then((playlistIdResult) => {
+      const playlistId = playlistIdResult.rows[0].id;
+
+      return pool.query(`INSERT INTO user_playlists(playlist_id,user_id) VALUES(${playlistId},${req.loggedInUserId}) RETURNING *`);
+    })
+    .then((results) => {
+      res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
+    });
+});
+
+// **************************** Podcast series display,update **************************** /
 
 // Route that displays the podcast series with its description and episodes
 app.get('/series/:id', (req, res) => {
@@ -481,14 +494,15 @@ app.get('/series/:id', (req, res) => {
   let data = {};
   data = assignLoggedInUserDetails(data, req);
   // First query for the podcast series details
-  pool.query(`
-  SELECT 
-  id AS series_id,
-  name AS series_name,
-  description AS series_description,
-  artwork_filename AS series_artwork
-  FROM podcast_series 
-  WHERE podcast_series.id = ${seriesId}`)
+  pool
+    .query(`
+    SELECT 
+    id AS series_id,
+    name AS series_name,
+    description AS series_description,
+    artwork_filename AS series_artwork
+    FROM podcast_series 
+    WHERE podcast_series.id = ${seriesId}`)
     .then((podcastSeriesResult) => {
       if (podcastSeriesResult && podcastSeriesResult.rows) {
         data.selectedSeries = podcastSeriesResult.rows;
@@ -500,22 +514,75 @@ app.get('/series/:id', (req, res) => {
       podcast_episodes.name AS episode_name,
       podcast_episodes.description AS episode_description,
       podcast_episodes.artwork_filename AS episode_artwork,
-      podcast_episodes.podcast_ext_url 
+      podcast_episodes.podcast_ext_url      
       FROM podcast_episodes
       INNER JOIN podcast_series
-      ON podcast_series.id = podcast_series_id
+      ON podcast_series.id = podcast_series_id      
       WHERE podcast_series_id = ${seriesId}`);
     })
     .then((eachEpisodeResult) => {
+      let arrayOfEpisodeIfFavouritedQuery = [];
+      // Next, check if any of the listed episodes have been favourited by the user before
+      // Premise is that the user must be logged in if not an error will occur
       if (eachEpisodeResult && eachEpisodeResult.rows) {
         data.episodes = eachEpisodeResult.rows;
+
+        if (req.middlewareLoggedIn === true) {
+          arrayOfEpisodeIfFavouritedQuery = data.episodes.map((episode, index) => pool.query(`
+          SELECT COUNT(*) 
+          from listener_podcast_episodes           
+          WHERE podcast_episode_id = ${episode.episode_id}
+          AND listener_id = ${req.loggedInUserId}`)
+            .then((isCountOneResult) => {
+            // In the scenario if an episode has been favourited before
+              if (isCountOneResult.rows[0].count === '1') {
+                return pool
+                  .query(
+                    `SELECT favourited 
+                  from listener_podcast_episodes           
+                  WHERE podcast_episode_id = ${episode.episode_id}
+                  AND listener_id = ${req.loggedInUserId}`,
+                  );
+              }
+            // Else no query will passed on to the next then statement
+            })
+            .then((isEpisodeFavouritedQueryResult) => {
+            // In the event episode has been favourited before, result will be defined
+              if (isEpisodeFavouritedQueryResult !== undefined) {
+                episode.favourited = isEpisodeFavouritedQueryResult.rows[0].favourited;
+                return episode;
+              }
+              episode.favourited = false;
+              return episode;
+            })
+            .catch((error) => {
+            // In the event the episode has never been favourited before, result will be undefined
+              console.log(error, `error in one of the queries ${index}`);
+              // Regardless, that episode's favourite status should be labeled false
+              episode.favourited = false;
+              return episode;
+            }));
+          return Promise.all(arrayOfEpisodeIfFavouritedQuery);
+        }
       }
     })
-    .then(() => {
+    .then((favouritePromiseResult) => {
+      if (favouritePromiseResult) {
+        data.episodes = favouritePromiseResult;
+      }
+
       if (req.query) {
         const { episodeLinkToPlay } = req.query;
         data.episodeLinkToPlay = episodeLinkToPlay;
       }
+
+      // To perform user validation to decide whether hearts can be shown or not
+      if (convertUserIdToHash(req.loggedInUserId) === req.cookies.loggedInHash) {
+        data.isUserAuth = true;
+      } else {
+        data.isUserAuth = false;
+      }
+
       // Pass all info into data variable
       res.render('selectedSeries', data);
     })
@@ -594,7 +661,10 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
       }
       // query for existing genre and subgenres
       return pool.query(`
-      SELECT subgenre_id,subgenres.name AS subgenreText,genres.name as genreText
+      SELECT 
+      subgenre_id,
+      subgenres.name AS subgenreText,
+      genres.name as genreText
       FROM podcast_series_subgenres
       INNER JOIN subgenres
       ON subgenres.id = podcast_series_subgenres.subgenre_id
@@ -611,9 +681,20 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
         data.previousValues.subgenreId = genreAndSubGenreResult.rows[0].subgenre_id;
         // Store and display the genre text
         data.previousValues.genreText = genreAndSubGenreResult.rows[0].genretext;
+
+        // query for subgenre names that are tagged to this genreText
+        return pool.query(`
+        SELECT subgenres.name
+        FROM subgenres
+        INNER JOIN genres ON
+        genres.id = genre_id
+        WHERE genres.name ='${data.previousValues.genreText}'`);
       }
     })
-    .then(() => {
+    .then((subgenreNameResult) => {
+      if (subgenreNameResult) {
+        data.subgenreNames = subgenreNameResult.rows.map((row) => row.name);
+      }
       // For the form to submit back to the same series Id
       data.currSeriesId = req.params.id;
       res.render('editExistingSeries', data);
@@ -622,7 +703,7 @@ app.get('/series/:id/edit', checkIsUserCreatorAuth, (req, res) => {
 });
 
 // Route that edits an existing podcast_series
-app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
+app.put('/series/:id/edit', multerUpload.single('artwork'), checkIsUserCreatorAuth, (req, res) => {
   // Check if entry is finished through temp data in req.cookies
   // if entry is not finished, the info will be stored in the cookies
   if (!req.body.submitOverallForm) {
@@ -652,7 +733,7 @@ app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
     // If podcast image is submitted, then change podcast image
     .then(() => {
       if (req.file) {
-        const newArtworkFile = req.file.filename;
+        const newArtworkFile = req.file.location;
         return pool.query(`UPDATE podcast_series SET artwork_filename ='${newArtworkFile}' WHERE id = ${req.params.id}`);
       }
     })
@@ -665,12 +746,25 @@ app.put('/series/:id/edit', upload.single('artwork'), (req, res) => {
     .catch((error) => response.status(503).send(error));
 });
 
-app.delete('/series/:id/delete', (req, res) => {
-
+app.delete('/series/:id/delete', checkIsUserCreatorAuth, (req, res) => {
+  pool
+    .query(`
+  DELETE FROM podcast_series
+  WHERE id = ${req.params.id}
+   `)
+    .then(() => pool.query(`
+      DELETE FROM podcast_episodes
+      WHERE podcast_series_id = ${req.params.id}
+      `))
+    .then(() => {
+      res.redirect('/');
+    })
+    .catch((error) => console.log(error, 'error in deleting podcast series/episodes'));
 });
-// **************************** Podcast episode CRUD **************************** /
-// Route that displays an individual podcast episode with its comments
 
+// ****************** Podcast episode display,update,and deletion ****************** /
+
+// Route that displays an individual podcast episode with its comments
 app.get('/series/:seriesId/episode/:id', (req, res) => {
   const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   // Store data to be rendered into ejs into a var
@@ -690,7 +784,8 @@ app.get('/series/:seriesId/episode/:id', (req, res) => {
     podcast_episodes.podcast_ext_url AS episode_podcast_ext_url,
     podcast_episodes.podcast_series_id AS episode_series_id,
     podcast_series.id AS series_id,
-    podcast_series.name AS series_name
+    podcast_series.name AS series_name,
+    podcast_series.artwork_filename AS series_artwork_filename
     FROM podcast_episodes
     INNER JOIN podcast_series
     ON podcast_episodes.podcast_series_id=podcast_series.id 
@@ -732,13 +827,15 @@ app.get('/series/:seriesId/episode/:id', (req, res) => {
         data.isEpisodeFavourited = result.rows[0].favourited;
       }
       // Query for current user which comments he favourited before
-      return pool.query(`
+      if (req.middlewareLoggedIn === true) {
+        return pool.query(`
       SELECT user_episode_comments.id,favourited
       FROM favourite_comments
       INNER JOIN user_episode_comments
       ON user_episode_comments.id=user_episode_comment_id
       WHERE favourite_comments.user_id = ${req.loggedInUserId}
       `);
+      }
     })
     .then((userFavCommentsResult) => {
       if (userFavCommentsResult && userFavCommentsResult.rows.length > 0) {
@@ -751,25 +848,28 @@ app.get('/series/:seriesId/episode/:id', (req, res) => {
         });
       }
       // Query for all the playlists current loggedInUser has
-      return pool.query(`
+      if (req.middlewareLoggedIn === true) {
+        return pool.query(`
       SELECT playlists.name FROM playlists
       INNER JOIN user_playlists
       ON playlist_id = playlists.id
       WHERE user_id = ${req.loggedInUserId} `);
+      }
     })
     .then((playlistResults) => {
-      data.currUserPlaylists = playlistResults.rows;
+      if (playlistResults) {
+        data.currUserPlaylists = playlistResults.rows;
+      }
       if (req.query) {
         const { addPlaylist: selectedPlaylistToBeAdded } = req.query;
         data.selectedPlaylist = selectedPlaylistToBeAdded;
       }
-      console.log(data, 'data');
       res.render('episodeDisplay', data);
     });
 });
 
 // Route that displays the podcast episode edit form
-app.get('/series/:seriesId/episode/:id/edit', (req, res) => {
+app.get('/series/:seriesId/episode/:id/edit', checkIsUserCreatorAuth, (req, res) => {
   const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   let data = {};
   data = assignLoggedInUserDetails(data, req);
@@ -779,7 +879,7 @@ app.get('/series/:seriesId/episode/:id/edit', (req, res) => {
     podcast_episodes.id,
     podcast_episodes.name,
     podcast_episodes.episode_number,
-    podcast_episodes.description,
+    podcast_episodes.description AS episode_description,
     podcast_episodes.artwork_filename,
     podcast_episodes.podcast_ext_url,
     podcast_episodes.podcast_series_id,
@@ -812,11 +912,11 @@ app.get('/series/:seriesId/episode/:id/edit', (req, res) => {
 });
 
 // Route handles the podcast episode edit request
-app.put('/series/:seriesId/episode/:id/edit', upload.single('artwork'), (req, res) => {
+app.put('/series/:seriesId/episode/:id/edit', multerUpload.single('artwork'), checkIsUserCreatorAuth, (req, res) => {
   const { seriesId: currSeriesId, id: currEpisodeId } = req.params;
   if (req.body.seriesName) {
     res.cookie('previousValues', req.body);
-    res.redirect(`/podcast/episode/${req.params.id}/edit`);
+    res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
     return;
   }
   // Remove artwork file, seriesName and seriesText first in case user does not upload as well as further obtaining the seriesName subsequently
@@ -860,7 +960,7 @@ app.put('/series/:seriesId/episode/:id/edit', upload.single('artwork'), (req, re
       if (req.file) {
         return pool.query(
           `UPDATE podcast_episodes
-          SET artwork_filename = '${req.file.filename}'
+          SET artwork_filename = '${req.file.location}'
           WHERE id =${req.params.id}
           `,
         );
@@ -875,7 +975,7 @@ app.put('/series/:seriesId/episode/:id/edit', upload.single('artwork'), (req, re
 });
 
 // Route that handles the podcast episode deletion request
-app.delete('/series/:seriesId/episode/:id/delete', (req, res) => {
+app.delete('/series/:seriesId/episode/:id/delete', checkIsUserCreatorAuth, (req, res) => {
   pool
     .query(`
     DELETE FROM podcast_episodes 
@@ -908,7 +1008,7 @@ app.post('/login', (req, res) => {
     .query(`SELECT id from users WHERE username='${req.body.username}' AND password='${hash}'`)
     .then((result) => {
       if (result.rows.length === 0) {
-        res.render('error/displayErrorPage');
+        res.render('errors/displayErrorPage');
         return;
       }
       // Perform hashing of userId using username + salt
@@ -918,6 +1018,10 @@ app.post('/login', (req, res) => {
       res.cookie('loggedInHash', hashedUserIdString);
       res.cookie('loggedInUserId', result.rows[0].id);
       res.redirect('/');
+    })
+    .catch((error) => {
+      console.log(error);
+      res.render('displayErrorPage');
     });
 });
 
@@ -927,21 +1031,17 @@ app.get('/register', (req, res) => {
 });
 
 // Route that submits a new user registration
-app.post('/register', upload.single('profilePic'), (req, res) => {
+app.post('/register', multerUpload.single('profilePic'), (req, res) => {
   const hash = hashPassword(req.body.password);
   req.body.password = hash;
-  // Reassign profile_pic to the hashed filename by multer in req.body
-  // if a profile picture was uploaded
-  if (req.file) {
-    req.body.profilePic = req.file.filename;
-  }
+
   const userValues = Object.entries(req.body).map(([key, value]) => value);
   const checkIfUsernameAndEmailExistsQuery = {
     text: `SELECT username,email_address FROM users WHERE (username ='${req.body.username}') OR (email_address='${req.body.emailAddress}')`,
   };
 
   const createNewUserQuery = {
-    text: 'INSERT INTO users(first_name,last_name,email_address,username,password,profile_pic) VALUES($1,$2,$3,$4,$5,$6) RETURNING * ',
+    text: 'INSERT INTO users(first_name,last_name,email_address,username,password) VALUES($1,$2,$3,$4,$5) RETURNING * ',
     values: userValues,
   };
 
@@ -975,17 +1075,30 @@ app.post('/register', upload.single('profilePic'), (req, res) => {
         return pool.query(createNewUserQuery);
       }
     })
-    .then((result) => {
+    .then((insertionQueryResult) => {
+      console.log(insertionQueryResult.rows[0]);
       // If form is valid an an create new user query was performed
-      if (result) {
-        if (result.rows.length > 0) {
-          const hashedUserIdString = convertUserIdToHash(result.rows[0].id);
+      if (insertionQueryResult) {
+        if (insertionQueryResult.rows.length > 0) {
+          const hashedUserIdString = convertUserIdToHash(insertionQueryResult.rows[0].id);
           res.cookie('loggedInHash', hashedUserIdString);
-          res.cookie('loggedInUserId', result.rows[0].id);
+          res.cookie('loggedInUserId', insertionQueryResult.rows[0].id);
           res.clearCookie('previousValues');
-          res.redirect('/');
+          // Reassign profile_pic to the hashed filename by multer in req.body
+          // if a profile picture was uploaded
+          let profilePic;
+          if (req.file) {
+            profilePic = req.file.location;
+          } else {
+            // if not, upload a default profile picture
+            profilePic = 'defaultprofilepic.jpg';
+          }
+          return pool.query(`UPDATE users SET profile_pic='${profilePic}' WHERE id=${insertionQueryResult.rows[0].id} RETURNING *`);
         }
       }
+    })
+    .then(() => {
+      res.redirect('/');
     })
     .catch((error) => {
       // Else form was invalid and a new user creation query was not performed
@@ -1015,7 +1128,7 @@ app.delete('/logout', (req, res) => {
   res.redirect('/');
 });
 
-// **************************** Adding comments to an episode **************************** /
+// ********************* Adding comments and favourites to an episode *********************  /
 
 // Creates a new comment as well as a favourite entry (false by default)
 app.post('/series/:seriesId/episode/:id/comment', (req, res) => {
@@ -1065,12 +1178,16 @@ app.post('/series/:seriesId/episode/:id/favourite', (req, res) => {
         return pool.query(`UPDATE listener_podcast_episodes SET favourited=${newFavouritedStatus} WHERE listener_id=${req.loggedInUserId} and podcast_episode_id=${currEpisodeId}`);
       }
     }).then(() => {
+      if (req.body.favouritedEpisode === 'selectedSeriesPage') {
+        res.redirect(`/series/${currSeriesId}`);
+        return;
+      }
       // If user clicked on unfavouriting from his own profile page, then redirect back to user page
       res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
     });
 });
 
-// Unfavourite a podcast episode from logged in user profile page
+// Unfavourite a podcast episode only from a LoggedIn user profile page
 app.put('/user/:id/editFavouriteEpisode/:episodeId', (req, res) => {
   const { episodeId: currEpisodeId } = req.params;
   pool
@@ -1078,49 +1195,51 @@ app.put('/user/:id/editFavouriteEpisode/:episodeId', (req, res) => {
     .then(() => res.redirect(`/user/${req.loggedInUserId}`));
 });
 
-// Handles the editing of a previously inserted favourite entry (upon creation of a comment) // to be split out into post and put separately
+// Handles the editing of a previously inserted favourite entry (upon creation of a comment)
+// to be split out into post and put separately
 app.put('/series/:seriesId/episode/:episodeId/comment/:commentId/favourite', (req, res) => {
-  const { seriesId: currSeriesId, episodeId: currEpisodeId } = req.params;
+  const { seriesId: currSeriesId, episodeId: currEpisodeId, commentId: currCommentId } = req.params;
 
   // Store new favourite status in a variable
   let newFavouriteStatus;
   pool
     .query(`SELECT favourited FROM favourite_comments 
-  WHERE user_id=${req.loggedInUserId}
-  AND user_episode_comment_id = ${req.params.commentId}
+            WHERE user_id=${req.loggedInUserId}
+            AND user_episode_comment_id = ${currCommentId}
   `)
-    .then((result) => {
-      if (result && result.rows && result.rows.length !== 0) {
-        if (result.rows[0].favourited === true) {
+    .then((thisUserFavResult) => {
+      if (thisUserFavResult && thisUserFavResult.rows && thisUserFavResult.rows.length !== 0) {
+        if (thisUserFavResult.rows[0].favourited === true) {
           newFavouriteStatus = false;
         } else {
           newFavouriteStatus = true;
         }
-        return pool.query(`UPDATE
-  favourite_comments 
-  SET favourited = ${newFavouriteStatus}
-  WHERE user_episode_comment_id = ${req.params.commentId} 
-  AND user_id = ${req.loggedInUserId} RETURNING * `);
+        return pool.query(`
+        UPDATE
+        favourite_comments 
+        SET favourited = ${newFavouriteStatus}
+        WHERE user_episode_comment_id = ${currCommentId} 
+        AND user_id = ${req.loggedInUserId} RETURNING * `);
       }
       return pool.query(`
         INSERT INTO favourite_comments(favourited,user_episode_comment_id,user_id)
-        VALUES(true,${req.params.commentId},${req.loggedInUserId}) RETURNING *`);
+        VALUES(true,${currCommentId},${req.loggedInUserId}) RETURNING *`);
     })
-    .then((result) => {
-      res.redirect(`/series/:${currSeriesId}/episode/${currEpisodeId}`);
+    .then(() => {
+      if (req.body.favouriteComment === 'profilePage') {
+        res.redirect(`/user/${req.loggedInUserId}/favouriteComments`);
+      } else {
+        res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
+      }
     });
 });
 
-// **************************** Adding friends **************************** /
+// ********************* Displaying user profile page ********************* /
 
-// **** Displaying user profile page ***/
 // Route that gets a user's profile page (redirects to favourite Episodes for now)
 app.get('/user/:id', (req, res) => {
   res.redirect(`/user/${req.params.id}/favouriteEpisodes`);
 });
-
-// Route that renders user's playlists
-app.get('/user/:id/playlists');
 
 // Route that renders user's favourite episodes
 app.get('/user/:id/favouriteEpisodes', (req, res) => {
@@ -1131,11 +1250,19 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
   pool
   // Querying for  all the favourited episodes
     .query(
-      `SELECT *             
+      `SELECT *,
+      podcast_episodes.id AS episode_id,
+      podcast_episodes.name AS episode_name,
+      podcast_episodes.artwork_filename AS episode_artwork_filename,      
+      podcast_episodes.podcast_series_id AS series_id,
+      podcast_series.artwork_filename AS series_artwork_filename               
       FROM podcast_episodes
       INNER JOIN listener_podcast_episodes 
-      ON listener_podcast_episodes.podcast_episode_id=podcast_episodes.id            
-      WHERE favourited=true AND listener_id = ${currUserId}`,
+      ON listener_podcast_episodes.podcast_episode_id=podcast_episodes.id
+      INNER JOIN podcast_series 
+      ON podcast_episodes.podcast_series_id = podcast_series.id                  
+      WHERE favourited=true 
+      AND listener_id = ${currUserId}`,
     )
     .then((result) => {
       if (result && result.rows) {
@@ -1150,7 +1277,8 @@ app.get('/user/:id/favouriteEpisodes', (req, res) => {
     .then((result) => {
       data = assignCurrentProfilePageUserInfo(data, result, req);
       return pool.query(`
-      SELECT * FROM fellowships WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`);
+      SELECT * FROM fellowships 
+      WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`);
     })
     .then((fellowshipResult) => {
       if (fellowshipResult.rows.length === 0) {
@@ -1179,56 +1307,35 @@ app.get('/user/:id/favouriteComments', (req, res) => {
   // whose profile page we are accessing
   pool
     .query(
-      `SELECT poster_id,favourited, comment, user_episode_comment_id
-    FROM favourite_comments
-    INNER JOIN user_episode_comments
-    ON user_episode_comments.id=favourite_comments.user_episode_comment_id
-    WHERE favourite_comments.user_id = ${currUserId} AND favourited =true
+      `SELECT poster_id,
+      favourited, 
+      comment, 
+      user_episode_comment_id AS comment_id,
+      podcast_series.id AS series_id,
+      podcast_series.name AS series_name,
+      podcast_episodes.id AS episode_id,
+      podcast_episodes.name AS episode_name,
+      users.username,
+      users.profile_pic
+      FROM favourite_comments
+      INNER JOIN user_episode_comments
+      ON user_episode_comments.id=favourite_comments.user_episode_comment_id
+      INNER JOIN podcast_episodes
+      ON user_episode_comments.podcast_episode_id = podcast_episodes.id
+      INNER JOIN podcast_series
+      ON podcast_series_id = podcast_series.id
+      INNER JOIN users
+      ON users.id = poster_id
+      WHERE favourite_comments.user_id = ${currUserId} AND favourited =true
     `,
     )
-    // However the join tables does not contain the original poster's username and picture
-    // so for each favourited comment, we have to perform a query to get the relevant deets
-    .then((result) => {
-      let arrayOfPosterQuery = [];
-      if (result.rows.length > 0) {
-        // Store all the queries as promises in an array
-        arrayOfPosterQuery = result.rows.map((row) => pool
-          .query(
-            `SELECT 
-            username,
-            profile_pic,
-            podcast_episodes.name AS episode_name,
-            podcast_series.name AS series_name 
-            FROM users            
-            INNER JOIN user_episode_comments
-            ON poster_id = users.id
-            INNER JOIN podcast_episodes
-            ON user_episode_comments.podcast_episode_id = podcast_episodes.id        
-            INNER JOIN podcast_series 
-            ON podcast_series_id = podcast_series.id              
-            WHERE users.id=${row.poster_id} `,
-          )
-          .then((posterResult) => {
-            row.username = posterResult.rows[0].username;
-            row.profile_pic = posterResult.rows[0].profile_pic;
-            row.episodeName = posterResult.rows[0].episode_name;
-            row.seriesName = posterResult.rows[0].series_name;
-            // return the result later
-            return row;
-          })
-          .catch((error) => console.log(error, 'error in one of the queries')));
-      }
-      return Promise.all(arrayOfPosterQuery);
-    })
-    // only when all the queries are successfully completed
-    // we can obtain all the favourited comments by the user, c/w with the original
-    // commenter's username and profile picture
-    .then((arrayResult) => {
-      if (arrayResult) {
-        data.comments = arrayResult;
+    .then((commentDetailsResult) => {
+      if (commentDetailsResult) {
+        data.comments = commentDetailsResult.rows;
       }
       return pool.query(`
-      SELECT username AS curr_username,profile_pic
+      SELECT username AS curr_username,
+      profile_pic
       FROM users
       WHERE users.id = ${currUserId}`);
     })
@@ -1236,7 +1343,8 @@ app.get('/user/:id/favouriteComments', (req, res) => {
     .then((result) => {
       data = assignCurrentProfilePageUserInfo(data, result, req);
       return pool.query(`
-      SELECT * FROM fellowships WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`);
+      SELECT * FROM fellowships 
+      WHERE (follower_user_id = ${req.loggedInUserId} AND following_user_id = ${currUserId})`);
     })
     .then((result) => {
       if (result.rows.length === 0) {
@@ -1321,56 +1429,7 @@ app.get('/user/:id/following', (req, res) => {
     });
 });
 
-// Need to split the post into post and put requests TBD
-// Route that handles the adding of friends
-app.put('/user/:id/follow', (req, res) => {
-  const currUserId = Number(req.params.id);
-  // First check if loggedInUser is already friends with the person in the profile page
-  pool.query(`SELECT * FROM fellowships 
-  WHERE 
-  (following_user_id=${currUserId}
-  AND follower_user_id=${req.loggedInUserId})
-  `)
-    .then((result) => {
-      // If no friendship was created in the first place
-      if (result.rows.length === 0) {
-        return pool.query(`
-        INSERT INTO
-        fellowships(following_user_id,follower_user_id,isfollowing)
-        VALUES(${req.params.id},${req.loggedInUserId},true)
-        RETURNING *
-        `);
-      }
-      // If a friendship exists before
-      if (result.rows.length === 1) {
-        if (result.rows[0].isfollowing === true) {
-          return pool.query(`
-          UPDATE fellowships 
-          SET isfollowing=false 
-          WHERE 
-          (following_user_id=${currUserId}
-          AND follower_user_id=${req.loggedInUserId})
-          RETURNING *`);
-        } if (result.rows[0].isfollowing === false) {
-          return pool.query(
-            `UPDATE fellowships
-          SET isfollowing=true
-          WHERE 
-          (following_user_id=${currUserId}
-          AND follower_user_id=${req.loggedInUserId})
-          RETURNING *`,
-          );
-        }
-      }
-    })
-    .then((result) => {
-      if (result) {
-        console.log(result.rows, 'outcome of adding friend');
-      }
-      res.redirect(`/user/${req.params.id}`);
-    });
-});
-
+// Renders user's playlists in profile page
 app.get('/user/:id/myPlaylists', (req, res) => {
   let data = {};
   const currUserId = req.params.id;
@@ -1401,10 +1460,14 @@ app.get('/user/:id/myPlaylists', (req, res) => {
       podcast_episodes.name AS episode_name,
       podcast_episodes.id AS episode_id,
       podcast_episodes.artwork_filename AS episode_artwork_filename,
-      podcast_episodes.podcast_ext_url AS episode_podcast_ext_url
+      podcast_episodes.podcast_ext_url AS episode_podcast_ext_url,
+      podcast_series.id AS series_id,
+      podcast_series.artwork_filename AS series_artwork_filename
       FROM podcast_episodes
-      INNER JOIN episode_playlists
+      INNER JOIN episode_playlists      
       ON episode_playlists.podcast_episode_id = podcast_episodes.id
+      INNER JOIN podcast_series
+      ON podcast_episodes.podcast_series_id = podcast_series.id
       WHERE episode_playlists.playlist_id = ${thisPlaylist.playlist_id} 
       `)
           .then((podcastNameResult) => podcastNameResult.rows)
@@ -1433,29 +1496,18 @@ app.get('/user/:id/myPlaylists', (req, res) => {
     .catch((error) => console.log(error));
 });
 
-app.post('/createPlaylist', (req, res) => {
-  pool.query(`INSERT INTO playlists(name,description) VALUES('${req.body.newPlaylistName}','${req.body.newPlaylistDescription}') RETURNING id`)
-    .then((playlistIdResult) => {
-      const playlistId = playlistIdResult.rows[0].id;
-
-      return pool.query(`INSERT INTO user_playlists(playlist_id,user_id) VALUES(${playlistId},${req.loggedInUserId}) RETURNING *`);
-    })
-    .then((results) => {
-      res.redirect(`/user/${req.loggedInUserId}`);
-    });
-});
+// **************************** Playlist Management **************************** /
 
 // Handles insertion of episode into playlist as well as playlist-episode join table
 app.post('/insertEpisodeIntoPlaylist', (req, res) => {
-  console.log(req.body, 'test');
   const { selectedPlaylist, currEpisodeId, currSeriesId } = req.body;
   pool
     .query(`
    INSERT INTO episode_playlists(podcast_episode_id,playlist_id)
    SELECT ${Number(currEpisodeId)},playlists.id
    FROM playlists
-   WHERE name='${selectedPlaylist}
-   '
+   WHERE name='${selectedPlaylist}'
+   RETURNING *
    `)
     .then(() => {
       res.redirect(`/series/${currSeriesId}/episode/${currEpisodeId}`);
@@ -1463,8 +1515,13 @@ app.post('/insertEpisodeIntoPlaylist', (req, res) => {
     .catch((error) => { console.log(error); });
 });
 
-app.delete('/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
-  const { playlistId, episodeId } = req.params;
+// Handles the removal of an episode from the playlist
+app.delete('/user/:userId/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
+  const { playlistId, episodeId, userId } = req.params;
+  if (convertUserIdToHash(req.loggedInUserId) !== req.cookies.loggedInHash || Number(userId) !== req.loggedInUserId) {
+    res.render('errors/displayNotAuthorized');
+    return;
+  }
   pool
     .query(
       `DELETE FROM episode_playlists 
@@ -1472,8 +1529,56 @@ app.delete('/removeFromPlaylist/:playlistId/:episodeId', (req, res) => {
     RETURNING *`,
     )
     .then((deletionResults) => {
-      console.log(deletionResults.rows, 'results of deletion');
       res.redirect(`/user/${req.loggedInUserId}/myPlaylists`);
+    })
+    .catch((error) => { console.log(error); });
+});
+
+// ********************* Followership/Fellowship Management ********************* /
+// Need to split the post into post and put requests TBD
+// Route that updates the following of loggedInUser against other users
+app.put('/user/:id/follow', (req, res) => {
+  const currUserId = Number(req.params.id);
+  // First check if loggedInUser is already friends with the person in the profile page
+  pool.query(`SELECT * FROM fellowships 
+  WHERE 
+  (following_user_id=${currUserId}
+  AND follower_user_id=${req.loggedInUserId})
+  `)
+    .then((result) => {
+      // If no fellowship was created in the first place
+      if (result.rows.length === 0) {
+        return pool.query(`
+        INSERT INTO
+        fellowships(following_user_id,follower_user_id,isfollowing)
+        VALUES(${req.params.id},${req.loggedInUserId},true)
+        RETURNING *
+        `);
+      }
+      // If a fellowship exists before
+      if (result.rows.length === 1) {
+        if (result.rows[0].isfollowing === true) {
+          return pool.query(`
+          UPDATE fellowships 
+          SET isfollowing=false 
+          WHERE 
+          (following_user_id=${currUserId}
+          AND follower_user_id=${req.loggedInUserId})
+          RETURNING *`);
+        } if (result.rows[0].isfollowing === false) {
+          return pool.query(
+            `UPDATE fellowships
+          SET isfollowing=true
+          WHERE 
+          (following_user_id=${currUserId}
+          AND follower_user_id=${req.loggedInUserId})
+          RETURNING *`,
+          );
+        }
+      }
+    })
+    .then(() => {
+      res.redirect(`/user/${req.params.id}`);
     })
     .catch((error) => { console.log(error); });
 });

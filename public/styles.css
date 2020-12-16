@@ -1,15 +1,21 @@
 /** @format */
 html {
   overflow-x: hidden;
-  background-attachment: white;
+}
+body {
+  background-image: linear-gradient(180deg, #030c13, #383a3c);
+  min-height: 945px;
+  color: white;
+  font-family: "Roboto", sans-serif;
+  overflow-x: hidden;
 }
 
 .navTopMargin {
-  margin-top: 100px;
+  margin-top: 40px;
 }
 
 .navBarBg {
-  background-color: rgb(39, 188, 233);
+  background-image: linear-gradient(180deg, #383a3c, #030c13);
 }
 
 .logo {
@@ -55,16 +61,19 @@ html {
   padding-top: 0;
   padding-bottom: 0;
   vertical-align: middle;
+  /* border-top: 1px solid rgb(167, 166, 166); */
 }
 
 .table > tbody > tr > td {
   padding: 0.75rem;
   vertical-align: middle;
+  /* border-top: 1px solid rgb(167, 166, 166); */
 }
 
 .table > tbody > tr > th {
   padding: 0.75rem;
   vertical-align: middle;
+  border-top: 1px solid rgb(167, 166, 166);
 }
 
 .expand-button {
@@ -86,8 +95,33 @@ html {
   font-size: 20px;
 }
 
+.backgroundDisplay {
+  position: relative;
+}
+
+a {
+  color: white;
+}
+a:hover {
+  text-decoration: none;
+  color: #cb2d6f;
+  background-color: transparent;
+}
+a.dropdown-item:hover {
+  color: #cb2d6f;
+  background-color: transparent;
+}
+
+p.card-text {
+  color: rgb(167, 166, 166);
+}
+
+.descriptionText {
+  color: rgb(167, 166, 166);
+}
+
 .actionBtns {
-  width: 300px;
+  width: 90px;
 }
 
 h1 .display {
@@ -164,11 +198,12 @@ h1 .display {
 }
 
 .carouselDiv {
-  max-height: 500px;
+  max-height: 450px;
 }
 
 .carouselPicture {
   overflow: hidden;
+  width: 700px;
 }
 
 .recommendedPodcasts {
@@ -178,13 +213,17 @@ h1 .display {
 
 .cardSize {
   min-height: 400px;
-  max-height: 500px;
+  max-height: 800px;
   width: 300px;
   background-color: transparent;
   border: none;
 }
+#playlistArtworkDisplay {
+  width: auto;
+}
 
 .artworkDisplay {
+  position: relative;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -197,43 +236,118 @@ h1 .display {
   text-align: center;
 }
 
-.artworkDisplay > button {
-  display: none;
+.artworkDisplay:before {
+  content: " ";
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2;
 }
-.epArtworkDisplay > button {
+.artworkDisplay:hover:before {
+  opacity: 1;
+}
+
+.artworkDisplay > a {
+  position: absolute;
   display: none;
+  top: calc(50% - 25px);
+  left: calc(50% - 30px);
+  font-size: 20px;
+  color: white;
+  border-style: none;
+  background: transparent;
+  width: 70px;
+  height: auto;
+  z-index: 5;
+}
+
+.artworkDisplay > button {
+  position: absolute;
+  display: none;
+  top: calc(50% - 25px);
+  left: calc(50% - 30px);
+  font-size: 40px;
+  border-style: solid;
+  border-color: white;
+  color: white;
+  background: transparent;
+  width: 70px;
+  height: auto;
+  z-index: 5;
 }
 
 .artworkDisplay > a {
   display: none;
 }
 
+.artworkDisplay:hover > a {
+  display: block;
+  border-style: solid;
+  border-color: white;
+  background-color: transparent;
+}
+
+.artworkDisplay > button {
+  display: none;
+}
+
 .artworkDisplay:hover > button {
   display: block;
+}
+
+.epArtworkDisplay {
+  position: relative;
+  display: block;
+  position: relative;
+  height: 9rem;
+  width: 9rem;
+}
+
+.epArtworkDisplay:before {
+  content: " ";
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+.epArtworkDisplay:hover:before {
+  opacity: 1;
+}
+
+.epArtworkDisplay > button {
+  display: none;
   position: absolute;
   top: calc(50% - 25px);
   left: calc(50% - 30px);
   font-size: 30px;
-  color: green;
+  border-style: solid;
+  border-color: white;
+  color: white;
   background: transparent;
   width: 60px;
   height: 60px;
+  z-index: 5;
 }
 
 .epArtworkDisplay:hover > button {
   display: block;
-  position: absolute;
-  top: calc(50% - 25px);
-  left: calc(50% - 30px);
-  font-size: 30px;
-  color: green;
-  background: transparent;
-  width: 60px;
-  height: 60px;
 }
 
-.artworkDisplay:hover > a {
-  display: block;
+.epArtwork {
+  position: relative;
+  height: 10rem;
+  width: 10rem;
 }
 
 .genre {
@@ -251,21 +365,9 @@ h1 .display {
   height: 300px;
 }
 
-.epArtwork {
-  position: relative;
-  height: 10rem;
-  width: 10rem;
-}
-
-.epArtworkDisplay {
-  position: relative;
-  height: 9rem;
-  width: 9rem;
-}
-
 .seriesArtwork {
-  max-height: 200px;
-  max-width: 200px;
+  max-height: 250px;
+  max-width: 300px;
 }
 
 .sidebar {
@@ -289,13 +391,15 @@ h1 .display {
 
 .iframeDisplay iframe {
   position: fixed;
+  background-color: transparent;
   bottom: 0;
   left: calc(50% - 300px);
   width: 600px;
+  z-index: 100;
 }
 
 .spacing {
-  padding-bottom: 500px;
+  padding-bottom: 200px;
 }
 
 .episodeDescription {
@@ -304,15 +408,9 @@ h1 .display {
 
 .favouriteBtn {
   font-size: 30px;
-  color: red;
+  color: #cb2d6f;
   font-family: "Font Awesome";
   content: "\f08a";
-}
-
-.favouriteBtn:hover {
-  color: red;
-  font-size: 40px;
-  border-style: none;
 }
 
 .favouriteBtn:focus,
@@ -321,6 +419,14 @@ h1 .display {
   font-size: 40px;
   outline: none;
   box-shadow: none;
+}
+
+.maroon {
+  color: #cb2d6f;
+}
+
+textarea:focus {
+  box-shadow: none !important;
 }
 
 .profilePic {
@@ -380,11 +486,7 @@ h1 .display {
   bottom: 0;
   height: 1px;
   width: 70px;
-  border-bottom: 2px solid #4285f4;
-}
-
-a:hover {
-  text-decoration: none;
+  border-bottom: 2px solid #cb2d6f;
 }
 
 .alignPrevRight {
@@ -426,8 +528,97 @@ a:hover {
   display: none;
 }
 
+.userProfileInfo {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 15px;
+}
+
+.smallHeader {
+  font-size: small;
+  font-weight: bold;
+}
+
+.smallTable {
+  width: 70%;
+}
+
+.oneThirdWidth {
+  width: 33%;
+}
+
+.following {
+  border-style: solid;
+  border-color: lightblue;
+  border-radius: 15px;
+}
+
+#favHeader {
+  padding-left: 63px;
+}
+#helperText {
+  margin-top: -16px;
+}
+
+.hideScrollOnCardDeck {
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.carousel-control-next-icon,
+.carousel-control-prev-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: no-repeat 50%/100% 100%;
+  background-image: none;
+}
+
+.carouselHeroText {
+  font-size: 50px;
+  text-align: left;
+}
+.chatWithTraders > p {
+  text-align: start;
+}
+
+.bgOrange {
+  position: absolute;
+  padding: 13px;
+  top: -268px;
+  left: 0;
+  bottom: 86px;
+  background-color: lightsalmon;
+  opacity: 0.9;
+  width: 900px;
+}
+
+.bgTransparent {
+  position: absolute;
+  padding: 13px;
+  top: -310px;
+  left: 0;
+  bottom: 86px;
+  opacity: 0.9;
+  width: 700px;
+}
+
+.carouselContainer {
+  position: relative;
+}
+
 /* Extra small devices (portrait phones, less than 576px) */
 @media (max-width: 576px) {
+  #playlistArtworkDisplay {
+    height: 100px;
+    width: 100px;
+  }
+
+  .playlistArtworkContainer {
+    height: 100px;
+    width: 100px;
+  }
+
   .displayAtSmallBreakPoints {
     display: block;
   }
@@ -454,6 +645,9 @@ a:hover {
   .displayAtLargeBreakpoints {
     display: none;
   }
+  /* .displaySubHeader {
+    padding-left: 50px;
+  } */
 }
 
 /* Medium devices (tablets, less than 992px) */
@@ -467,5 +661,9 @@ a:hover {
 
   .displayAtLargeBreakpoints {
     display: none;
+  }
+
+  .displaySubHeader {
+    /* padding-left: 25px; */
   }
 }

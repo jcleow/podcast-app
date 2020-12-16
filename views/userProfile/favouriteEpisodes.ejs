@@ -1,50 +1,54 @@
 <%- include('../mainpage/headerAndNav') %>
 <body class='bg'>  
+<%- include('./userProfileBreadcrumbs') %>
  <div class="container navTopMargin ">
 <%- include('userInfoDisplay')%>
-     <div class="row d-flex justify-content-center pb-3 ">
-         <div class="col d-flex justify-content-center pb-2">
+     <div class="row d-flex justify-content-center pb-3">
+         <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/myPlaylists"  class='text-center my-auto'>My Playlists</a>
         </div>
-        <div class="col d-flex justify-content-center tabDiv pb-2">
-             <a href="/user/<%=currUserId%>/favouriteEpisodes" class='text-dark text-center my-auto'>All Favourite Episodes</a>
+        <div class="col-3 d-flex justify-content-center tabDiv pb-2">
+             <a href="/user/<%=currUserId%>/favouriteEpisodes" class='text-center my-auto'>All Favourite Episodes</a>
         </div>
-        <div class="col d-flex justify-content-center pb-2">
+        <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/favouriteComments" class='text-center my-auto'>All Favourite Comments</a>
         </div>
-        <div class="col d-flex justify-content-center pb-2">
+        <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/following" class='text-center my-auto'>Following</a>
         </div>
     </div>  
  </div>
 
 <!-- Display All Favourite Episodes -->
-<div class="container profilePageDisplay border border-dark">
+<div class="container profilePageDisplay smallTable">
      <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
   <thead>
     <tr>      
-      <th scope="col" class='text-dark'>Artwork</th>
-      <th scope="col" class='text-dark'>Episode Name</th>
-      <th scope="col" class='text-dark'>Ep. No.</th>
+      <th scope="col" class='text-white text-center smallHeader border-0'><div></div></th>
+      <th scope="col" class='text-white text-center smallHeader border-0'>Episode</th>
+      <th scope="col" class='text-white text-center smallHeader border-0'>Ep. No.</th>
     </tr>
   </thead>
   <tbody id="accordion">
     <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
       <% episodes.forEach((episode)=>{ %>
-      <td>
-        <form class="epArtworkDisplay"action ='/user/<%=currUserId%>/favouriteEpisodes'>
-        <img class='w-100 h-auto' src="/<%=episode.artwork_filename%>"/>                
+      <td class='text-center d-flex flex-row justify-content-center'>
+        <form class="epArtworkDisplay playlistArtworkContainer"action ='/user/<%=currUserId%>/favouriteEpisodes'>
+      <% if(episode.episode_artwork_filename) { %>
+        <img class='w-100 h-auto' src="<%=episode.episode_artwork_filename%>"/>
+      <% } else { %>
+        <img class='w-100 h-auto' src="<%=episode.series_artwork_filename%>"/>
+        <% } %>
           <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>          
         <input type='hidden' name="podcast_ext_url" value="<%=episode.podcast_ext_url%>"/>
       </form>
     </td>
-      <td><a class="text-dark"><%=episode.name%></a></form> </td>
-      <td class='text-dark'><%= episode.episode_number %></td>
-      <td class='text-dark'><%= episode.description %> </td>      
-    <td class='actionBtns'>
-              <div class="align-self-center">
+      <td class='text-center'><a href='/series/<%=episode.series_id%>/episode/<%=episode.episode_id%>'><%=episode.episode_name%></a></form></td>
+      <td class='text-white text-center'><%= episode.episode_number %></td>        
+    <td class='actionBtns border-0'>
+            
                 <% if(isUserAuth === true){ %>
-              <form action='/user/<%=loggedInUserId%>/editFavouriteEpisode/<%=episode.podcast_episode_id%>?_method=PUT' method="POST">
+              <form action='/user/<%=loggedInUserId%>/editFavouriteEpisode/<%=episode.episode_id%>?_method=PUT' method="POST">
                 <button class="favouriteBtn bg-transparent border-0 shadow-none"                             
                 type="submit"
                 >                  
@@ -57,7 +61,7 @@
                 <input type="hidden" name="favouriteSeries"/>                              
               </form>
             <% } %>
-            </div>
+            
         </form>
       </div>
     </td>

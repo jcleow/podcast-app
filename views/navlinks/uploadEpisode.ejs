@@ -3,8 +3,8 @@
   <body>
     <div class="container navTopMargin">
       <div class="row">
-        <div class="col d-flex justify-content-center submitSighting">
-          Upload a New Podcast Episode
+        <div class="col d-flex justify-content-center pb-4">
+         <h3> Upload a New Podcast Episode </h3>
         </div>
       </div>
 
@@ -12,7 +12,7 @@
 <form action="/series/episode/upload" method="POST" enctype="multipart/form-data">
     <div class="form-group ">
     <div>
-      <label for="Podcast Series">Podcast Series</label>
+      <label for="Podcast Series">Podcast Series</label><span class="required">*</span>
     </div>
     <div class="form-check form-check-inline w-100">
       <div class="container-fluid genre">
@@ -47,17 +47,17 @@
     <input type='text' class="form-control" id='episodeName' name='episodeName'>
   </div>
   <div class="form-group">
-    <label for="episodeNumber">Episode Number<span class="required">*</span></label>
+    <label for="episodeNumber">Episode Number</label>
     <input type="number" class="form-control" id="episodeNumber" name='episodeNumber'>
   </div>
 
    <div class="form-group">
     <label for="description">Description of Episode</label>
-    <textarea class="form-control" id="episodeDescription" name='episodeDescription'></textarea>
+    <textarea class="form-control" rows="4"  id="episodeDescription" name='episodeDescription'></textarea>
   </div>
 
    <div class="form-group">
-    <label for="soundCloudUrl">Paste SoundCloud Link<span class="required">*</span></label>
+    <label for="soundCloudUrl">Paste SoundCloud Embed Link<span class="required">*</span></label>
     <textarea class="form-control" id="soundCloudUrl" name='soundCloudUrl'></textarea>
   </div>
 
@@ -66,10 +66,10 @@
     <input type="file" name="artwork" />
   </div>
 
-  <div class="form-group">
+  <div class="form-group d-flex flex-row justify-content-center">  
+  <input type="submit" class="btn btn-outline-light mr-3" name="submitOverallForm"></input>
+  <a class='btn btn-outline-secondary' role='button' href="/">Return To Main Page</a> 
   </div>
-  <input type="submit" class="btn btn-primary" name="submitOverallForm"></input>
-  <a class='btn btn-secondary' role='button' href="/">Return To Main Page</a> 
 </form>
     </div>
   </body>

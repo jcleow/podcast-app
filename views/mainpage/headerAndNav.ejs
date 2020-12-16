@@ -9,26 +9,36 @@
     crossorigin="anonymous"
   />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css" />
 
   <!--NavBar-->
-  <nav class="navbar navbar-expand navbar-light bg-white fixed-top">
+  <nav class="navbar navbar-expand navbar-light">
 
   <div class="dropdown order-1 w-100 mr-auto">
-    <button class="btn btn-secondary bg-white border-0" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <span class="navbar-toggler-icon "></span>
-    </button>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-      <a class="nav-link" href="/series/create" class="text-dark"> Create Podcast</a>
-      <a class="nav-link" href="/podcast/episode/upload" class="text-dark">Upload Episode</a>
+     <%if(locals.loggedInUserId){%>  
+    <button class="btn bg-transparent border-0" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" class="bi bi-justify" viewBox="0 0 16 16">
+           <path fill-rule="evenodd" d="M2 12.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+        </svg>
+      </span>
+    </button>   
+    <div class="dropdown-menu navBarBg border-0" aria-labelledby="dropdownMenuButton">
+      <a class="nav-link" href="/series/create" class="text-dark"      
+      > Create Podcast</a>
+      <a class="nav-link" href="/series/episode/upload" class="text-dark">Upload Episode</a>                  
       <a class="nav-link" href="#" class="btn btn-primary" data-toggle="modal" data-target="#createPlaylist">Create Playlist</a>
+      <% } %>
     </div>
   </div>
 
 <!--NavBar Brand-->
   <div class="mx-auto order-2">
-    <a class="navbar-brand mx-auto" href="/">
-      <img src="/icons/soundwave.png" class="d-inline-block align-top logo"/>  
+    <a class="navbar-brand mx-auto" href="/">      
+      <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="white" class="bi bi-soundwave" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M8.5 2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5zm-2 2a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm4 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm-6 1.5A.5.5 0 0 1 5 6v4a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm8 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm-10 1A.5.5 0 0 1 3 7v2a.5.5 0 0 1-1 0V7a.5.5 0 0 1 .5-.5zm12 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0V7a.5.5 0 0 1 .5-.5z"/>
+      </svg> 
     </a>
   </div>
 <!-- Navbar links on the right/Account management -->
@@ -42,24 +52,24 @@
           <% } %>
           >          
             <% if(locals.loggedInUserProfilePic) { %>
-              <img class="profilePic rounded-circle"  src='/<%=loggedInUserProfilePic%>'/>
+              <img class="profilePic rounded-circle"  src='<%=loggedInUserProfilePic%>'/>
             <% } else { %>
-              Account
+             <span class="text-light">Account</span>
             <% } %>
             </a>
-          <button type="button" class="btn bg-transparent dropdown-toggle dropdown-toggle-split profilePicBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="btn bg-transparent dropdown-toggle text-white dropdown-toggle-split profilePicBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="sr-only">Toggle Dropdown</span>
           </button>
-          <div class="dropdown-menu dropdown-menu-left">
+          <div class="dropdown-menu bg-transparent dropdown-menu-left">
             <% if(!locals.loggedInUserId) { %>
-              <a class="dropdown-item" href="/login">Login</a>
-              <a class="dropdown-item" href="/register">Register</a>
+              <a class="dropdown-item text-white" href="/login">Login</a>
+              <a class="dropdown-item text-white" href="/register">Register</a>
             <% } %>
             <% if(locals.loggedInUserId) {%>
-            <a class="dropdown-item" href="/user/<%=loggedInUserId%>">My profile</a>
-              <div class="dropdown-divider"></div>
+            <a class="" href="/user/<%=loggedInUserId%>">My profile</a>
+            <div class="dropdown-divider"></div>              
               <form action='/logout?_method=DELETE' method='POST'>
-                <input class="dropdown-item" type="submit" value='Log Out'>
+                <input class="btn btn-outline-danger" type="submit" value='Log Out'/>
               </form>
             <% } %>
           </div>
@@ -72,11 +82,11 @@
 <!-- Modal -->
 <div class="modal fade" id="createPlaylist" tabindex="-1" role="dialog" aria-labelledby="createPlaylistModal" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
+    <div class="modal-content bg-dark">
+      <div class="modal-header border-0">
         <h5 class="modal-title" id="createPlaylistModal">Create Playlist</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+          <span class='text-light' aria-hidden="true">&times;</span>
         </button>
       </div>
       <!-- Form -->
@@ -89,8 +99,8 @@
           <textarea class='form-control' rows="3" placeholder='Give your playlist a catchy description' name='newPlaylistDescription' ></textarea>
         </div>
         <div class="modal-footer">          
-          <input type="submit" class="btn btn-primary" role="button"  value="Create"/>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <input type="submit" class="btn btn-outline-light" role="button"  value="Create"/>
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
         </div>
       </form>
       <!-- Form -->

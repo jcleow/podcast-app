@@ -3,8 +3,8 @@
   <body>
 <div class="container navTopMargin">  
   <div class="row">
-    <div class="col d-flex justify-content-center submitSighting">
-      Create a new Podcast Series
+    <div class="col d-flex justify-content-center pb-4">
+      <h3>Create a new Podcast Series</h3>
     </div>
   </div>
 
@@ -65,9 +65,7 @@
               <div class="input-group mb-3">
                   <div class="input-group-prepend">
                     <button class="btn btn-outline-secondary dropdown-toggle pr-5" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select a Genre</button>
-                    <div class="dropdown-menu scrollable-menu">
-                      <input class="dropdown-item" type="submit" name="genreName" value="New Genre">
-                      <div role="separator" class="dropdown-divider"></div>
+                    <div class="dropdown-menu scrollable-menu">                      
                       <% genreNames.forEach((genreName)=>{ %>
                       <input class="dropdown-item" type="submit" name="genreName" value="<%=genreName%>">
                       <% }); %>
@@ -109,9 +107,7 @@
                     <% } %>
                     >Select a Sub-Genre
                   </button>
-                    <div class="dropdown-menu scrollable-menu">
-                      <a class="dropdown-item ">New Sub-Genre</a>
-                      <div role="separator" class="dropdown-divider"></div>
+                    <div class="dropdown-menu scrollable-menu">                                            
                     <% if(locals.subgenreNames) {%>                      
                       <% subgenreNames.forEach((subgenreName)=>{ %>
                       <input class="dropdown-item" type="submit" name="subgenreName" value="<%=subgenreName%>" readonly>
@@ -142,15 +138,15 @@
         <input type="file" name="artwork" />
   </div>
   
-   <div>
-    <input type="submit" class="btn btn-primary" name="submitOverallForm"
+   <div class = 'd-flex flex-row justify-content-center'>
+    <input type="submit" class="btn btn-outline-light mr-2" name="submitOverallForm"
     <% if(locals.isNameValid){ %>
       <% if (isNameValid === 'false'){ %>
         disabled
      <% } %>
     <% } %>
     />
-    <a class='btn btn-secondary' role='button' href="/">Return To Main Page</a> 
+    <a class='btn btn-outline-secondary' role='button' href="/">Return To Main Page</a> 
    </div>
    </form>
 </body>

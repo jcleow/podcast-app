@@ -1,30 +1,28 @@
 <%- include('../mainpage/headerAndNav') %>
-<body class='bg'>  
+<body class='bg'> 
+<%- include('./userProfileBreadcrumbs') %> 
  <div class="container navTopMargin ">
 <%- include('userInfoDisplay')%>
      <div class="row d-flex justify-content-center pb-3 ">
-         <div class="col d-flex justify-content-center pb-2">
+         <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/myPlaylists" class='text-center my-auto'>My Playlists</a>
         </div>
-        <div class="col d-flex justify-content-center pb-2">
+        <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/favouriteEpisodes"class='text-center my-auto'>All Favourite Episodes</a>
         </div>
-        <div class="col d-flex justify-content-center tabDiv pb-2 ">
-             <a href="/user/<%=currUserId%>/favouriteComments" class='text-dark text-center my-auto'>All Favourite Comments</a>
+        <div class="col-3 d-flex justify-content-center tabDiv pb-2 ">
+             <a href="/user/<%=currUserId%>/favouriteComments" class='text-center my-auto'>All Favourite Comments</a>
         </div>
-        <div class="col d-flex justify-content-center pb-2">
+        <div class="col-3 d-flex justify-content-center pb-2">
              <a href="/user/<%=currUserId%>/following"class='text-center my-auto'>Following</a>
         </div>
     </div>  
  </div>
 
 <!-- Display All Favourite Comments -->
-<div class="container profilePageDisplay border border-dark">
-     <table class="table table-hover" class="collapse" data-parent="#overallAccordion">
+<div class="container profilePageDisplay smallTable">
+     <table class="table table-hover table-borderless" class="collapse" data-parent="#overallAccordion">
   <thead>
-    <tr>
-      <th scope="col" class='text-dark'>Favourited Comments</th>
-    </tr>
   </thead>
   <tbody id="accordion">
     <tr class= "accordion-toggle collapsed" data-toggle="collapse" data-target="#collapse1">
@@ -32,12 +30,12 @@
       <% comments.forEach((comment)=>{ %>
       <td>
       <div class="row">
-      <div class="col-sm-2 mb-3 d-flex justify-content-end align-self-start mt-1 pr-2">
+      <div class="col-2 mb-3 d-flex justify-content-end align-self-start mt-1 pr-2">
          <a href='/user/<%=comment.poster_id%>'>
-          <img class="profilePic rounded-circle" src='/<%=comment.profile_pic%>'>
+          <img class="profilePic rounded-circle" src='<%=comment.profile_pic%>'>
         </a>
       </div>
-      <div class="col-sm-10 mb-3">
+      <div class="col-10">
         <div class="row">
           <div class="col-md-4 pl-0">
             <a href='/user/<%=comment.poster_id%>'>
@@ -47,19 +45,19 @@
         </div>
           <div class="row">
             <div class="col-md-12 pl-0">
-              <small class='commentsDisplay'><%=comment.comment%></small>
+              <small class='commentsDisplay text-light'><%=comment.comment%></small>
             </div>
           </div>
           <div class="row">
             <div class="col-md-12 pl-0">
-              <small class='commentsDisplay font-italic'>In Podcast Series: <%=comment.seriesName%>, Episode: <%=comment.episodeName%></small>
+              <small class='commentsDisplay font-italic'><a href='/series/<%=comment.series_id%>/episode/<%=comment.episode_id%> ' >In Podcast Series: <%=comment.series_name%>, Episode: <%=comment.episode_name%></a></small>
             </div>
           </div>          
           <div class="row">
             <div class="col-md-4 pl-0">
-              <small class='commentsDisplay'>
-                <form action='/user/<%=currUserId%>/favouriteComments?_method=PUT' method="POST" >
-                <button class="bg-transparent border-0 shadow-none commentFavouriteBtn" type="submit">
+              <small class='commentsDisplay'>                
+                  <form action ='/series/<%=comment.series_id%>/episode/<%=comment.episode_id%>/comment/<%=comment.comment_id%>/favourite?_method=PUT' method="POST">
+                <button class="bg-transparent border-0 shadow-none commentFavouriteBtn maroon" type="submit">
                   <% if(comment.favourited !== undefined){ %>
                     <% if(comment.favourited === true) { %>
                       <i class="fa fa-heart"></i>
@@ -70,7 +68,7 @@
                   <i class="fa fa-heart-o"></i>
                   <% } %>
                 </button>
-                <input type="hidden" name="favouriteComment"/>
+                <input type="hidden" name="favouriteComment" value="profilePage"/>
                 </form>
               </small>
             </div>
