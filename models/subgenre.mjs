@@ -1,5 +1,5 @@
-export default function seriesModel(sequelize, DataTypes) {
-  return sequelize.define('Series', {
+export default function subgenreModel(sequelize, DataTypes) {
+  return sequelize.define('Subgenre', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -12,8 +12,8 @@ export default function seriesModel(sequelize, DataTypes) {
     description: {
       type: DataTypes.STRING,
     },
-    artwork_url: {
-      type: DataTypes.STRING,
+    genre_id: {
+      type: DataTypes.INTEGER,
     },
     created_at: {
       allowNull: false,

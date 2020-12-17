@@ -1,4 +1,4 @@
-export default function episodes(sequelize, DataTypes) {
+export default function episodeModel(sequelize, DataTypes) {
   return sequelize.define('Episode', {
     id: {
       allowNull: false,

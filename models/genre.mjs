@@ -1,5 +1,5 @@
-export default function seriesModel(sequelize, DataTypes) {
-  return sequelize.define('Series', {
+export default function genreModel(sequelize, DataTypes) {
+  return sequelize.define('Genre', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -10,9 +10,6 @@ export default function seriesModel(sequelize, DataTypes) {
       type: DataTypes.STRING,
     },
     description: {
-      type: DataTypes.STRING,
-    },
-    artwork_url: {
       type: DataTypes.STRING,
     },
     created_at: {

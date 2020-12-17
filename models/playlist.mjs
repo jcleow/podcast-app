@@ -1,5 +1,5 @@
-export default function seriesModel(sequelize, DataTypes) {
-  return sequelize.define('Series', {
+export default function playlistModel(sequelize, DataTypes) {
+  return sequelize.define('Playlist', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -7,12 +7,10 @@ export default function seriesModel(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
     },
     name: {
+      allowNull: false,
       type: DataTypes.STRING,
     },
     description: {
-      type: DataTypes.STRING,
-    },
-    artwork_url: {
       type: DataTypes.STRING,
     },
     created_at: {

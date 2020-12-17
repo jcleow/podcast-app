@@ -1,18 +1,27 @@
-export default function seriesModel(sequelize, DataTypes) {
-  return sequelize.define('Series', {
+export default function userModel(sequelize, DataTypes) {
+  return sequelize.define('User', {
     id: {
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
-    name: {
+    first_name: {
       type: DataTypes.STRING,
     },
-    description: {
+    last_name: {
       type: DataTypes.STRING,
     },
-    artwork_url: {
+    username: {
+      type: DataTypes.STRING,
+    },
+    profile_pic_url: {
+      type: DataTypes.STRING,
+    },
+    email_address: {
+      type: DataTypes.STRING,
+    },
+    password: {
       type: DataTypes.STRING,
     },
     created_at: {
