@@ -132,34 +132,6 @@ app.get('/', (req, res) => {
       data.episodes = podcastEpisodeResult.rows;
       data.episodeLinkToPlay = episodeToPlay;
     })
-    // Specific case to check if user wants to view podcast series
-    .then(() => {
-    // Check if user wants to view the podcast series description
-      if (req.query) {
-        if (req.query.series_id) {
-          return pool.query(`
-          SELECT 
-          podcast_episodes.id AS episode_id,
-          podcast_episodes.name AS episode_name,
-          podcast_episodes.description AS episode_description,
-          podcast_episodes.artwork_filename AS episode_artwork,
-          podcast_episodes.podcast_ext_url,
-          podcast_series.id AS series_id,
-          podcast_series.name AS series_name,
-          podcast_series.description AS series_description,
-          podcast_series.artwork_filename AS series_artwork
-          FROM podcast_series 
-          INNER JOIN podcast_episodes 
-          ON podcast_series.id=podcast_episodes.podcast_series_id 
-          WHERE podcast_series.id = ${req.query.series_id}`);
-        }
-      }
-    })
-    .then((viewPodcastSeriesResult) => {
-      if (viewPodcastSeriesResult) {
-        data.selectedSeries = viewPodcastSeriesResult.rows;
-      }
-    })
     .then(() => {
       // Pass all the info from result.rows into data;
       res.render('mainpage/main', data);

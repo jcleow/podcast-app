@@ -8,14 +8,11 @@ const SALT = process.env.MY_ENV_VAR;
 const { Pool } = pg;
 
 let poolConfig;
-if (process.env.ENV === 'PRODUCTION') {
+// test to see if the env var is set. If it is then we know we are in Heroku
+if (process.env.DATABASE_URL) {
+  // pg will take in the entire value and use it to connect
   poolConfig = {
-    user: 'postgres',
-    // set DB_PASSWORD as an environment variable for security.
-    password: process.env.DB_PASSWORD,
-    host: 'localhost',
-    database: 'podcast',
-    port: 5432,
+    connectionString: process.env.DATABASE,
   };
 } else {
   poolConfig = {
