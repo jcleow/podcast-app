@@ -12,7 +12,11 @@ export default function genreModel(sequelize, DataTypes) {
     description: {
       type: DataTypes.STRING,
     },
-    created_at: {
+    createdAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
       allowNull: false,
       type: DataTypes.DATE,
     },

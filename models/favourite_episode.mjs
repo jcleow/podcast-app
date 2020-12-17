@@ -23,7 +23,11 @@ export default function favouriteEpisodeModel(sequelize, DataTypes) {
         key: 'id',
       },
     },
-    created_at: {
+    createdAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
       allowNull: false,
       type: DataTypes.DATE,
     },

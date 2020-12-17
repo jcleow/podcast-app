@@ -1,0 +1,68 @@
+<div class='displayAtSmallBreakPoints'>
+  <div class="row mt-4">
+    <div class="col d-flex justify-content-center">
+      <div>
+        <h3>Recommended Episodes For You</h3>
+      </div>
+    </div>
+  </div>
+<% if(locals.episodes){ %>
+  <div id="recommendEpisodesCarouselSmall" class="carousel slide mt-2" data-interval="false" data-ride="carousel">
+
+  <div class="carousel-inner">
+  <% for(let i=0;i<episodes.length;i+=1) { %>
+  <div class="carousel-item carouselDiv
+  <% if(i===0){ %>
+    active
+  <% } %> 
+  ">
+    <div class="d-flex justify-content-center">
+      <div class="card-deck pt-3">
+        <div class = "row d-flex flex-row flex-nowrap overflow-auto">      
+            <div class = "col">            
+              <div class="card cardSize">
+                <form class= "artworkDisplay d-flex justify-content-center"      
+                  <% if(episodes[i].episode_artwork) { %>
+                  style="background-image:url(<%=episodes[i].artwork_filename%>)"
+                  <% } else { %>
+                  style="background-image:url(<%=episodes[i].album_artwork%>)"  
+                  action ='/'>
+                  <% } %> 
+                      <img class="card-img-top w-auto">
+                  <button class= "rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>
+                  <input type='hidden' name="episode_id" value="<%=episodes[i].podcast_ext_url%>"/>                                  
+                </form>
+                <div class="card-body">
+                <h5 class="card-title"> <a href="/series/<%=episodes[i].series_id%>/episode/<%=episodes[i].episode_id%>"><%=episodes[i].name%></a> </h5>
+                <p class="card-text"><%= truncateDescription(episodes[i].description)%></p>                  
+                </div>
+              </div>
+            </div>
+          </div> 
+        </div>      
+      </div> 
+    </div>   
+  <% } %>                              
+  </div> 
+
+    <div>
+      <a class="carousel-newControl-prev align-items-start alignPrevRight mt-3" href="#recommendEpisodesCarouselSmall" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-chevron-left" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+          </svg>
+        </span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-newControl-next align-items-start mt-3" href="#recommendEpisodesCarouselSmall" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-chevron-right" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+          </svg>
+        </span>
+        <span class="sr-only">Next</span>
+      </a>
+    </div>
+  </div>
+  <% } %>
+</div>

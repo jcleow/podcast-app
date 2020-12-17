@@ -1,6 +1,10 @@
 import db from './models/index.mjs';
-import items from './controllers/items.mjs';
+import mainpage from './controllers/mainpage.mjs';
 
 export default function routes(app) {
-  const ItemsController = items(db);
+  const mainPageController = mainpage(db);
+  app.get('/', mainPageController.index);
+
+  // const seriesPageController = series(db);
+  // app.get('/', seriesController.index);
 }

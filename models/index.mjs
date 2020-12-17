@@ -27,7 +27,7 @@ const sequelize = new Sequelize(
 db.EpisodeComment = episodeCommentModel(sequelize, Sequelize.DataTypes);
 db.Episode = episodeModel(sequelize, Sequelize.DataTypes);
 db.FavouriteComment = favouriteCommentModel(sequelize, Sequelize.DataTypes);
-db.Fellowship = fellowshipModel(sequelize.Sequelize.DataTypes);
+db.Fellowship = fellowshipModel(sequelize, Sequelize.DataTypes);
 db.Genre = genreModel(sequelize, Sequelize.DataTypes);
 db.Playlist = playlistModel(sequelize, Sequelize.DataTypes);
 db.Series = seriesModel(sequelize, Sequelize.DataTypes);
@@ -39,9 +39,9 @@ db.Sequelize = Sequelize;
 
 // Define the relationships between each of the models
 db.Series.hasMany(db.Episode);
-db.Episode.belongsTo(db.Episode);
+db.Episode.belongsTo(db.Series);
 
-db.User.hasMany(db.FavouriteComment);
-db.User.hasMany(db.Fellowship);
+// db.User.hasMany(db.FavouriteComment);
+// db.User.hasMany(db.Fellowship);
 
 export default db;

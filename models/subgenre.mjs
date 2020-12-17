@@ -15,7 +15,11 @@ export default function subgenreModel(sequelize, DataTypes) {
     genre_id: {
       type: DataTypes.INTEGER,
     },
-    created_at: {
+    createdAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
       allowNull: false,
       type: DataTypes.DATE,
     },

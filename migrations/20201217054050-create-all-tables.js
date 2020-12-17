@@ -13,10 +13,14 @@ module.exports = {
       description: {
         type: Sequelize.STRING,
       },
-      artwork_url: {
+      artwork_filename: {
         type: Sequelize.STRING,
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
@@ -39,15 +43,26 @@ module.exports = {
       description: {
         type: Sequelize.STRING,
       },
-      artwork_url: {
+      artwork_filename: {
         type: Sequelize.STRING,
       },
-      podcast_series_id: {
-        type: Sequelize.INTEGER,
+      podcast_ext_url: {
+        type: Sequelize.STRING,
       },
-      created_at: {
+      createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      SeriesId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Series',
+          key: 'id',
+        },
       },
     });
 
@@ -67,7 +82,11 @@ module.exports = {
       genre_id: {
         type: Sequelize.INTEGER,
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
@@ -86,7 +105,11 @@ module.exports = {
       description: {
         type: Sequelize.STRING,
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
@@ -106,7 +129,11 @@ module.exports = {
       description: {
         type: Sequelize.STRING,
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
@@ -128,7 +155,7 @@ module.exports = {
       username: {
         type: Sequelize.STRING,
       },
-      profile_pic_url: {
+      profile_pic: {
         type: Sequelize.STRING,
       },
       email_address: {
@@ -137,7 +164,11 @@ module.exports = {
       password: {
         type: Sequelize.STRING,
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
@@ -167,7 +198,11 @@ module.exports = {
           key: 'id',
         },
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
@@ -197,7 +232,11 @@ module.exports = {
           key: 'id',
         },
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
@@ -227,7 +266,11 @@ module.exports = {
           key: 'id',
         },
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
@@ -250,7 +293,11 @@ module.exports = {
       isFollowing: {
         type: Sequelize.BOOLEAN,
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },

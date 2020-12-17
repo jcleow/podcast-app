@@ -12,10 +12,14 @@ export default function seriesModel(sequelize, DataTypes) {
     description: {
       type: DataTypes.STRING,
     },
-    artwork_url: {
+    artwork_filename: {
       type: DataTypes.STRING,
     },
-    created_at: {
+    createdAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
       allowNull: false,
       type: DataTypes.DATE,
     },

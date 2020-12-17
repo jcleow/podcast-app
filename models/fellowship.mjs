@@ -16,7 +16,11 @@ export default function fellowshipModel(sequelize, DataTypes) {
     isFollowing: {
       type: DataTypes.BOOLEAN,
     },
-    created_at: {
+    createdAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
       allowNull: false,
       type: DataTypes.DATE,
     },
