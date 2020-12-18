@@ -47,17 +47,28 @@ export default function newSeriesForm(db) {
       } else if (req.cookies.previousValues.genreText) {
         selectedGenreName = req.cookies.previousValues.genreText;
       }
-      // This is an inner join between genre and subgenre
-      const subgenresData = await db.Subgenre.findAll({
-        include: {
-          model: db.Genre,
-          required: true,
-          where: {
-            name: selectedGenreName,
-          },
+      // // This is an inner join between genre and subgenre (eager loading)
+      // const subgenresData = await db.Subgenre.findAll({
+      //   include: {
+      //     model: db.Genre,
+      //     required: true,
+      //     where: {
+      //       name: selectedGenreName,
+      //     },
+      //   },
+      // });
+      // data.subgenreNames = subgenresData.map((subgenre) => subgenre.name);
+
+      // Getting the subgenres using associative methods (lazy loading)
+      const selectedGenre = await db.Genre.findOne({
+        where: {
+          name: selectedGenreName,
         },
       });
-      data.subgenreNames = subgenresData.map((subgenre) => subgenre.name);
+      console.log(selectedGenre, 'selectedGenre');
+      const allSubGenres = await selectedGenre.getSubgenres();
+      console.log(allSubGenres, 'allSubGenres');
+      data.subgenreNames = allSubGenres.map((subgenre) => subgenre.name);
     }
 
     // Step-4 Assign logged-in userdetails
