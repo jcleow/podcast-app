@@ -44,4 +44,7 @@ db.Episode.belongsTo(db.Series);
 // db.User.hasMany(db.FavouriteComment);
 // db.User.hasMany(db.Fellowship);
 
+db.Genre.hasMany(db.Subgenre);
+db.Subgenre.belongsTo(db.Genre);
+
 export default db;

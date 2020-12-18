@@ -1,10 +1,38 @@
+import aws from 'aws-sdk';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
 import db from './models/index.mjs';
 import mainpage from './controllers/mainpage.mjs';
+import newSeriesForm from './controllers/newSeriesForm.mjs';
+import createSeries from './controllers/createSeries.mjs';
+
+// Configuring S3
+const s3 = new aws.S3({
+  accessKeyId: process.env.ACCESSKEYID,
+  secretAccessKey: process.env.SECRETACCESSKEY,
+});
+// Configuring the Multer-S3 upload
+const multerUpload = multer({
+  storage: multerS3({
+    s3,
+    bucket: 'podcast-app-artwork',
+    acl: 'public-read',
+    metadata: (request, file, callback) => {
+      callback(null, { fieldName: file.fieldname });
+    },
+    key: (request, file, callback) => {
+      callback(null, Date.now().toString());
+    },
+  }),
+});
 
 export default function routes(app) {
   const mainPageController = mainpage(db);
   app.get('/', mainPageController.index);
 
-  // const seriesPageController = series(db);
-  // app.get('/', seriesController.index);
+  const newSeriesFormController = newSeriesForm(db);
+  app.get('/series/new', newSeriesFormController.index);
+
+  const createSeriesController = createSeries(db);
+  app.post('/series', multerUpload.single('artwork'), createSeriesController.index);
 }

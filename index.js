@@ -214,7 +214,7 @@ app.get('/series/create', (req, res) => {
     // next, check from cookies if there are any genres/subGenres names selected
     .then((genreResult) => { data.genreNames = genreResult.rows.map((row) => row.name);
     })
-    // third query for all the genres and subgenres and store into a temp data var
+    // Query for names made in the podcast_series for subsequent checking if they all exist
     .then(() => {
       if (data.previousValues) {
         return pool.query(`

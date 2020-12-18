@@ -66,6 +66,29 @@ module.exports = {
       },
     });
 
+    await queryInterface.createTable('Genres', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER,
+      },
+      name: {
+        type: Sequelize.STRING,
+      },
+      description: {
+        type: Sequelize.STRING,
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+    });
+
     await queryInterface.createTable('Subgenres', {
       id: {
         allowNull: false,
@@ -79,31 +102,12 @@ module.exports = {
       description: {
         type: Sequelize.STRING,
       },
-      genre_id: {
+      GenreId: {
         type: Sequelize.INTEGER,
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-    });
-
-    await queryInterface.createTable('Genres', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER,
-      },
-      name: {
-        type: Sequelize.STRING,
-      },
-      description: {
-        type: Sequelize.STRING,
+        references: {
+          model: 'Genres',
+          key: 'id',
+        },
       },
       createdAt: {
         allowNull: false,
@@ -184,14 +188,14 @@ module.exports = {
       favourited: {
         type: Sequelize.BOOLEAN,
       },
-      listener_id: {
+      ListenerId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Users',
           key: 'id',
         },
       },
-      episode_id: {
+      EpisodeId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Episodes',
@@ -218,14 +222,14 @@ module.exports = {
       comment: {
         type: Sequelize.STRING,
       },
-      episode_id: {
+      EpisodeId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Episodes',
           key: 'id',
         },
       },
-      user_id: {
+      UserId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Users',
@@ -252,14 +256,14 @@ module.exports = {
       favourited: {
         type: Sequelize.BOOLEAN,
       },
-      episode_comment_id: {
+      EpisodeCommentId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Episode_Comments',
           key: 'id',
         },
       },
-      user_id: {
+      UserId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Users',
