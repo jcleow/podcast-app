@@ -8,11 +8,12 @@ const SALT = process.env.MY_ENV_VAR;
 const { Pool } = pg;
 
 let poolConfig;
-if (process.env.DATABASE_URL) {
-  poolConfig = {
-    connectionString: process.env.DATABASE_URL,
-  };
-} else if (process.env.ENV === 'PRODUCTION') {
+// if (process.env.DATABASE_URL) {
+//   poolConfig = {
+//     connectionString: process.env.DATABASE_URL,
+//   };
+// } else
+if (process.env.ENV === 'PRODUCTION') {
   poolConfig = {
     user: 'postgres',
     // set DB_PASSWORD as an environment variable for security.
