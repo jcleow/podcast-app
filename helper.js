@@ -8,17 +8,9 @@ const SALT = process.env.MY_ENV_VAR;
 const { Pool } = pg;
 
 let poolConfig;
-<<<<<<< HEAD
-// test to see if the env var is set. If it is then we know we are in Heroku
-if (process.env.DATABASE_URL) {
-  // pg will take in the entire value and use it to connect
-  poolConfig = {
-    connectionString: process.env.DATABASE,
-=======
 if (process.env.DATABASE_URL) {
   poolConfig = {
     connectionString: process.env.DATABASE_URL,
->>>>>>> bcdda75fc9e33dea068dba988702fb08764c76cb
   };
 } else {
   poolConfig = {
