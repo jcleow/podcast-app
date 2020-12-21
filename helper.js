@@ -12,6 +12,15 @@ if (process.env.DATABASE_URL) {
   poolConfig = {
     connectionString: process.env.DATABASE_URL,
   };
+} else if (process.env.ENV === 'PRODUCTION') {
+  poolConfig = {
+    user: 'postgres',
+    // set DB_PASSWORD as an environment variable for security.
+    password: process.env.DB_PASSWORD,
+    host: 'localhost',
+    database: 'podcast',
+    port: 5432,
+  };
 } else {
   poolConfig = {
     user: process.env.USER,
