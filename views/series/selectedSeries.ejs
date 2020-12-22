@@ -1,0 +1,97 @@
+<%- include('../mainpage/headerAndNav.ejs') %>
+
+<nav aria-label="breadcrumb" >
+  <ol class="breadcrumb bg-transparent ml-3">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Series</li>
+  </ol>
+</nav>
+
+<div class="container navTopMargin">  
+  <div class="row">
+    <div class="col-sm-4 h-auto d-flex align-items-stretch">
+        <div class="card-body d-flex justify-content-center">                  
+          <img class='seriesArtwork'src="<%=selectedSeries.artwork_filename%>"/>
+      </div>
+    </div>    
+    <div class="col-sm-8">
+        <div class="card-body">
+          <div><small><i>Podcast Series:</i></small></div>
+          <button class="btn bg-transparent text-white dropdown-toggle pl-0 pt-0 mt-0" type="button"
+          id="dropdownMenuButton" data-toggle="dropdown"><span class="episodeDescription"><%=selectedSeries.name%></span></button> 
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">              
+                      <a class="dropdown-item btn" href='/series/<%=selectedSeries.id%>/edit' role="button" type='submit'>Edit</a>                     
+                    <form class="dropdown-item" action="/series/<%=selectedSeries.id%>/delete?_method=DELETE" method= "POST">
+                      <input
+                        type="submit"
+                        name="_method"
+                        class="btn p-0"
+                        value="Delete"
+                      />
+                    </form>                    
+                </div>        
+          <p class="card-text"><%=selectedSeries.description%></p>         
+      </div>
+        <a href="/" class="btn btn-outline-light ml-3" role="button">
+          Return to Main</a
+        >       
+    </div>
+  </div>
+  <div class = "row">
+    <div class="col-12 d-flex flex-row justify-content-center">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col" class='text-light smallHeader border-0'><div></div></th>
+            <th scope="col" class='text-light smallHeader border-0'><div >Episode</div></th>            
+            <th scope="col" class='text-light smallHeader border-0'><div>Description</div></th>            
+          </tr>
+        </thead>
+        <tbody>
+          <% selectedSeries.Episodes.forEach((ep) =>{ %>
+          <tr class=''>            
+              <td>
+                <form class='epArtworkDisplay' action ='/series/<%=selectedSeries.id%>'>
+                <% if(ep.episode_artwork) {%>
+                <img class='w-100 h-auto' src="<%=ep.episode_artwork%>"/>                
+                <% } else { %>
+                <img class='w-100 h-auto' src="<%=selectedSeries.artwork_filename%>"/>
+                <% } %>                
+                  <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>
+                  <input type='hidden' name="episodeLinkToPlay" value="<%=ep.podcast_ext_url%>"/>
+              </form>
+              </td>
+              <td><a href='/series/<%=selectedSeries.id%>/episode/<%=ep.episode_id%>'><%=ep.episode_name%></a></td>              
+              <td class='w-50 descriptionText'>
+                <%=ep.episode_description%></a></td>
+            <td class='align-middle'>            
+            <% if(isUserAuth === true){ %>
+              <form action='/series/<%=selectedSeries.id%>/episode/<%=ep.episode_id%>/favourite' method="POST">
+                <button class="favouriteBtn bg-transparent border-0 shadow-none"                             
+                type="submit"
+                >   <% if(ep.favourited !== undefined) { %>               
+                      <% if(ep.favourited === true ){ %>
+                      <i class="fa fa-heart"></i>
+                        <% } else if(ep.favourited === false) { %>
+                        <i class="fa fa-heart-o"></i>                      
+                        <% } %>
+                      <% } else { %>
+                        <i class="fa fa-heart-o"></i>
+                      <% } %>                    
+                </button>              
+                <input type="hidden" name="favouritedEpisode" value="selectedSeriesPage"/>                              
+              </form>
+            <% } %>            
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<% if (locals.episodeLinkToPlay) {%>
+<%- include('../soundcloudPlayer')%>
+<% } %>
+<%-include('../mainpage/footer') %>

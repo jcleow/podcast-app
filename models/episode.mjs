@@ -21,9 +21,6 @@ export default function episodeModel(sequelize, DataTypes) {
     podcast_ext_url: {
       type: DataTypes.STRING,
     },
-    podcast_series_id: {
-      type: DataTypes.INTEGER,
-    },
     createdAt: {
       allowNull: false,
       type: DataTypes.DATE,

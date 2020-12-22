@@ -33,6 +33,7 @@ export default function routes(app) {
   app.get('/', mainPageController.index);
 
   const SeriesController = series(db);
+  app.get('/series/:id', SeriesController.index);
   app.get('/series/new', SeriesController.newForm);
   app.post('/series', multerUpload.single('artwork'), SeriesController.create);
 

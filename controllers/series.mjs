@@ -113,5 +113,18 @@ export default function createSeries(db) {
     res.clearCookie('previousFileSelected');
     res.redirect('/');
   };
-  return { newForm, create };
+
+  const index = async (req, res) => {
+    const selectedSeries = await db.Series.findOne({
+      where: {
+        id: req.params.id,
+      },
+      include: db.Episode,
+    });
+    console.log(selectedSeries, 'selectedSeries');
+    // passing in selectedSeries as an instance of the Series
+    // such that it can access the attribute directly such as selectedSeries.id
+    res.render('series/selectedSeries', { selectedSeries });
+  };
+  return { newForm, create, index };
 }
