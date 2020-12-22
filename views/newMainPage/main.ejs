@@ -1,0 +1,20 @@
+<%- include('headerAndNav') %>
+<body class='bg'>  
+
+<%-include('carousel')%>
+ 
+<!-- First section for Recommended Podcasts by Series -->
+<%-include('popularSeriesCarouselLarge')%>
+<%-include('popularSeriesCarouselMedium')%>
+<%-include('popularSeriesCarouselSmall')%>
+
+<!-- Second section for Recommended Podcasts by Episodes -->
+<%-include('recommendedEpisodesLarge') %>
+<%-include('recommendedEpisodesMedium') %>
+<%-include('recommendedEpisodesSmall') %>
+
+</div>
+</body>
+
+<%- include('../soundcloudPlayer')%>
+<%-include('footer') %>

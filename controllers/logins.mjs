@@ -2,7 +2,7 @@ import jsSHA from 'jssha';
 import db from '../models/index.mjs';
 
 export default function login() {
-  const index = async (req, res) => {
+  const newForm = async (req, res) => {
     res.render('logins/newLoginForm');
   };
 
@@ -19,5 +19,5 @@ export default function login() {
     });
     console.log(selectedUser);
   };
-  return { index, create };
+  return { newForm, create };
 }

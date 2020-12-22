@@ -38,7 +38,7 @@ export default function mainpage(db) {
       }
 
       // finally, render the series
-      res.render('series/main', data);
+      res.render('newMainPage/main', data);
     } catch (error) {
       console.log(error);
     }

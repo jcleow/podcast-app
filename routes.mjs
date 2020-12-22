@@ -33,14 +33,14 @@ export default function routes(app) {
   app.get('/', mainPageController.index);
 
   const SeriesController = series(db);
-  app.get('/series/new', SeriesController.index);
+  app.get('/series/new', SeriesController.newForm);
   app.post('/series', multerUpload.single('artwork'), SeriesController.create);
 
   const LoginController = login(db);
-  app.get('/login', LoginController.index);
+  app.get('/login', LoginController.newForm);
   app.post('/login', LoginController.create);
 
   const UsersController = users(db);
-  app.get('/register', UsersController.index);
+  app.get('/register', UsersController.newForm);
   app.post('/register', multerUpload.single('profilePic'), UsersController.create);
 }

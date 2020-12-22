@@ -1,3 +1,5 @@
+import { assignLoggedInUserDetails } from '../helper.mjs';
+
 export default function createSeries(db) {
   const newForm = async (req, res) => {
     // Used to store displayData
