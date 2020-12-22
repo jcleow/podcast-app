@@ -3,13 +3,15 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import db from './models/index.mjs';
 import mainpage from './controllers/mainpage.mjs';
-import newSeriesForm from './controllers/newSeriesForm.mjs';
-import createSeries from './controllers/createSeries.mjs';
+import series from './controllers/series.mjs';
+import login from './controllers/logins.mjs';
+import users from './controllers/users.mjs';
 
 // Configuring S3
 const s3 = new aws.S3({
   accessKeyId: process.env.ACCESSKEYID,
   secretAccessKey: process.env.SECRETACCESSKEY,
+  region: 'ap-southeast-1',
 });
 // Configuring the Multer-S3 upload
 const multerUpload = multer({
@@ -30,9 +32,15 @@ export default function routes(app) {
   const mainPageController = mainpage(db);
   app.get('/', mainPageController.index);
 
-  const newSeriesFormController = newSeriesForm(db);
-  app.get('/series/new', newSeriesFormController.index);
+  const SeriesController = series(db);
+  app.get('/series/new', SeriesController.index);
+  app.post('/series', multerUpload.single('artwork'), SeriesController.create);
 
-  const createSeriesController = createSeries(db);
-  app.post('/series', multerUpload.single('artwork'), createSeriesController.index);
+  const LoginController = login(db);
+  app.get('/login', LoginController.index);
+  app.post('/login', LoginController.create);
+
+  const UsersController = users(db);
+  app.get('/register', UsersController.index);
+  app.post('/register', multerUpload.single('profilePic'), UsersController.create);
 }

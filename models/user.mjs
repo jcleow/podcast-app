@@ -15,7 +15,7 @@ export default function userModel(sequelize, DataTypes) {
     username: {
       type: DataTypes.STRING,
     },
-    profile_pic_url: {
+    profile_pic: {
       type: DataTypes.STRING,
     },
     email_address: {

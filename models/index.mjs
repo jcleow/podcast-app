@@ -41,10 +41,10 @@ db.Sequelize = Sequelize;
 db.Series.hasMany(db.Episode);
 db.Episode.belongsTo(db.Series);
 
-// db.User.hasMany(db.FavouriteComment);
-// db.User.hasMany(db.Fellowship);
-
 db.Genre.hasMany(db.Subgenre);
 db.Subgenre.belongsTo(db.Genre);
+
+db.Series.belongsToMany(db.Subgenre, { through: 'Series_Subgenres', onDelete: 'cascade' });
+db.Subgenre.belongsToMany(db.Series, { through: 'Series_Subgenres' });
 
 export default db;

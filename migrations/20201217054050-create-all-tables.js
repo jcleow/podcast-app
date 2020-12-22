@@ -24,7 +24,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
       },
-
     });
 
     await queryInterface.createTable('Episodes', {

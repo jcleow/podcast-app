@@ -1,0 +1,31 @@
+<%- include('../mainpage/headerAndNav') %>
+
+  <body>
+  <div class='container loginDisplay'>
+    <div class="row navTopMargin ">
+      <div class="col-12 d-flex justify-content-center pageTitle pb-2 rounded">
+     <span class=""> Login to Podcast App!</span>
+      </div>
+    </div>
+    <div class="row navTopMargin ">
+      <div class='col-12 d-flex justify-content-center rounded'>
+    <form action='/login' method='POST'>
+        <div class='form-group '>
+            <label for="username" class=''><b>Username</b></label>
+            <input type="text" class="form-control border border-info" name="username" >
+        </div>
+
+        <div class="form-group pt-3 ">
+            <label for="password" class='' ><b>Password</b></label>
+            <input type="password" class="form-control border border-info" name="password" placeholder="Password">
+        </div>     
+
+        <div class="form-group mx-auto submitBtn" >
+          <button type="submit" class="btn btn-outline-light">Login</button>
+        </div>
+    </form>
+    </div>
+    </div>  
+  </body>
+  
+<%-include('../mainpage/footer') %>

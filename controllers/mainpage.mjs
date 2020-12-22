@@ -1,8 +1,10 @@
+import { assignLoggedInUserDetails } from '../helper.mjs';
+
 export default function mainpage(db) {
   const index = async (req, res) => {
     try {
-      // Clean and pass an array of the data into a new variable to be rendered in ejs
-      const data = {};
+      // Clean and pass an array of the data into a temp 'data' variable to be rendered in ejs
+      let data = {};
 
       // find all series data
       const seriesData = await db.Series.findAll({
@@ -18,19 +20,19 @@ export default function mainpage(db) {
           attributes: ['id'],
         }],
       });
-      console.log(episodesData, 'episodesData');
-      console.log(episodesData[0].Series, 'series data pertaining to an episode');
 
-      // Store all related values into displayData
+      // Assign loggedInUser details to temp data var
+      data = assignLoggedInUserDetails(data, req);
+
+      // Store all related values into data var
       data.series = seriesData.map((aSeriesData) => aSeriesData.dataValues);
       data.episodes = episodesData.map((episodeData) => episodeData.dataValues);
 
       // Adding series id to each episode
       data.episodes.forEach((episode) =>
       { episode.series_id = episode.Series.dataValues.id; });
-      console.log(data.episodes, 'displayEpisodes');
 
-      // if user chooses to play an episode... store the link inside displayData
+      // if user chooses to play an episode... store the link inside data var
       if (req.query) {
         data.episodeLinkToPlay = req.query.episode_id;
       }

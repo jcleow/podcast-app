@@ -1,0 +1,130 @@
+<%- include('../mainpage/headerAndNav') %>
+
+  <body>
+
+  <div class='container loginDisplay'>
+    <div class="row navTopMargin">
+      <div class="col-12 d-flex justify-content-center pageTitle">
+      Register for a new account!
+      </div>
+    </div>
+          
+  <div class='container signupDisplay'>
+    <div class="row navTopMargin">
+      <div class='col-12 d-flex justify-content-center'>
+
+    <form action="/register" method="POST" enctype="multipart/form-data"
+        oninput='confirmPassword.setCustomValidity(confirmPassword.value != password.value ? "Passwords do not match." : "")'>
+      <div class ="form-row">
+        <div class ="col-6">
+          <div class='form group'>
+              <label for="firstName">First Name:</label><span class="required">*</span>
+              <input type="text" class="form-control" id="firstName" name="firstName">
+          </div>
+         </div>
+        
+      <div class="col-6">
+        <div class='form-group'>
+            <label for="lastName">Last Name:</label><span class="required">*</span>
+            <input type="text" class="form-control" id="lastName" name="lastName">
+        </div>
+       </div>
+      </div>
+        <div class='form-group'>
+            <label for="emailAddress">Email address:</label> <span class="required">*</span>
+            <input type="email" 
+            
+            class="form-control 
+            <% if (locals.isEmailValid !== undefined){ %>
+              <% if(isEmailValid === false){ %>
+                is-invalid
+                <% } else {%>              
+                is-valid             
+              <% } %>
+            <% } %>  
+            "
+
+            id="emailAddress" aria-describedby="emailHelp" placeholder="Enter email" name="emailAddress" 
+             <% if(locals.previousValues){ %>
+            value="<%=previousValues.emailAddress%>"
+            <% } %>
+
+            required> 
+            <% if (locals.isEmailValid !== undefined){ %>              
+              <% if(isEmailValid === false){ %>
+                <div class="invalid-feedback">
+                  <%=previousValues.emailAddress%> has been taken.
+                </div>
+              <% } else {%>
+                <div class="valid-feedback">
+                  <%=previousValues.emailAddress%> looks good!
+                </div>
+              <% } %>             
+            <% } else { %>            
+               <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>  
+            <% } %>
+            
+        </div>
+
+        <div class="form-group">
+          <label for="photo">Upload a Profile Picture</label><br/>
+          <input type="file" name="profilePic" />
+        </div>
+
+        <div class='form-group'>
+            <label for="username">Username:</label> <span class="required">*</span>
+            <input type="text" class="form-control
+            <% if (locals.isUsernameValid !== undefined){ %>
+              <% if(isUsernameValid === false){ %>
+                is-invalid
+                <% } else {%>              
+                is-valid             
+              <% } %>
+            <% } %>                                       
+            " 
+            id="username" placeholder="Username" name="username" 
+            <% if(locals.isUsernameValid !== undefined){ %>
+            value="<%=previousValues.username%>"
+            <% } %>
+            required>
+
+            <% if (locals.isUsernameValid !== undefined){ %>
+              <% if(isUsernameValid === false){ %>
+                <div class="invalid-feedback">
+                  <%=previousValues.username%> has been taken.
+                </div>
+              <% } else {%>
+                <div class="valid-feedback">
+                  <%=previousValues.username%> looks good!
+                </div>
+              <% } %>
+            <% } %>
+        </div>
+      
+        <div class="form-group">
+            <label for="password">Password:</label> <span class="required">*</span>
+            <input type="password" class="form-control" id="passWord" placeholder="Password" name="password" required>
+             <small id="passwordHelpBlock" class="form-text text-muted">
+  Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
+</small>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password:</label> <span class="required">*</span>
+            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password" required>
+        </div>
+
+        <div class="form-group form-check">
+          <input type="checkbox" class="form-check-input" id="termsAndConditions" required>
+          <label class="form-check-label" for="exampleCheck1">By clicking this you agree to all the terms & conditions</label>
+        </div>
+
+         <div class="form-group mx-auto submitBtn" >
+            <button type="submit" class="btn btn-outline-light">Sign up</button>
+          </div>
+    </form>
+    </div>
+    </div>  
+  </body>
+  
+<%-include('../mainpage/footer') %>
