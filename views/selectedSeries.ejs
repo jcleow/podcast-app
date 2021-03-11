@@ -11,7 +11,7 @@
   <div class="row">
     <div class="col-sm-4 h-auto d-flex align-items-stretch">
         <div class="card-body d-flex justify-content-center">                  
-          <img class='seriesArtwork'src="/<%=selectedSeries[0].series_artwork%>"/>
+          <img class='seriesArtwork'src="<%=selectedSeries[0].series_artwork%>"/>
       </div>
     </div>    
     <div class="col-sm-8">
@@ -53,9 +53,9 @@
               <td>
                 <form class='epArtworkDisplay' action ='/series/<%=selectedSeries[0].series_id%>'>
                 <% if(ep.episode_artwork) {%>
-                <img class='w-100 h-auto' src="/<%=ep.episode_artwork%>"/>                
+                <img class='w-100 h-auto' src="<%=ep.episode_artwork%>"/>                
                 <% } else { %>
-                <img class='w-100 h-auto' src="/<%=selectedSeries[0].series_artwork%>"/>
+                <img class='w-100 h-auto' src="<%=selectedSeries[0].series_artwork%>"/>
                 <% } %>                
                   <button class="rounded-circle" type='submit'><i class='fa fa-play ml-2'></i></button>
                   <input type='hidden' name="episodeLinkToPlay" value="<%=ep.podcast_ext_url%>"/>
