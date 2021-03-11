@@ -288,17 +288,17 @@ app.post('/series/create', multerUpload.single('artwork'), (req, res) => {
     RETURNING *`))
     // If user uploaded an artwork, then run the query to insert it
     .then(() => {
-      let filename;
+      let seriesArtWork;
       // if user uploads an artwork
       if (req.file) {
-        filename = req.file.filename;
+        seriesArtWork = req.file.location;
       } else {
         // if not use default artwork
-        filename = 'defaultArtwork.jpg';
+        seriesArtWork = 'defaultArtwork.jpg';
       }
       const insertPodcastSeriesArtworkQuery = {
         text: `UPDATE podcast_series SET artwork_filename= $1 WHERE id=${currPodcastSeriesId} RETURNING *`,
-        values: [filename],
+        values: [seriesArtWork],
       };
       return pool.query(insertPodcastSeriesArtworkQuery);
     })
@@ -410,13 +410,14 @@ app.post('/series/episode/upload', multerUpload.single('artwork'), (req, res) =>
     // next insert the filename of the uploaded artwork
     .then(() => {
       if (req.file) {
-        const { filename } = req.file;
+        const { location } = req.file;
+        console.log(location,'location');
         const insertEpisodeArtworkQuery = {
           text: `
           UPDATE podcast_episodes 
           SET artwork_filename = $1 
           WHERE id = ${currPodcastEpisodeId}`,
-          values: [filename],
+          values: [location],
         };
         return pool.query(insertEpisodeArtworkQuery);
       }
@@ -705,7 +706,7 @@ app.put('/series/:id/edit', multerUpload.single('artwork'), checkIsUserCreatorAu
     // If podcast image is submitted, then change podcast image
     .then(() => {
       if (req.file) {
-        const newArtworkFile = req.file.filename;
+        const newArtworkFile = req.file.location;
         return pool.query(`UPDATE podcast_series SET artwork_filename ='${newArtworkFile}' WHERE id = ${req.params.id}`);
       }
     })
@@ -932,7 +933,7 @@ app.put('/series/:seriesId/episode/:id/edit', multerUpload.single('artwork'), ch
       if (req.file) {
         return pool.query(
           `UPDATE podcast_episodes
-          SET artwork_filename = '${req.file.filename}'
+          SET artwork_filename = '${req.file.location}'
           WHERE id =${req.params.id}
           `,
         );
