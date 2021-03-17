@@ -8,7 +8,7 @@ Portfolio page: https://jcleow.github.io/portfolio/podcast.html
 
 ![pod-cast-homepage](https://jcleow.github.io/portfolio/img/projects/podcastApp/homePage.png)
 
-### Features ###
+## Features ##
 * Users can create a new podcast series and upload episodes associated with it, categorised by genres and subgenres. *Currently only support Soundcloud embed links for podcast uploads
 * Upload profile pictures, podcast series wide and/or episode specific artworks.
 * Discuss/comment on individual podcast episodes with other users
@@ -16,12 +16,12 @@ Portfolio page: https://jcleow.github.io/portfolio/podcast.html
 * Create your own favourite playlist of episodes
 * Follow your favourite users and check out their favourited comments and playlists
 
-### Technologies Used ###
+## Technologies Used ##
 Frontend: HTML, CSS, Bootstrap, EJS
 Backend: PostgresQL,Express
 Version Control: Git
 
-### Technical Details ###
+## Technical Details ##
 
 * Designed a PostgresQL database with Express.js backend to perform CRUD actions
 on podcasts, users, followings, likes and comments
@@ -32,11 +32,11 @@ on podcasts, users, followings, likes and comments
 * Used Bootstrap extensive for the first time, and implemented a responsive bootstrap carousel display for Bootstrap Cards on the home page.
   *  https://medium.com/swlh/how-to-implement-a-responsive-carousel-using-bootstrap-with-custom-markup-for-a-podcast-web-app-81d0130adce5
 
-### Future Implementations ###
+## Future Implementations ##
 * Can extend the app by having a newsfeed to see what the users followed activities are.
 * To integrate with Spotify / SoundCloud API. Currently using only SoundCloud embed links because they are free.
 
-### Known Issues ###
+## Known Issues ##
 <details>  
   <summary> Restricted to only pasting soundcloud embed links during podcast creation </summary>
   <p> Users currently can only upload a podcast by using an Embed SoundCloudLink 
@@ -48,7 +48,7 @@ on podcasts, users, followings, likes and comments
   <p>Seed data are manually input at deployment (due to lack of time to automate the generation of scrapping soundcloud embed links). Future implementation if integrated with Spotify/Soundcloud API may negate this</p>
 </details>
 
-### Running the code ###
+## Running the code ##
 
 1. Clone the Repo [**aws-deployment branch**]
 
