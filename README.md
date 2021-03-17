@@ -27,8 +27,10 @@ Version Control: Git
 on podcasts, users, followings, likes and comments
 * Introduced session authentication through cookies for login, registration and user-specific pages
 * Integrated with Multer-S3 for image uploads, complete with EJS and Bootstrap for rendering
-* Designed from scratch DB tables to support features above, and it was interesting to discover the follower-followee relationships in an ERD diagram where the 'users' has 2x 1:M relationship with the 'fellowships' table. This is because a user can be both a follower and a followee, where a follower can have many followees and vice versa.
-* Used Bootstrap extensive for the first time, and implemented a responsive bootstrap carousel display for Bootstrap Cards on the home page
+* Designed from scratch DB tables to support features above
+  * Follower-followee relationships represented in an ERD diagram where the 'users' has 2x 1:M relationship with the 'fellowships' table,as a user can be both a follower and a followee, where a follower can have many followees and vice versa.
+* Used Bootstrap extensive for the first time, and implemented a responsive bootstrap carousel display for Bootstrap Cards on the home page.
+  *  https://medium.com/swlh/how-to-implement-a-responsive-carousel-using-bootstrap-with-custom-markup-for-a-podcast-web-app-81d0130adce5
 
 ### Future Implementations ###
 * Can extend the app by having a newsfeed to see what the users followed activities are.
