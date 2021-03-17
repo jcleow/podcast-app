@@ -40,11 +40,6 @@ on podcasts, users, followings, likes and comments
   <p> Users currently can only upload a podcast by using an Embed SoundCloudLink 
 (e.g <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?.... >) and not an mp3/wav audio file. <p>
 </details>
-
-<details>
-  <summary>Rename and cleanup of `newRoutes` branch for Heroku deployment</summary>
-  <p>Yet to rename route for deployment and new routes added on heroku (currently sit as newRoute branch). This was created for practice on deployment away from AWS onto Heroku <p>
- </details>
  
  <details>
   <summary>Manual Input of Seed Data</summary>
@@ -53,7 +48,7 @@ on podcasts, users, followings, likes and comments
 
 ### Running the code ###
 
-1. Clone the Repo
+1. Clone the Repo [**aws-deployment branch**]
 
 `git clone https://github.com/jcleow/podcast-app.git`
 
