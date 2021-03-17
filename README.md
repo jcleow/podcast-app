@@ -8,18 +8,26 @@ Portfolio page: https://jcleow.github.io/portfolio/podcast.html
 
 ![pod-cast-homepage](https://jcleow.github.io/portfolio/img/projects/podcastApp/homePage.png)
 
+### Features ###
+* Users can create a new podcast series and upload episodes associated with it, categorised by genres and subgenres. *Currently only support Soundcloud embed links for podcast uploads
+* Upload profile pictures, podcast series wide and/or episode specific artworks.
+* Discuss/comment on individual podcast episodes with other users
+* Favourite comments and episodes, which will be recorded in user's profile pages.
+* Create your own favourite playlist of episodes
+* Follow your favourite users and check out their favourited comments and playlists
+
 ### Technologies Used ###
 Frontend: HTML, CSS, Bootstrap, EJS
 Backend: PostgresQL,Express
 Version Control: Git
 
-### Technical Learnings ###
-* To perform any update on the Database, a refresh was needed. It was slightly challenging to manage, especially for certain forms validation where the subgenre field depended on the value of the selected genre field. 
- 
-* At point of selecting a genre, the form refreshes and updates. However, this creates errors when there are required fields before the genre input, thus blocking the refresh. An intermediate solution to this was to disable the required fields before to enable a dynamic refresh of the subgenres based on the selected genres.
- 
+### Technical Details ###
+
+* Designed a PostgresQL database with Express.js backend to perform CRUD actions
+on podcasts, users, followings, likes and comments
+* Introduced session authentication through cookies for login, registration and user-specific pages
+* Integrated with Multer-S3 for image uploads, complete with EJS and Bootstrap for rendering
 * Designed from scratch DB tables to support features above, and it was interesting to discover the follower-followee relationships in an ERD diagram where the 'users' has 2x 1:M relationship with the 'fellowships' table. This is because a user can be both a follower and a followee, where a follower can have many followees and vice versa.
- 
 * Used Bootstrap extensive for the first time, and implemented a responsive bootstrap carousel display for Bootstrap Cards on the home page
 
 ### Future Implementations ###
